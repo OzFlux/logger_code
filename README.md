@@ -1,7 +1,7 @@
 # logger_code
 Various versions of Campbell Scientific logger code developed as standard program for OzFlux
 
-Notes:
+Code notes:
 
 1) "Opec_extended_v3_3.cr3" is the original code inherited from Ed Swiatek at CSI USA. 
 This is the final version of the non-EasyFlux code that CSI produced. It is written in a general
@@ -20,6 +20,8 @@ program. This is not ideal, but the only alternative would be to change the vari
 instrument combinations. As it stands, one of the aims with respect to naming conventions is where possible to 
 remove instrument names from within variable names. Doing this in the original program would lead to a very 
 confusing program!
+
+Design principles
 
 Coming: 
 * a document spelling out a basic set of principles for program design
