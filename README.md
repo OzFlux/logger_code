@@ -33,5 +33,4 @@ T / RH should be first set of differential or SE ports (IRGA and sonic to standa
 * adopt umol/m^2/s^1 for CO2 flux - quantities are more intuitive than mg/m^2/s^1, which is generally < 1.
 
 Coming: 
-* a document spelling out a basic set of principles for program design
 * a comma-delimited text file to tie variable names to variable descriptions
