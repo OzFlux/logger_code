@@ -21,7 +21,16 @@ instrument combinations. As it stands, one of the aims with respect to naming co
 remove instrument names from within variable names. Doing this in the original program would lead to a very 
 confusing program!
 
-Design principles
+Design principles:
+
+* no instrument names in variables except where required for identification (see below);
+* pre-defined standard variable names (see table 1 and related discussion here: https://github.com/OzFlux/PyFluxPro/wiki/Variable-names-and-attributes) to be used where possible;
+* a single table should contain all variables requisite to flux calculation, with site-specific variables stored in ancillary tables;
+* the program (and the corresponding physical architecture / wiring of the measurement system) should be such that the core code required to produce the turbulent flux data does not 
+need to change from program to program; as such, IRGA, sonic anemometer and T / RH sensor should all wire to logger panel and not to expansion peripherals;
+T / RH should be first set of differential or SE ports (IRGA and sonic to standard SDM - generally C1, C2 and C3);
+* multiple instrument measurements of the same quantity should be denoted by a relevant dimension (e.g. depth for soil moisture) or otherwise by replicate number;
+* adopt umol/m^2/s^1 for CO2 flux - quantities are more intuitive than mg/m^2/s^1, which is generally < 1.
 
 Coming: 
 * a document spelling out a basic set of principles for program design
