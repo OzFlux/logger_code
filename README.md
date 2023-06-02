@@ -31,11 +31,7 @@ need to change from program to program; as such, IRGA, sonic anemometer and T / 
 T / RH should be first set of differential or SE ports (IRGA and sonic to standard SDM - generally C1, C2 and C3);
 * multiple instrument measurements of the same quantity should be denoted by a relevant dimension (e.g. depth for soil moisture) or otherwise by replicate number;
 * adopt umol/m^2/s^1 for CO2 flux - quantities are more intuitive than mg/m^2/s^1, which is generally < 1;
-* the general philosophy underlying the removal of instrument names from variable names is that the netCDF data format to which the data is ultimately written
-allows metadata to be attached to data. At present, metadata are sourced from control files; ideally, a single meta-database would contain the relevant metadata 
-down to instrument level. Regardless, as long as the metadata can be attached to the data downstream in the processing pipeline, it is unnecessary to try to insert
-it into variable names. This also has the disadvantage of creating unique variable names from site to site rather than a standardised nomenclature, something we are 
-trying to move towards.
+* the general philosophy underlying the removal of instrument names from variable names is that the netCDF data format to which the data is ultimately written allows metadata to be attached to data. At present, metadata are sourced from control files; ideally, a single meta-database would contain the relevant metadata down to instrument level. Regardless, as long as the metadata can be attached to the data downstream in the processing pipeline, it is unnecessary to try to insert it into variable names. Doing so also has the disadvantage of creating unique variable names from site to site rather than a standardised nomenclature, towards which we are currently trying to move.
 * stuff here about pulling configuration data into a separate file. I have given up on this, but woth discussing whether it is a good idea. Consensus seems to be no.
 
 Coming: 
