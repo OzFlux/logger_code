@@ -2,7 +2,7 @@
 Various versions of Campbell Scientific logger code developed as standard program for OzFlux
 
 Program files:
-* CR6 / CSAT3B / LI7500RS: OzFlux_std_2023_v1.CR6
+* CR6 / CSAT3B / LI7500RS: OzFlux_std_2023_CSAT3B_LI7500RS.CR6
 
 Code notes:
 
