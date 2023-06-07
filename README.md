@@ -17,7 +17,7 @@ the program code "Opec_extended_v3_3_corr.cr3" is identical to the original code
 that the delay is changed to 1 scan (and associated documentation line in initial comments - line 8).
 Any new conditionally-compiled programs should be generated from the corrected version rather than
 the original.
-3) The current code in "OzFlux_std_2023_v1.CR6" has diverged significantly from the original program
+3) The current code in the standard programs has diverged significantly from the original program
 in terms of variable names, so cannot simply be reproduced by conditionally compiling the original
 program. This is not ideal, but the only alternative would be to change the variable names for all possible
 instrument combinations. As it stands, one of the aims with respect to naming conventions is where possible to 
