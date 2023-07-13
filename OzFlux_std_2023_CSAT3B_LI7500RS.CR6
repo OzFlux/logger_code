@@ -337,6 +337,12 @@ Units wnd_dir_sonic = degrees
 Units std_wnd_dir = degrees
 Units wnd_dir_compass = degrees
 
+' File renaming flags, strings and arrays
+Public PrevFileName As String *30
+Public NewFileName As String *50
+Public NewFileFlag
+Dim timearray(6)
+
 ' Tables
 
 DataTable (delay_3d,TRUE,OFFSET)      ' Raw sonic data delay table
@@ -556,7 +562,7 @@ Units Tb = K
 '############################################################################
 
 '############################################################################
-'*** Beginning of TCAV constants and variables ***
+'*** Beginning of TCAV variables ***
 Public Tsoil(NMBR_TSOIL)                'TCAV soil thermocouples.
 Public del_Tsoil(NMBR_TSOIL)            'Change in soil temperature.
 Dim prev_Tsoil(NMBR_TSOIL)
@@ -706,7 +712,7 @@ EndTable
 'Time series data.
 DataTable (ts_data,TRUE,-1)
   DataInterval (0,SCAN_INTERVAL,mSec,100)
-  TableFile ("CRD:"&Status.SerialNumber(1,1)&".ts_data_",64,-1,0,1,Day,0,0)
+  TableFile ("CRD:"&Status.SerialNumber(1,1)&".ts_data_",64,-1,0,1,Day,NewFileFlag,PrevFileName)
 
   '*** Beginning of sonic time series output ***
   Sample (5,sonic_raw(1),IEEE4)
@@ -718,7 +724,21 @@ DataTable (ts_data,TRUE,-1)
   FieldNames ("CO2_irga,H2O_irga,amb_press_irga,sig_str_irga")
   '*** End of LI-7500(RS) time series output ***
 EndTable
+'############################################################################
 
+'############################################################################
+'*** Subroutines ***
+
+Sub file_rename()
+  ' This subroutine creates a new filename and renames the file output to the card by tablefile
+  SplitStr(timearray(),flux.TimeStamp(3,2),"",6,0)
+  NewFileName = _
+  "CRD:TOB3_" & STATION_NAME & "_" & SCAN_INTERVAL & "ms_"&timearray(3)&"_"& _
+  FormatFloat(timearray(2),"%02.0f")&"_"& _
+  FormatFloat(timearray(1),"%02.0f")&".dat"
+  FileRename(PrevFileName, NewFileName)
+EndSub
+'############################################################################
 
 '*** Program ***
 
@@ -962,6 +982,10 @@ BeginProg
     CS7500 (irga_raw(1),1,LI7500_SDM_ADDR,6)
     '*** End of LI-7500(RS) measurements ***
     
+    '*** File rename subroutine ***
+    If NewFileFlag Then Call file_rename()        
+    '*** End of file rename subroutine ***
+
   NextScan
 
 
