@@ -1,0 +1,36 @@
+FAST PROCESSING DESCRIPTION
+
+Fast sequence begins with call to the delay tables of both the IRGA (delay_irga) and the CSAT (delay_3D). These tables sample the raw output arrays from the respective instruments (irga_raw, sonic_raw), and keep the 17 (why 17?) most recent records. In the case of the IRGA, raw data molar densities are converted to mass densities before the table call.
+
+Subsequent execution is conditional on the number of scans reaching the preprogrammed execution delay (17 - required to fill the record tables sufficiently to match the requisite delays that ensures sonic and IRGA alignment). The variable scan_count increments until it reaches this value, then stops. Further processing then occurs on all subsequent scans, as below.
+
+The sonic data are processed first. The raw data record from the appropriate location in the delay table (determined by the predetermined CSAT_RECS_BACK constant) is retrieved and transferred via dly_data_out array and written to array sonic (aliased as Ux, Uy, Uz, Ts and diag_sonic).
+
+The sonic diagnostic bit word is checked to see if a valid number is found. If not (i.e. is NaN), it is set to 256 (everything is in hex, so in CrBasic this is denoted by h100) to ensure the subsequent bitwise processing is numerically valid. The 9 diag bits are then parsed into the diag_bits_sonic array, which is aliased with the names of the various warnings (see program for details). The sonic processing disable flag (sonic_disable_f) is set high if the diagnostic word is non-zero. diag_sonic_aggregate seems to be set to 1 and remain there until OUTPUT_INTERVAL is reached (then set back to zero). So just an indicator of whether ANY diagnostics were raised in the interval?
+
+Sonic data (wind vectors and sonic temperature) are loaded into the 2D array used for the covariance calculation (array is DIM 1,4: Ts, Ux, Uy, Uz). Covariance table is called (triggering covariance calculation; 4 elements returns 10 outputs, 7 covariances and three variances). Additional processing occurs ONLY IF there is table output (which only occurs if the previously-set sonic_disable_f is zero).
+
+Additional processing retrieves the values from the sonic covariance table, and writes them to output locations (see cov_out_sonic array and associated aliases). The wind vector variances are rewritten as standard deviations. The sonic wind directions (i.e. +180 -> -180) and compass wind directions (azimuth) are calculated. Tau and ustar are calculated from the wind vectors (though Tau still needs to be scaled by the density i.e. u*^2 = Tau / rho).
+
+Temperature and humidity data are processed to averages next (required for subsequent calculations). The table stats_tmpr_rh is called on every scan, but the actual measurement occurs in the slow sequence (only temperature, vapour pressure and saturation vapour pressure) and the table only outputs at OUTPUT_INTERVAL (usually 30 minutes). The calculation of the relevant met variables is only triggered by the output. These variables are: H2O_tmpr_rh_mean (vapour density - g/m^3), rho_d_tmpr_rh_mean (density of dry air used in Webb et al. term - kg/m^3), rho_a_tmpr_rh_mean (density of air - kg/m^3), and RH_tmpr_rh_mean (%).
+
+IRGA processing next. As with the sonic, the raw data record from the appropriate location in the delay table (determined by the predetermined LI7500_RECS_BACK constant) is retrieved and transferred via dly_data_out array and written to array irga (first five slots, aliased as CO2_irga, H2O_irga, amb_press_irga, sig_str_irga and diag_irga).
+
+The irga diagnostic bit word is checked to see if a valid number is found. If not (i.e. is NaN), it is set to o (everything is in hex, so in CrBasic this is denoted by h00) to ensure the subsequent bitwise processing is numerically valid. The 4 diag bits are then parsed into the diag_bits_irga array, which is aliased with the names of the various warnings (see program for details). The irga processing disable flag (irga_disable_f) is set high if the diagnostic word is non-zero OR the signal strength (sig_str_irga) < the specified threshold (IRGA_SIG_STR_THRESHOLD). diag_irga_aggregate seems to be set to 1 and remain there until OUTPUT_INTERVAL is reached (then set back to zero). So just an indicator of whether ANY diagnostics were raised in the interval?
+
+Fast response air temperature (Tc_irga) is computed from sonic temperature and IRGA vapor density (see sonic manual). Molar mixing ratios for Co2 and H2O are then calculated.
+
+IRGA data and sonic vector data are both loaded into the 2D array used for the covariance calculation (array is DIM 3,4: 1:1 -> 1:4 are CO2 and wind vectors, 2:1 -> 2:4 are H2O and wind vectors, 3:1 -> 3:4 are Tc_irga and wind vectors). Covariance table is called (triggering covariance calculation; 4 elements per row, but we only care about the variance of the scalar, and it's covariance with the vectors, therefore a total of 12 outputs). Additional processing occurs ONLY IF there is table output (which only occurs if the previously-set irga_disable_f is zero).
+
+Additional processing retrieves the values from the irga covariance table, and writes them to output locations (see cov_out_irga array and associated aliases). The scaling values to yield fluxes from covariances are calculated (densities, Cp, Lv), and the scalar value variances are rewritten as standard deviations. The WPL terms for CO2 and H2O (for both water vapour and heat) are calculated, and the mass scalar fluxes are calculated.
+
+Final calculation of the sensible heat flux is then done, using both sonic temperature (Hs) AND sonic temperature corrected for water vapour (Hc_irga). And tau is scaled using the calculated density.
+
+Flux output table is then called.
+
+Aggregate diagnostic variables are flushed.
+
+Slow sequence flags are used to ensure that any outputs to the flux table that are only measured in the slow sequence occur only immediately following execution of the slow sequence (once every ten seconds). The logic is that the slow sequence sets slowsequence_finished_f at the end of its execution. If this is true, slowsequence_disable_f is set to false, and all variables in the flux table that use this flag as a trigger are processed when the fast scan calls the flux table. But immediately following the table call, the disable flag is again set true.
+
+Finally, the CSAT and LI7500 measurements are executed, and the file renaming subroutine is called (conditionally - only if a new file has just been opened). 
+
