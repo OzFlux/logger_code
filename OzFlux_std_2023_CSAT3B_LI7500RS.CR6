@@ -63,7 +63,7 @@ Const CDMVOLT116_1_SN = 4634       ' CDM-VOLT116 serial number
 Const CDMVOLT116_1_ADDR = 1        ' CDM-VOLT116 CPI address
 Const CDMVOLT116_1_DESC = "Mast top MUX"  ' CDM-VOLT116 descriptor
 
-' -> CSAT3B (CR6 -> note that CSAT and IRGA signals are combined at top of 
+' -> CSAT3B (CR6 -> note that CSAT and IRGA signals are combined at top of
 '            mast and brought down to logger on a single cable for tall towers;
 '            as such, wiring colours may vary for cabling used)
 
@@ -131,13 +131,13 @@ Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
 ' -> SHFP (CR6 -> read calibration coefficients into memory on compile)
 
 Const SHF_ANALOG_INPUT = U5           'Unique differential analog input channel.
-Const NMBR_SHF = 2                    'n plates 
+Const NMBR_SHF = 2                    'n plates
 Const SHF_FIELDS = "Fg_HFT3_01,Fg_HFP01_02"    'Field names
-Const SHF_CAL_1 = -33.1               'Unique multiplier for HFP #1 (1000/sensitivity). 
+Const SHF_CAL_1 = -33.1               'Unique multiplier for HFP #1 (1000/sensitivity).
 Const SHF_CAL_2 = 15.11               'Unique multiplier for HFP #2 (1000/sensitivity).
-Data SHF_CAL_1                        
+Data SHF_CAL_1
 Data SHF_CAL_2
-                     
+
 'HFP01 #1
 'U5      Signal (white)
 'gnd     Signal reference (green)
@@ -221,7 +221,7 @@ SetSetting ("FTPPassword","EPCN")
 PipeLineMode
 
 '############################################################################
-'*** Constants, variables, working data tables ***
+'*** Internal constants, variables, working data tables ***
 
 ' -> Internal and secondary constants
 Const OFFSET = 17                                                  'An offset delay that will be introduced to the eddy covariance data used to compute online fluxes.
@@ -252,6 +252,10 @@ Dim slowsequence_disable_f As Boolean = TRUE             'Flag used to decimate 
 Dim dly_data_out(7)                                      'Array used to temporarily store the lagged record for sonic or irga.
 Dim process_time
 Dim buff_depth
+Dim PrevFileName As String *30                           'The name of the daily fast data file at time of closing
+Dim NewFileName As String *50                            'The filename that is constructed from date and time elements
+Dim NewFileFlag                                          'Status flag that goes high when file handle is closed (midnight)
+Dim timearray(6)                                         'Array that holds the date and time elements used to construct the new file name
 Dim i As Long                                            'Main scan index variable.
 Dim n = 1
 Units process_time = us
@@ -336,12 +340,6 @@ Units rslt_wnd_spd = m/s
 Units wnd_dir_sonic = degrees
 Units std_wnd_dir = degrees
 Units wnd_dir_compass = degrees
-
-' File renaming flags, strings and arrays
-Public PrevFileName As String *30
-Public NewFileName As String *50
-Public NewFileFlag
-Dim timearray(6)
 
 ' Tables
 
@@ -483,7 +481,7 @@ Public rain
 Units rain = mm
 
 
-''*** Ancillary wind speed 
+''*** Ancillary wind speed
 'Public WS_AUX
 'Public WD_AUX
 'Units WS_AUX = meters/second
@@ -686,10 +684,10 @@ DataTable (flux,TRUE,FLUX_SIZE_CPU)
   Totalize (1,rain,IEEE4,FALSE)
   '*** End of TE525 output data ***
 
-'  '*** Beginning of auxiliary wind output data ***
-'  WindVector(1,WS_AUX,WD_AUX,FP2,False,0,0,0)
-'  FieldNames(WIND_AUX_FIELDS)
-'  '*** End of CNR 4 output data ***
+  '  '*** Beginning of auxiliary wind output data ***
+  '  WindVector(1,WS_AUX,WD_AUX,FP2,False,0,0,0)
+  '  FieldNames(WIND_AUX_FIELDS)
+  '  '*** End of CNR 4 output data ***
 
   '*** Beginning of other output data ***
   Average (1,panel_tmpr,IEEE4,FALSE)
@@ -733,10 +731,10 @@ Sub file_rename()
   ' This subroutine creates a new filename and renames the file output to the card by tablefile
   SplitStr(timearray(),flux.TimeStamp(3,2),"",6,0)
   NewFileName = _
-  "CRD:TOB3_" & STATION_NAME & "_" & SCAN_INTERVAL & "ms_"&timearray(3)&"_"& _
-  FormatFloat(timearray(2),"%02.0f")&"_"& _
-  FormatFloat(timearray(1),"%02.0f")&".dat"
-  FileRename(PrevFileName, NewFileName)
+"CRD:TOB3_"&STATION_NAME&"_"&SCAN_INTERVAL&"ms_"&timearray(3)&"_"& _
+FormatFloat(timearray(2),"%02.0f")&"_"& _
+FormatFloat(timearray(1),"%02.0f")&".dat"
+FileRename(PrevFileName, NewFileName)
 EndSub
 '############################################################################
 
@@ -744,7 +742,7 @@ EndSub
 
 BeginProg
 
-' Load NMBR_SHF plate calibration.
+  ' Load NMBR_SHF plate calibration.
   For i = 1 To NMBR_SHF
     Read shf_cal(i)
   Next i
@@ -752,7 +750,7 @@ BeginProg
   'Set the SDM clock speed.
   SDMSpeed (SDM_PER)
   Scan (SCAN_INTERVAL,mSec,SCAN_BUFFER_SIZE,0)
-    
+
     'Datalogger panel temperature.
     PanelTemp (panel_tmpr,250)
 
@@ -782,20 +780,21 @@ BeginProg
     '*** Beginning of rain gauge measurement ***
     PulseCount (rain,1,RAIN_PULSE_INPUT,2,0,RAIN_CAL,0)
     '*** End of rain gauge measurement ***
- 
 
-'    '*** Beginning of independent wind speed and direction measurement
-'    PulseCount(WS_AUX,1,WIND_SPD_PULSE_INPUT,5,1,0.098,0)
-'    BrHalf (WD_AUX,1,AutoRange,WIND_DIR_ANALOG_INPUT,WIND_DIR_VX_PORT,1,WIND_DIR_VX_MV,True,0,ANALOG_INTEGRATION,355,0)
-'    If WD_AUX >=360 Then WD_AUX = 0
-'    If WD_AUX <0 Then WD_AUX = 0
-'    '*** End of independent wind speed and direction
-    
+
+    '    '*** Beginning of independent wind speed and direction measurement
+    '    PulseCount(WS_AUX,1,WIND_SPD_PULSE_INPUT,5,1,0.098,0)
+    '    BrHalf (WD_AUX,1,AutoRange,WIND_DIR_ANALOG_INPUT,WIND_DIR_VX_PORT,1,WIND_DIR_VX_MV,True,0,ANALOG_INTEGRATION,355,0)
+    '    If WD_AUX >=360 Then WD_AUX = 0
+    '    If WD_AUX <0 Then WD_AUX = 0
+    '    '*** End of independent wind speed and direction
+
     'Save time series data.
     CallTable ts_data
 
 
     If ( scan_count >= OFFSET ) Then
+
       '*** Beginning of CSAT3B processing ***
       'Load in CSAT3B data that has been lagged by CSAT3_REC_BCK scans.
       GetRecord (dly_data_out(1),delay_3d,CSAT3_REC_BCK)
@@ -965,8 +964,9 @@ BeginProg
         slowsequence_finished_f = FALSE
         slowsequence_disable_f = FALSE
       EndIf
+
     Else
-      scan_count += 1
+      scan_count += 1 'Increments until reaches the value of OFFSET 
     EndIf
 
     CallTable diagnostic
@@ -981,9 +981,9 @@ BeginProg
     '*** Beginning of LI-7500(RS) measurements ***
     CS7500 (irga_raw(1),1,LI7500_SDM_ADDR,6)
     '*** End of LI-7500(RS) measurements ***
-    
+
     '*** File rename subroutine ***
-    If NewFileFlag Then Call file_rename()        
+    If NewFileFlag Then Call file_rename()
     '*** End of file rename subroutine ***
 
   NextScan
@@ -1000,8 +1000,8 @@ BeginProg
 
     '*** Beginning of SHF measurements ***
     VoltDiff (shf(),NMBR_SHF,AutoRange,SHF_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,shf_cal(),0)
-     '*** End of SHF measurements ***
-    
+    '*** End of SHF measurements ***
+
     '*** Beginning of CS65X measurements ***
     SDI12Recorder (cs65x_raw(1),CS65X_1_SDI12_PORT,CS65X_1_ADDR,"M3!",1,0)
     sws_cs650(1) = cs65x_raw(1)
@@ -1018,14 +1018,14 @@ BeginProg
     '*** Beginning of CDM-VOLT116 measurements ***
 
     '*** Beginning of temperature and humidity probe measurements ***
-    CDM_VoltDiff (VOLT116,1,T_tmpr_rh,1,AutoRange,T_RH_MAIN_INPUT,True,0,ANALOG_INTEGRATION,T_RH_T_MULT,T_RH_T_OFFSET)  
+    CDM_VoltDiff (VOLT116,1,T_tmpr_rh,1,AutoRange,T_RH_MAIN_INPUT,True,0,ANALOG_INTEGRATION,T_RH_T_MULT,T_RH_T_OFFSET)
     CDM_VoltDiff (VOLT116,1,RH_tmpr_rh,1,AutoRange,T_RH_MAIN_INPUT+1,True,0,ANALOG_INTEGRATION,T_RH_RH_MULT,T_RH_RH_OFFSET)
     VaporPressure (e_tmpr_rh,T_tmpr_rh,RH_tmpr_rh)
     SatVP (es_tmpr_rh,T_tmpr_rh)
     '*** End of temperature and humidity probe measurements ***
 
     '*** Beginning of net radiometer measurements ***
-    ' Measure radiation components, calculate body temperature and correct raw longwave    
+    ' Measure radiation components, calculate body temperature and correct raw longwave
     CDM_VoltDiff (VOLT116,1,Fsd,4,AutoRange,NR_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,1.0,0)
     Fsd = Fsd*NR_SW_INCOMING_CAL
     Fsu = Fsu*NR_SW_OUTGOING_CAL
@@ -1039,58 +1039,58 @@ BeginProg
     Fld_meas = Fld
     Flu_meas = Flu
     Flu=Flu+(SB*Tb^4)         ' Corrected upwelling longwave
-    Fld=Fld+(SB*Tb^4)         ' Corrected downwelling longwave    
+    Fld=Fld+(SB*Tb^4)         ' Corrected downwelling longwave
     Rn = Fsd-Fsu+Fld-Flu
     albedo = Fsu/Fsd
     '*** End of net radiometer measurements ***
 
 
 
-'    '*** Beginning of quantum sensor measurements ***
-'    CDM_VoltDiff (VOLT116,1,Fpar(),2,AutoRange,PAR_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,5,0)
-'    '*** End of quantum sensor measurements ***
+    '    '*** Beginning of quantum sensor measurements ***
+    '    CDM_VoltDiff (VOLT116,1,Fpar(),2,AutoRange,PAR_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,5,0)
+    '    '*** End of quantum sensor measurements ***
 
     '*** End of CDM-VOLT116 measurements ***
 
 
-'    '*** Beginning of AM16/32B measurements ***
-'
-'    'Set VOLT116 SW5V port high to drive AM16/32 Reset high and wake up the AM16/32
-'    CDM_MuxSelect (VOLT116,1,CDM_MUX_CLOCK,CDM_MUX_RESET,20,1,1)
-'
-'    'Impart a 150 millisecond delay. - Multiple delay instructions 
-'    'allow the datalogger to integrate (time slice) the slow sequence scans into the main scan,
-'    'without causing skipped scans or records in the main scan.
-'    ' DO WE NEED THIS?
-'    Delay(0,20,mSec)
-'    Delay(0,20,mSec)
-'    Delay(0,20,mSec)
-'    Delay(0,20,mSec)
-'    Delay(0,20,mSec)
-'    Delay(0,20,mSec)
-'    Delay(0,20,mSec)
-'    Delay(0,20,mSec)
-'
-'    '*** Beginning of SHF measurements ***
-'    i = 1
-'    SubScan (0,Sec,NMBR_SHF)
-'      CDM_VoltDiff (VOLT116,1,shf(i),1,AutoRange,CDM_MUX_CHANNEL,True,0,ANALOG_INTEGRATION,shf_cal(i),0)
-'      i += 1
-'      CDM_PulsePort (VOLT116,1,CDM_MUX_CLOCK,20000) 'Advance the AM16/32 to the next channel
-'    NextSubScan
-'    '*** End of SHF measurements ***
-'
-'    '*** Beginning of TCAV measurements ***  
-'    i = 1
-'    SubScan (0,Sec,NMBR_TSOIL)
-'      CDM_TCDiff (VOLT116,1,Tsoil(i),1,AutoRange,CDM_MUX_CHANNEL,TypeE,T107_C,True,0,ANALOG_INTEGRATION,1,0)
-'      i += 1      
-'      CDM_PulsePort (VOLT116,1,CDM_MUX_CLOCK,20000) 'Advance the AM16/32 to the next channel
-'    NextSubScan
-'    '*** End of TCAV measurements ***
-'
-'    'Set VOLT116 SW5V low to drive AM16/32 Reset low and send the AM16/32 to sleep
-'    CDM_SW5 (VOLT116,1,CDM_MUX_RESET,0,0)
+    '    '*** Beginning of AM16/32B measurements ***
+    '
+    '    'Set VOLT116 SW5V port high to drive AM16/32 Reset high and wake up the AM16/32
+    '    CDM_MuxSelect (VOLT116,1,CDM_MUX_CLOCK,CDM_MUX_RESET,20,1,1)
+    '
+    '    'Impart a 150 millisecond delay. - Multiple delay instructions
+    '    'allow the datalogger to integrate (time slice) the slow sequence scans into the main scan,
+    '    'without causing skipped scans or records in the main scan.
+    '    ' DO WE NEED THIS?
+    '    Delay(0,20,mSec)
+    '    Delay(0,20,mSec)
+    '    Delay(0,20,mSec)
+    '    Delay(0,20,mSec)
+    '    Delay(0,20,mSec)
+    '    Delay(0,20,mSec)
+    '    Delay(0,20,mSec)
+    '    Delay(0,20,mSec)
+    '
+    '    '*** Beginning of SHF measurements ***
+    '    i = 1
+    '    SubScan (0,Sec,NMBR_SHF)
+    '      CDM_VoltDiff (VOLT116,1,shf(i),1,AutoRange,CDM_MUX_CHANNEL,True,0,ANALOG_INTEGRATION,shf_cal(i),0)
+    '      i += 1
+    '      CDM_PulsePort (VOLT116,1,CDM_MUX_CLOCK,20000) 'Advance the AM16/32 to the next channel
+    '    NextSubScan
+    '    '*** End of SHF measurements ***
+    '
+    '    '*** Beginning of TCAV measurements ***
+    '    i = 1
+    '    SubScan (0,Sec,NMBR_TSOIL)
+    '      CDM_TCDiff (VOLT116,1,Tsoil(i),1,AutoRange,CDM_MUX_CHANNEL,TypeE,T107_C,True,0,ANALOG_INTEGRATION,1,0)
+    '      i += 1
+    '      CDM_PulsePort (VOLT116,1,CDM_MUX_CLOCK,20000) 'Advance the AM16/32 to the next channel
+    '    NextSubScan
+    '    '*** End of TCAV measurements ***
+    '
+    '    'Set VOLT116 SW5V low to drive AM16/32 Reset low and send the AM16/32 to sleep
+    '    CDM_SW5 (VOLT116,1,CDM_MUX_RESET,0,0)
 
     '*** End of AM16/32B measurements ***
 
