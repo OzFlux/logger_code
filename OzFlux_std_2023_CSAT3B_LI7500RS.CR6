@@ -6,8 +6,6 @@
 
 ' To do (IMcHugh):
 ' check all added measurements are in data tables
-' is there a better way to declare and handle variables where n probes is unknown (eg. CS650)
-' should soil moisture sensors be in a separate loop?
 ' put instrument order in constants and variables section in same order as the user-set constants and wiring
 
 ' The sign convention for the fluxes is positive away from the surface and
@@ -22,7 +20,6 @@
 ' The site attendant must load in several constants and calibration values.
 ' Search for the text string "unique" to find the locations where unique
 ' constants and calibration values are entered.
-
 
 '*** Unit Definitions ***
 
@@ -43,29 +40,68 @@
 'V        volts
 'W        Watts
 
-'############################################################################
-' *** User-customised station settings, constants and wiring ***
+'*** Search strings ***
 
-' *** Station settings ***
-Const STATION_NAME = "WombatStateForest"
+'General                    -> Station-based user constants: "Station-based user constants"
+'                           -> Other user constants: "General user constants"
+'                           -> Scientific constants: "Scientific constants"
+
+'VOLT116                    -> User constants: "VOLT116 user constants"
+
+'CSAT3B                     -> User constants and wiring: "CSAT3B user constants / wiring"
+'                           -> Internal constants, variables and tables: "CSAT3B internal constants / variables / tables"
+
+'LI7500RS                   -> User constants and wiring: "LI7500RS user constants / wiring"
+'                           -> Internal constants, variables and tables: "LI7500RS internal constants / variables / tables"
+
+'Soil moisture              -> User constants and wiring: "Soil moisture user constants / wiring"
+'                           -> Internal variables: "Soil moisture internal variables"
+
+'Rain gauge                 -> User constants and wiring: "Rain gauge user constants / wiring"
+'                           -> Internal variables: "Rain gauge internal variables"
+
+'Soil heat flux             -> User constants and wiring: "Soil heat flux user constants / wiring"
+'                           -> Internal variables: "Soil heat flux internal variables"
+
+'Soil temperature           -> User constants / wiring: "Soil temperature user constants / wiring"
+'                           -> Internal constants and variables: "Soil temperature internal variables / tables" 
+
+'Ancillary wind sensor      -> User constants and wiring: ""
+'                           -> Internal variables: "Ancillary wind sensing internal variables"
+
+'Air temperature / humidity -> User constants and wiring: "T and RH user constants / wiring"
+'                           -> Internal variables and tables: "T and RH internal variables / tables"
+
+'Radiation                  -> User constants and wiring: "4-component radiation user constants / wiring"
+'                           -> Internal constants and variables: "4-component radiation internal constants / variables"
+
+'############################################################################
+
+'############################################################################
+' *** Begin user-customised station / logger / instrument constants and wiring ***
+
+' -> Station-based user constants
+
+Const STATION_NAME = "WombatStateForest_EC"
 Const PAKBUS_ADDR = 1
 
-' *** General ***
-Const NUM_DAY_CRD = 200               'Unique value, number of days of flux data to store on a 16 GB CF card (44 days = 2 GB). This value will vary with configuration.
-Const SDM_PER = 30                    'Unique value, default SDM clock speed.
-Const ANALOG_INTEGRATION = _50Hz      'Slow sequence analog measurement integration time, _60Hz or _50Hz.
+' -> General user constants
+
+Const NUM_DAY_CRD = 200               ' Unique value, number of days of flux data to store on a 16 GB CF card (44 days = 2 GB). This value will vary with configuration.
+Const SDM_PER = 30                    ' Unique value, default SDM clock speed.
+Const ANALOG_INTEGRATION = _50Hz      ' Slow sequence analog measurement integration time, _60Hz or _50Hz.
 Const SCAN_INTERVAL = 100             ' Unique value, measurement rate 100 ms (10 Hz) or 50 ms (20 Hz).
 Const OUTPUT_INTERVAL = 30            ' Unique value, online flux data output interval in minutes.
 
-' -> VOLT116 (settings only - wiring N/A, connection via CPI)
+' -> VOLT116 user constants (constants only - wiring N/A, connection via CPI)
 
-Const CDMVOLT116_1_SN = 4634       ' CDM-VOLT116 serial number
-Const CDMVOLT116_1_ADDR = 1        ' CDM-VOLT116 CPI address
-Const CDMVOLT116_1_DESC = "Mast top MUX"  ' CDM-VOLT116 descriptor
+Const CDMVOLT116_1_SN = 4634              ' CDM-VOLT116 serial number
+Const CDMVOLT116_1_ADDR = 1               ' CDM-VOLT116 CPI address
+Const CDMVOLT116_1_DESC = "Mast_top_MUX"  ' CDM-VOLT116 descriptor
 
-' -> CSAT3B (CR6 -> note that CSAT and IRGA signals are combined at top of
-'            mast and brought down to logger on a single cable for tall towers;
-'            as such, wiring colours may vary for cabling used)
+' -> CSAT3B user constants / wiring (CR6 -> note that CSAT and IRGA signals 
+'    are combined at top of mast and brought down to logger on a single cable 
+'    for tall towers; as such, wiring colours may vary for cabling used).
 
 Const CSAT3B_SDM_ADDR = 3          ' CSAT3B SDM address
 Const AZ_CSAT = 210                ' CSAT3B azimuth
@@ -80,10 +116,10 @@ Const AZ_CSAT = 210                ' CSAT3B azimuth
 'G       power reference (black)
 '        power shield (clear)
 
-' -> LI7500RS (CR6 -> as per CSAT above)
+' -> LI7500RS user constants / wiring (CR6 - as per CSAT above)
 
 Const LI7500_SDM_ADDR = 7          ' IRGA SDM address
-Const IRGA_SIG_STR_THRESHOLD = 10  ' Unique value - filter LI-7500(RS) data with signal strength < SIG_STR_THRESHOLD.
+Const IRGA_SIG_STR_THRESHOLD = 60  ' Unique value - filter LI-7500(RS) data with signal strength < SIG_STR_THRESHOLD.
 
 'SDM-C1  SDM Data (gray/blue)
 'SDM-C2  SDM Clock (blue/white)
@@ -95,42 +131,43 @@ Const IRGA_SIG_STR_THRESHOLD = 10  ' Unique value - filter LI-7500(RS) data with
 'G       power reference (red with black/black)
 '        ground (green/not used)
 
-' -> CS650 soil moisture (CR6)
-Const NMBR_CS65X = 6                  'Number of CS65X to measure.
-Const CS65X_1_SDI12_PORT = U1         'Measurement port.
-Const CS65X_1_ADDR = 0                'Address for this probe.
-'Search for text "Duplicate above for additional probes." to add code for additional probes.
-'*** Beginning of CS65X wiring ***
-'C5      SDI-12 data #1 (SDI-12 address = 0) (green)
-'C7      SDI-12 data #2 (SDI-12 address = 0) (green)
-'G       RS-232 Rx #1 (orange)
-'        RS-232 Rx #2 (orange)
+' -> Soil moisture user constants / wiring (CR6)
 
+Const NMBR_CS65X = 4                  'Number of CS65X to measure.
+Const CS65X_SDI12_PORT = U9           'Measurement port.
+Const CS65X_1_ADDR = 1                'Address for this probe.
+Const CS65X_2_ADDR = 2                'Address for this probe.
+Const CS65X_3_ADDR = 3                'Address for this probe.
+Const CS65X_4_ADDR = 4                'Address for this probe.
+
+'Search for text "Duplicate above for additional probes." to add code for additional probes.
+
+'C5      SDI-12 data #1 (SDI-12 address = 1-4) (green)
+'G       RS-232 Rx #1 (orange)
 '12V     SDI-12 power #1 (red)
 '        SDI-12 power #2 (red)
 'G       SDI-12 data/power reference #1 (black)
 '        Shield #1 (clear)
 '        SDI-12 data/power reference #2 (black)
 '        Shield #2 (clear)
-'*** End of CS65X wiring ***
 
-' -> rain gauge (CR6)
+' -> Rain gauge user constants / wiring (CR6)
 
 'Note: for the CR6 and CR1000X, triggering conflicts may occur when a companion terminal is used for
 'a triggering instruction such As TimerInput(), PulseCount(), OR WaitDigTrig(). For
 'example, If the WindSonic4 Is connected To C3 on a CR1000X, C4 cannot be used in the
 'TimerInput(), PulseCount(), OR WaitDigTrig() instructions. Hence, we put the pulse port at U3.
 
-Const RAIN_PULSE_INPUT = U3        'Unique pulse input channel for tipping bucket.
+Const RAIN_PULSE_INPUT = U12       'Unique pulse input channel for tipping bucket.
 Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
 
 'U3      Signal (black)
 'G       Signal reference (white)
 '        Shield (clear)
 
-' -> SHFP (CR6 -> read calibration coefficients into memory on compile)
+' -> Soil heat flux user constants / wiring (CR6 - read calibration coefficients into memory on compile)
 
-Const SHF_ANALOG_INPUT = U5           'Unique differential analog input channel.
+Const SHF_ANALOG_INPUT = U1           'Unique differential analog input channel.
 Const NMBR_SHF = 2                    'n plates
 Const SHF_FIELDS = "Fg_HFT3_01,Fg_HFP01_02"    'Field names
 Const SHF_CAL_1 = -33.1               'Unique multiplier for HFP #1 (1000/sensitivity).
@@ -147,11 +184,12 @@ Data SHF_CAL_2
 'gnd     Signal reference (green)
 'gnd     Shield (clear)
 
-' -> TCAVs (CR6)
+' -> Soil temperature user constants / wiring (CR6)
 
-Const TSOIL_ANALOG_INPUT = U7         'Unique differential analog input channel.
+Const TSOIL_ANALOG_INPUT = U3         'Unique differential analog input channel.
 Const NMBR_TSOIL = 2                  'n sensors
 
+'TCAV1
 '3H      Signal #1 (purple)
 '3L      Signal reference #1 (red)
 'gnd     Shield #1 (clear)
@@ -160,7 +198,7 @@ Const NMBR_TSOIL = 2                  'n sensors
 '4L      Signal reference #2 (red)
 'gnd     Shield #2 (clear)
 
-' -> T and RH (VOLT116)
+' -> T and RH user constants / wiring (VOLT116)
 
 Const T_RH_MAIN_INPUT = 1          'Unique differential input channel for temperature and humidity probe.
 Const T_RH_T_MULT = 0.14           'Unique multiplier for temperature; HC2S3 = 0.1, HMP155A = 0.14, or HMP45C = 0.1.
@@ -176,7 +214,7 @@ Const T_RH_RH_OFFSET = 0           'Unique offset for rh; HC2S3 = ?, HMP155A = 0
 '12V     Power (red)
 'G       Power reference (black)
 
-' -> 4-component radiation (VOLT116)
+' -> 4-component radiation user constants / wiring (VOLT116)
 
 Const NR_ANALOG_INPUT = 3                'Unique differential analog input channel for raw measurements
 Const NR_TSENS_ANALOG_INPUT = 13         'Unique single-ended analog input channel for body T
@@ -208,20 +246,12 @@ Const NR_LW_OUTGOING_CAL = 1000/12.68    'Unique multiplier for CNR 4 longwave o
 
 ' -> quantum sensor outgoing
 
+' *** End user-customised station / logger / instrument constants and wiring ***
+' *** CUSTOMISE THE BELOW AT YOUR OWN RISK!!!
 '############################################################################
-'*** Hardware config section ***
-
-CPIAddModule(VOLT116,CDMVOLT116_1_SN,CDMVOLT116_1_DESC,CDMVOLT116_1_ADDR)  ' Add CPI module for expanded measurements
-SetSetting ("StationName",STATION_NAME)                     'Station name
-SetSetting ("PakBusAddress",1)                              'Pakbus address
-SetSetting ("FTPEnabled",True)                              'FTP server settings
-SetSetting ("FTPPort",21)
-SetSetting ("FTPUserName","CCFC")
-SetSetting ("FTPPassword","EPCN")
-PipeLineMode
 
 '############################################################################
-'*** Internal constants, variables, working data tables ***
+' *** Begin internal constants, variables, working data tables ***
 
 ' -> Internal and secondary constants
 Const OFFSET = 17                                                  'An offset delay that will be introduced to the eddy covariance data used to compute online fluxes.
@@ -245,7 +275,7 @@ Public batt_volt
 Units panel_tmpr = C
 Units batt_volt = V
 
-' -> Working variables ***
+' -> Working variables
 Dim scan_count As Long                                   'Number scans executed.
 Dim slowsequence_finished_f As Boolean                   'Flag used to indicate the SlowSequence has finished its scan.
 Dim slowsequence_disable_f As Boolean = TRUE             'Flag used to decimate statistics in main scan.
@@ -262,7 +292,7 @@ Units process_time = us
 Units buff_depth = scans
 Units n = samples
 
-' -> CSAT3B
+' -> CSAT3B internal constants / variables / tables
 
 ' Constants
 
@@ -355,9 +385,9 @@ DataTable (comp_cov_sonic,TRUE,1)     ' Sonic covariances table
   WindVector (1,Uy,Ux,IEEE4,sonic_disable_f,0,1,2)
 EndTable
 
-' -> LI-7500RS
+' -> LI7500RS internal constants / variables / tables
 
-'Constants
+' Constants
 
 Const delay_irga7500 = INT (300/SCAN_INTERVAL) 'Fixed inherent lag of the LI-7500(RS) data (three scans at 10 Hz or six scans at 20 Hz).
 Const LI7500_REC_BCK = OFFSET-delay_irga7500-1 'Number of records back to align LI-7500(RS) data. Minus one scan because the SDM instruction is at the end of the program.
@@ -476,20 +506,23 @@ DataTable (comp_cov_irga,TRUE,1)    ' IRGA covariance table
   Average (1,Tc_irga,IEEE4,sonic_irga_disable_f)
 EndTable
 
-' - > Rain gauge
+' -> Rain gauge internal variables
+
+' Variables
+
 Public rain
 Units rain = mm
 
+' -> Ancillary wind sensing internal variables
 
-''*** Ancillary wind speed
+' Variables
+
 'Public WS_AUX
 'Public WD_AUX
 'Units WS_AUX = meters/second
 'Units WD_AUX = degrees
-''***
 
-'############################################################################
-'*** Temperature / humidity sensor variables and working data tables ***
+' -> T and RH internal variables / tables
 
 ' Variables
 
@@ -527,10 +560,7 @@ DataTable (stats_tmpr_rh,TRUE,1)
   Average (1,es_tmpr_rh,IEEE4,slowsequence_disable_f)
 EndTable
 
-'############################################################################
-
-'############################################################################
-'*** CNR 4 constants and variables ***
+' -> 4-component radiation internal constants / variables
 
 ' Constants
 
@@ -557,10 +587,10 @@ Units nr = W/m^2
 Units albedo = arb
 Units Tb = K
 
-'############################################################################
+' -> Soil temperature internal variables / tables
 
-'############################################################################
-'*** Beginning of TCAV variables ***
+' Variables
+
 Public Tsoil(NMBR_TSOIL)                'TCAV soil thermocouples.
 Public del_Tsoil(NMBR_TSOIL)            'Change in soil temperature.
 Dim prev_Tsoil(NMBR_TSOIL)
@@ -568,31 +598,19 @@ Dim Tsoil_mean(NMBR_TSOIL)
 Units Tsoil_mean = C
 Units del_Tsoil = C
 
+' Tables
+
 DataTable (stats_soil,TRUE,1)
   TableHide
   DataInterval (0,OUTPUT_INTERVAL,Min,1)
 
   Average (NMBR_TSOIL,Tsoil(1),IEEE4,slowsequence_disable_f)
 EndTable
-'*** End of TCAV constants and variables ***
 
-''*** Beginning of T107 constants and variables ***
-'' AM16/32 panel temperature
-'Public T107_C
-'Units T107_C=Deg C
-''*** End of T107 constants and variables ***
+' -> Soil moisture internal variables
 
-''*** Beginning of PAR constants and variables ***
-'Public Fpar(2)
-'Alias Fpar(1) = Fpard    ' Downwelling PPFD
-'Alias Fpar(2) = Fparu    ' Upwelling PPFD
-'Units Fpar = umol/m^2/s
-''*** End of PAR constants and variables ***
+' Constants
 
-
-
-
-'*** Beginning of CS65X constants and variables ***
 Public sws_cs650(NMBR_CS65X)           'Volumetric soil water content.
 Public ec_cs650(NMBR_CS65X)            'Electrical conductivity.
 Public T_cs650(NMBR_CS65X)             'Temperature.
@@ -606,19 +624,45 @@ Units T_cs650 = C
 Units perm_cs650 = None
 Units PerAvg_cs650 = us
 Units VoltR_cs650 = None
-'*** End of CS65X constants and variables ***
 
-'*** Beginning of HFP01 constants and variables ***
+' -> Soil heat flux internal variables
+
 Public shf(NMBR_SHF)                   ' HFP01 soil heat flux plates.
 Units shf = W/m^2
 Dim shf_cal(NMBR_SHF)
-'*** End of HFP01 constants and variables ***
+
+''*** Beginning of PAR constants and variables ***
+'Public Fpar(2)
+'Alias Fpar(1) = Fpard    ' Downwelling PPFD
+'Alias Fpar(2) = Fparu    ' Upwelling PPFD
+'Units Fpar = umol/m^2/s
+''*** End of PAR constants and variables ***
+
+'*** End internal constants, variables, working data tables ***
+'############################################################################
 
 '############################################################################
-'*** Output data tables ***
+'*** Begin hardware config section ***
+
+CPIAddModule(VOLT116,CDMVOLT116_1_SN,CDMVOLT116_1_DESC,CDMVOLT116_1_ADDR)  ' Add CPI module for expanded measurements
+SetSetting ("StationName",STATION_NAME)                     'Station name
+SetSetting ("PakBusAddress",PAKBUS_ADDR)                              'Pakbus address
+SetSetting ("FTPEnabled",True)                              'FTP server settings
+SetSetting ("FTPPort",21)
+SetSetting ("FTPUserName","CCFC")
+SetSetting ("FTPPassword","EPCN")
+PipeLineMode
+
+'*** End hardware config section ***
+'############################################################################
+
+'############################################################################
+'*** Begin output data tables ***
+
 DataTable (flux,TRUE,FLUX_SIZE_CPU)
   DataInterval (0,OUTPUT_INTERVAL,Min,10)
   CardOut (0,FLUX_SIZE_CRD)
+  
   '*** Beginning of CSAT3B output data ***
   Sample (18,Hs,IEEE4)
   Average (4,Ux,IEEE4,sonic_disable_f)
@@ -645,7 +689,7 @@ DataTable (flux,TRUE,FLUX_SIZE_CPU)
   FieldNames ("irga_samples_Tot")
   Sample (1,diag_irga_aggregate,IEEE4)
   Totalize (1,n,IEEE4,CO2_irga<>NAN)
-  FieldNames ("no_new_data_irga_Tot")
+  FieldNames ("no_new_irga_data_Tot")
   Totalize (1,n,IEEE4,CO2_irga<>-99999)
   FieldNames ("sig_error_irga_Tot")
   Average (1,sig_str_irga,IEEE4,H2O_irga=NAN)
@@ -659,30 +703,30 @@ DataTable (flux,TRUE,FLUX_SIZE_CPU)
 
   '*** Beginning of radiometer output data ***
   Average (9,Rn,IEEE4,slowsequence_disable_f)
-  '*** End of CNR 4 output data ***
+  '*** End of radiometer output data ***
 
   '*** Beginning of soil T output data ***
   Sample (NMBR_TSOIL,Tsoil_mean(1),IEEE4)
   Sample (NMBR_TSOIL,del_Tsoil(1),IEEE4)
-  '*** End of TCAV output data ***
+  '*** End of soil T output data ***
 
-  '*** Beginning of CS65X output data ***
+  '*** Beginning of soil moisture output data ***
   Average (NMBR_CS65X,sws_cs650(1),IEEE4,slowsequence_disable_f)
   Average (NMBR_CS65X,ec_cs650(1),IEEE4,slowsequence_disable_f)
   Average (NMBR_CS65X,T_cs650(1),IEEE4,slowsequence_disable_f)
   Average (NMBR_CS65X,perm_cs650(1),IEEE4,slowsequence_disable_f)
   Average (NMBR_CS65X,PerAvg_cs650(1),IEEE4,slowsequence_disable_f)
   Average (NMBR_CS65X,VoltR_cs650(1),IEEE4,slowsequence_disable_f)
-  '*** End of CS65X output data ***
+  '*** End of soil moisture output data ***
 
   '*** Beginning of HFP output data ***
   Average (NMBR_SHF,shf(1),IEEE4,slowsequence_disable_f)
   FieldNames(SHF_FIELDS)
   '*** End of HFP output data ***
 
-  '*** Beginning of tipping bucket output data ***
+  '*** Beginning of precipitation output data ***
   Totalize (1,rain,IEEE4,FALSE)
-  '*** End of TE525 output data ***
+  '*** End of precipitation output data ***
 
   '  '*** Beginning of auxiliary wind output data ***
   '  WindVector(1,WS_AUX,WD_AUX,FP2,False,0,0,0)
@@ -721,11 +765,14 @@ DataTable (ts_data,TRUE,-1)
   Sample (4,irga_raw(1),IEEE4)
   FieldNames ("CO2_irga,H2O_irga,amb_press_irga,sig_str_irga")
   '*** End of LI-7500(RS) time series output ***
+  
 EndTable
+
+'*** End output data tables ***
 '############################################################################
 
 '############################################################################
-'*** Subroutines ***
+'*** Begin subroutines ***
 
 Sub file_rename()
   ' This subroutine creates a new filename and renames the file output to the card by tablefile
@@ -736,8 +783,11 @@ FormatFloat(timearray(2),"%02.0f")&"_"& _
 FormatFloat(timearray(1),"%02.0f")&".dat"
 FileRename(PrevFileName, NewFileName)
 EndSub
+
+'*** End subroutines ***
 '############################################################################
 
+'############################################################################
 '*** Program ***
 
 BeginProg
@@ -754,11 +804,9 @@ BeginProg
     'Datalogger panel temperature.
     PanelTemp (panel_tmpr,250)
 
-
     '*** Beginning of sonic measurement processing ***
     CallTable delay_3d
     '*** End of sonic measurement processing ***
-
 
     '*** Beginning of LI-7500(RS) measurement processing ***
     'Convert LI-7500(RS) data from molar density [mmol/m^3] to mass density.
@@ -776,11 +824,9 @@ BeginProg
     CallTable delay_irga
     '*** End of LI-7500(RS) measurement processing ***
 
-
     '*** Beginning of rain gauge measurement ***
     PulseCount (rain,1,RAIN_PULSE_INPUT,2,0,RAIN_CAL,0)
     '*** End of rain gauge measurement ***
-
 
     '    '*** Beginning of independent wind speed and direction measurement
     '    PulseCount(WS_AUX,1,WIND_SPD_PULSE_INPUT,5,1,0.098,0)
@@ -792,10 +838,9 @@ BeginProg
     'Save time series data.
     CallTable ts_data
 
-
     If ( scan_count >= OFFSET ) Then
 
-      '*** Beginning of CSAT3B processing ***
+      '*** Beginning of sonic processing ***
       'Load in CSAT3B data that has been lagged by CSAT3_REC_BCK scans.
       GetRecord (dly_data_out(1),delay_3d,CSAT3_REC_BCK)
 
@@ -838,8 +883,7 @@ BeginProg
         Uy_stdev = SQR (Uy_stdev)
         Uz_stdev = SQR (Uz_stdev)
       EndIf
-      '*** End of CSAT3B processing ***
-
+      '*** End of sonic processing ***
 
       '*** Beginning of temperature and humidity processing ***
       CallTable stats_tmpr_rh
@@ -852,7 +896,6 @@ BeginProg
         RH_tmpr_rh_mean = 100*e_tmpr_rh_mean/e_sat_tmpr_rh_mean
       EndIf
       '*** End of temperature and humidity processing ***
-
 
       '*** Beginning of LI-7500(RS) processing ***
       'Load in the LI-7500(RS) data that has been lagged by LI7500_REC_BCK scans.
@@ -924,7 +967,6 @@ BeginProg
       EndIf
       '*** End of LI-7500(RS) processing ***
 
-
       '*** Beginning of sonic sensible heat, momentum, and sensible heat flux processing ***
       If ( comp_cov_sonic.Output(1,1) ) Then
         'CSAT3(A) sensible heat flux using sonic temperature.
@@ -938,7 +980,6 @@ BeginProg
       EndIf
       '*** End of sensible heat flux processing ***
 
-
       '*** Beginning of soil temperature processing ***
       CallTable stats_soil
       If ( stats_soil.Output(1,1) ) Then
@@ -951,7 +992,6 @@ BeginProg
         Next i
       EndIf
       '*** End of soil temperature processing ***
-
 
       CallTable flux
       If ( flux.Output(1,1) ) Then
@@ -973,7 +1013,6 @@ BeginProg
     process_time = Status.ProcessTime(1,1)
     buff_depth = Status.BuffDepth(1,1)
 
-
     '*** Beginning of CSAT3B measurements ***
     CSAT3B (sonic_raw(1),0,CSAT3B_SDM_ADDR,0)
     '*** End of CSAT3B measurements ***
@@ -988,7 +1027,6 @@ BeginProg
 
   NextScan
 
-
   SlowSequence
 
   Scan (10,Sec,3,0)
@@ -999,17 +1037,45 @@ BeginProg
     '*** Beginning of CR6 measurements ***
 
     '*** Beginning of SHF measurements ***
-    VoltDiff (shf(),NMBR_SHF,AutoRange,SHF_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,shf_cal(),0)
+    VoltSe (shf(),NMBR_SHF,mV200C,SHF_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,shf_cal(),0)
     '*** End of SHF measurements ***
 
+    '*** Beginning of soil temperature measurements ***
+    TCDiff (Tsoil,NMBR_TSOIL,mV200c,TSOIL_ANALOG_INPUT,TypeE,panel_tmpr,True,0,ANALOG_INTEGRATION,1.0,0)
+    '*** End of soil temperature measurements ***
+    
     '*** Beginning of CS65X measurements ***
-    SDI12Recorder (cs65x_raw(1),CS65X_1_SDI12_PORT,CS65X_1_ADDR,"M3!",1,0)
+    SDI12Recorder (cs65x_raw(1),CS65X_SDI12_PORT,CS65X_1_ADDR,"M3!",1,0)
     sws_cs650(1) = cs65x_raw(1)
     ec_cs650(1) = cs65x_raw(2)
     T_cs650(1) = cs65x_raw(3)
     perm_cs650(1) = cs65x_raw(4)
     PerAvg_cs650(1) = cs65x_raw(5)
     VoltR_cs650(1) = cs65x_raw(6)
+    
+    SDI12Recorder (cs65x_raw(1),CS65X_SDI12_PORT,CS65X_2_ADDR,"M3!",1,0)
+    sws_cs650(2) = cs65x_raw(1)
+    ec_cs650(2) = cs65x_raw(2)
+    T_cs650(2) = cs65x_raw(3)
+    perm_cs650(2) = cs65x_raw(4)
+    PerAvg_cs650(2) = cs65x_raw(5)
+    VoltR_cs650(2) = cs65x_raw(6)
+    
+    SDI12Recorder (cs65x_raw(1),CS65X_SDI12_PORT,CS65X_3_ADDR,"M3!",1,0)
+    sws_cs650(3) = cs65x_raw(1)
+    ec_cs650(3) = cs65x_raw(2)
+    T_cs650(3) = cs65x_raw(3)
+    perm_cs650(3) = cs65x_raw(4)
+    PerAvg_cs650(3) = cs65x_raw(5)
+    VoltR_cs650(3) = cs65x_raw(6)
+    
+    SDI12Recorder (cs65x_raw(1),CS65X_SDI12_PORT,CS65X_4_ADDR,"M3!",1,0)
+    sws_cs650(4) = cs65x_raw(1)
+    ec_cs650(4) = cs65x_raw(2)
+    T_cs650(4) = cs65x_raw(3)
+    perm_cs650(4) = cs65x_raw(4)
+    PerAvg_cs650(4) = cs65x_raw(5)
+    VoltR_cs650(4) = cs65x_raw(6)
     'Duplicate above for additional probes.
     '*** End of CS65X measurements ***
 
@@ -1044,55 +1110,11 @@ BeginProg
     albedo = Fsu/Fsd
     '*** End of net radiometer measurements ***
 
-
-
     '    '*** Beginning of quantum sensor measurements ***
     '    CDM_VoltDiff (VOLT116,1,Fpar(),2,AutoRange,PAR_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,5,0)
     '    '*** End of quantum sensor measurements ***
 
     '*** End of CDM-VOLT116 measurements ***
-
-
-    '    '*** Beginning of AM16/32B measurements ***
-    '
-    '    'Set VOLT116 SW5V port high to drive AM16/32 Reset high and wake up the AM16/32
-    '    CDM_MuxSelect (VOLT116,1,CDM_MUX_CLOCK,CDM_MUX_RESET,20,1,1)
-    '
-    '    'Impart a 150 millisecond delay. - Multiple delay instructions
-    '    'allow the datalogger to integrate (time slice) the slow sequence scans into the main scan,
-    '    'without causing skipped scans or records in the main scan.
-    '    ' DO WE NEED THIS?
-    '    Delay(0,20,mSec)
-    '    Delay(0,20,mSec)
-    '    Delay(0,20,mSec)
-    '    Delay(0,20,mSec)
-    '    Delay(0,20,mSec)
-    '    Delay(0,20,mSec)
-    '    Delay(0,20,mSec)
-    '    Delay(0,20,mSec)
-    '
-    '    '*** Beginning of SHF measurements ***
-    '    i = 1
-    '    SubScan (0,Sec,NMBR_SHF)
-    '      CDM_VoltDiff (VOLT116,1,shf(i),1,AutoRange,CDM_MUX_CHANNEL,True,0,ANALOG_INTEGRATION,shf_cal(i),0)
-    '      i += 1
-    '      CDM_PulsePort (VOLT116,1,CDM_MUX_CLOCK,20000) 'Advance the AM16/32 to the next channel
-    '    NextSubScan
-    '    '*** End of SHF measurements ***
-    '
-    '    '*** Beginning of TCAV measurements ***
-    '    i = 1
-    '    SubScan (0,Sec,NMBR_TSOIL)
-    '      CDM_TCDiff (VOLT116,1,Tsoil(i),1,AutoRange,CDM_MUX_CHANNEL,TypeE,T107_C,True,0,ANALOG_INTEGRATION,1,0)
-    '      i += 1
-    '      CDM_PulsePort (VOLT116,1,CDM_MUX_CLOCK,20000) 'Advance the AM16/32 to the next channel
-    '    NextSubScan
-    '    '*** End of TCAV measurements ***
-    '
-    '    'Set VOLT116 SW5V low to drive AM16/32 Reset low and send the AM16/32 to sleep
-    '    CDM_SW5 (VOLT116,1,CDM_MUX_RESET,0,0)
-
-    '*** End of AM16/32B measurements ***
 
     slowsequence_finished_f = TRUE
   NextScan
