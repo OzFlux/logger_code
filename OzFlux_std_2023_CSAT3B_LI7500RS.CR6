@@ -219,10 +219,10 @@ Const T_RH_RH_OFFSET = 0           'Unique offset for rh; HC2S3 = ?, HMP155A = 0
 Const NR_ANALOG_INPUT = 3                'Unique differential analog input channel for raw measurements
 Const NR_TSENS_ANALOG_INPUT = 13         'Unique single-ended analog input channel for body T
 Const NR_TSENS_VX = X1                   'Unique voltage excitation channel for thermistor
-Const NR_SW_INCOMING_CAL = 1000/13.67    'Unique multiplier for CNR 4 shortwave incoming radiation (1000/sensitivity).
-Const NR_SW_OUTGOING_CAL = 1000/14.51    'Unique multiplier for CNR 4 shortwave outgoing radiation (1000/sensitivity).
-Const NR_LW_INCOMING_CAL = 1000/11.99    'Unique multiplier for CNR 4 longwave incoming radiation (1000/sensitivity).
-Const NR_LW_OUTGOING_CAL = 1000/12.68    'Unique multiplier for CNR 4 longwave outgoing radiation (1000/sensitivity).
+Const NR_SW_INCOMING_CAL = 1000/12.71    'Unique multiplier for CNR 4 shortwave incoming radiation (1000/sensitivity).
+Const NR_SW_OUTGOING_CAL = 1000/12.98    'Unique multiplier for CNR 4 shortwave outgoing radiation (1000/sensitivity).
+Const NR_LW_INCOMING_CAL = 1000/8.75     'Unique multiplier for CNR 4 longwave incoming radiation (1000/sensitivity).
+Const NR_LW_OUTGOING_CAL = 1000/9.00     'Unique multiplier for CNR 4 longwave outgoing radiation (1000/sensitivity).
 
 '3H      Incoming shortwave radiation signal (red)
 '3L      Incoming shortwave radiation signal reference (blue)
@@ -282,7 +282,7 @@ Dim slowsequence_disable_f As Boolean = TRUE             'Flag used to decimate 
 Dim dly_data_out(7)                                      'Array used to temporarily store the lagged record for sonic or irga.
 Dim process_time
 Dim buff_depth
-Dim PrevFileName As String *30                           'The name of the daily fast data file at time of closing
+Dim PrevFileName As String *50                           'The name of the daily fast data file at time of closing
 Dim NewFileName As String *50                            'The filename that is constructed from date and time elements
 Dim NewFileFlag                                          'Status flag that goes high when file handle is closed (midnight)
 Dim timearray(6)                                         'Array that holds the date and time elements used to construct the new file name
