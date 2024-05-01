@@ -32,7 +32,7 @@ Const SENSOR_HFT3         = FALSE  'HFT3                      soil heat flux pla
 Const SENSOR_HFP01        = TRUE   'HFP01                     soil heat flux plates
 Const SENSOR_HFP01SC      = FALSE  'HFP01SC                   soil heat flux plates
 Const SENSOR_SI_111       = FALSE  'SI-111                    infrared surface temperature
-Const SENSOR_TE525        = FALSE  'TE525                     tipping bucket rain gauge
+Const SENSOR_TE525        = TRUE   'TE525                     tipping bucket rain gauge
 
 Const FIND_DIAG_BITS      = TRUE   'Set to TRUE to find individual diagnostic bits.
 
