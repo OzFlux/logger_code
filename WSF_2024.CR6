@@ -537,7 +537,7 @@ PipeLineMode
 '############################################################################
 '*** Begin output data tables ***
 
-DataTable (TERN_flux,TRUE,FLUX_SIZE_CPU)
+DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
   DataInterval (0,OUTPUT_INTERVAL,Min,10)
   CardOut (0,FLUX_SIZE_CRD)
   
@@ -631,7 +631,7 @@ EndTable
 
 Sub file_rename()
   ' This subroutine creates a new filename and renames the file output to the card by tablefile
-  SplitStr(timearray(),TERN_flux.TimeStamp(3,2),"",6,0)
+  SplitStr(timearray(),TERNflux.TimeStamp(3,2),"",6,0)
   NewFileName = _
 "CRD:TOB3_"&STATION_NAME&"_"&SCAN_INTERVAL&"ms_"&timearray(3)&"_"& _
 FormatFloat(timearray(2),"%02.0f")&"_"& _
@@ -823,8 +823,8 @@ BeginProg
       EndIf
       '*** End of sensible heat flux processing ***
 
-      CallTable TERN_flux
-      If ( TERN_flux.Output(1,1) ) Then
+      CallTable TERNflux
+      If ( TERNflux.Output(1,1) ) Then
         diag_sonic_aggregate = 0
         diag_irga_aggregate = 0
       EndIf
