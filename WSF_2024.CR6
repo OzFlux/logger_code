@@ -129,7 +129,7 @@ Const IRGA_SIG_STR_THRESHOLD = 60  ' Unique value - filter LI-7500(RS) data with
 'example, If the WindSonic4 Is connected To C3 on a CR1000X, C4 cannot be used in the
 'TimerInput(), PulseCount(), OR WaitDigTrig() instructions. Hence, we put the pulse port at U3.
 
-Const RAIN_PULSE_INPUT = U12       'Unique pulse input channel for tipping bucket.
+Const RAIN_PULSE_INPUT = U1        'Unique pulse input channel for tipping bucket.
 Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
 
 'U3      Signal (black)
@@ -208,10 +208,10 @@ Dim Lv                                'Latent heat of vaporization [J/g].
 Dim Cp                                'Specific heat capacity [J/(kg K)].
 
 ' -> Logger diagnostic variables
-Public panel_tmpr
-Public batt_volt
-Units panel_tmpr = degC
-Units batt_volt = V
+Public Tpanel
+Public Vbat
+Units Tpanel = degC
+Units Vbat = V
 
 ' -> Working variables
 Dim scan_count As Long                                   'Number scans executed.
@@ -589,8 +589,8 @@ DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
   '*** End of precipitation output data ***
 
   '*** Beginning of other output data ***
-  Average (1,panel_tmpr,IEEE4,FALSE)
-  Average (1,batt_volt,IEEE4,slowsequence_disable_f)
+  Average (1,Tpanel,IEEE4,FALSE)
+  Average (1,Vbat,IEEE4,slowsequence_disable_f)
   Average (1,process_time,IEEE4,FALSE)
   Maximum (1,process_time,IEEE4,FALSE,FALSE)
   Maximum (1,buff_depth,IEEE4,FALSE,FALSE)
@@ -652,7 +652,7 @@ BeginProg
   Scan (SCAN_INTERVAL,mSec,SCAN_BUFFER_SIZE,0)
 
     'Datalogger panel temperature.
-    PanelTemp (panel_tmpr,250)
+    PanelTemp (Tpanel,250)
 
     '*** Beginning of sonic measurement processing ***
     CallTable delay_3d
@@ -675,7 +675,7 @@ BeginProg
     '*** End of LI-7500(RS) measurement processing ***
 
     '*** Beginning of rain gauge measurement ***
-    PulseCount (rain,1,RAIN_PULSE_INPUT,2,0,RAIN_CAL,0)
+    PulseCount (rain,1,RAIN_PULSE_INPUT,1,0,RAIN_CAL,0)
     '*** End of rain gauge measurement ***
 
     'Save time series data.
@@ -862,7 +862,7 @@ BeginProg
   Scan (10,Sec,3,0)
 
     'Measure battery voltage.
-    Battery (batt_volt)
+    Battery (Vbat)
 
     '*** Beginning of CR6 measurements ***
 
