@@ -186,7 +186,7 @@ Const T_RH_T_OFFSET = -40         'Unique offset for temperature; HC2S3 = -40, H
 
 Const NR_ANALOG_INPUT = 3            'Unique differential analog input channel.
 Const NR_TsENS_ANALOG_INPUT = 13     'Unique single-ended analog input channel for body T
-Const NR_TsENS_VX = X1               'Unique voltage excitation channel for thermistor
+Const NR_TsENS_VX = X2               'Unique voltage excitation channel for thermistor
 Const NR_SW_INCOMING_CAL = 1000/15   'Unique multiplier for CNR 4 shortwave incoming radiation (1000/sensitivity).
 Const NR_SW_OUTGOING_CAL = 1000/15   'Unique multiplier for CNR 4 shortwave outgoing radiation (1000/sensitivity).
 Const NR_LW_INCOMING_CAL = 1000/8    'Unique multiplier for CNR 4 longwave incoming radiation (1000/sensitivity).
@@ -208,7 +208,7 @@ Const NR_LW_OUTGOING_CAL = 1000/8    'Unique multiplier for CNR 4 longwave outgo
 '7H      Thermistor signal (white)
 'gnd     Thermistor signal reference (black)
 '        Shield (clear)
-'X1      Thermistor excitation (red)
+'X2      Thermistor excitation (red)
 
 ' *** End user-customised station / logger / instrument constanTs and wiring ***
 ' *** CUSTOMISE THE BELOW AT YOUR OWN RISK!!!
