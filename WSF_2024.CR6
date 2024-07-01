@@ -141,7 +141,7 @@ Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
 Const T_RH_MAIN_INPUT = 1          'Unique differential input channel for temperature and humidity probe.
 Const T_RH_T_MULT = 0.14           'Unique multiplier for temperature; HC2S3 = 0.1, HMP155A = 0.14, or HMP45C = 0.1.
 Const T_RH_T_OFFSET = -80          'Unique offset for temperature; HC2S3 = -40, HMP155A = -80, or HMP45C = -40.
-Const T_RH_RH_MULT = 0.1           'Unique multiplier for rh; HC2S3 = ?, HMP155A = 0.001, or HMP45C = ?.
+Const T_RH_RH_MULT = 0.1           'Unique multiplier for rh; HC2S3 = ?, HMP155A = 0.001, or HMP45C = ?. From CSA manual HMP155 "Humidity reported as a percent – set Mult to 0.1 and Offset to 0", "Humidity reported as a fraction – set Mult to 0.001 and Offset to 0"
 Const T_RH_RH_OFFSET = 0           'Unique offset for rh; HC2S3 = ?, HMP155A = 0, or HMP45C = ?.
 
 '1H      Temperature signal (yellow)
