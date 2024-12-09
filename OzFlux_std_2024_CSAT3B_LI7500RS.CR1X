@@ -82,7 +82,7 @@
 
 ' -> Station-based user constants
 
-Const STATION_NAME = "WombatStateForest_EC"
+Const STATION_NAME = "<YOURSITEHERE>_EC"
 Const PAKBUS_ADDR = 1
 
 ' -> General user constants
@@ -133,8 +133,8 @@ Const IRGA_SIG_STR_THRESHOLD = 60  ' Unique value - filter LI-7500(RS) data with
 
 ' -> Soil moisture user constants / wiring (CR6)
 
-Const NMBR_CS65X = 5                  'Number of CS65X to measure.
-Const CS65X_SDI12_PORT = U9           'Measurement port.
+Const NMBR_CS65X = 4                  'Number of CS65X to measure.
+Const CS65X_SDI12_PORT = C5           'Measurement port.
 Const CS65X_1_ADDR = 1                'Address for this probe.
 Const CS65X_2_ADDR = 2                'Address for this probe.
 Const CS65X_3_ADDR = 3                'Address for this probe.
@@ -158,7 +158,7 @@ Const CS65X_4_ADDR = 4                'Address for this probe.
 'example, If the WindSonic4 Is connected To C3 on a CR1000X, C4 cannot be used in the
 'TimerInput(), PulseCount(), OR WaitDigTrig() instructions. Hence, we put the pulse port at U3.
 
-Const RAIN_PULSE_INPUT = U12       'Unique pulse input channel for tipping bucket.
+Const RAIN_PULSE_INPUT = P1        'Unique pulse input channel for tipping bucket.
 Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
 
 'U3      Signal (black)
@@ -167,7 +167,7 @@ Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
 
 ' -> Soil heat flux user constants / wiring (CR6 - read calibration coefficients into memory on compile)
 
-Const SHF_ANALOG_INPUT = U1           'Unique single-ended analog input channel.
+Const SHF_ANALOG_INPUT = 10           'Unique single-ended analog input channel.
 Const NMBR_SHF = 2                    'n plates
 Const SHF_FIELDS = "Fg_01,Fg_02"      'Field names
 Const SHF_CAL_1 = -33.1               'Unique multiplier for HFP #1 (1000/sensitivity).
@@ -186,7 +186,7 @@ Data SHF_CAL_2
 
 ' -> Soil temperature user constants / wiring (CR6)
 
-Const TSOIL_ANALOG_INPUT = U3         'Unique differential analog input channel.
+Const TSOIL_ANALOG_INPUT = 6          'Unique differential analog input channel.
 Const NMBR_TSOIL = 2                  'n sensors
 
 'TCAV1
@@ -824,7 +824,7 @@ BeginProg
     '*** End of LI-7500(RS) measurement processing ***
 
     '*** Beginning of rain gauge measurement ***
-    PulseCount (rain,1,RAIN_PULSE_INPUT,2,0,RAIN_CAL,0)
+    PulseCount (rain,1,RAIN_PULSE_INPUT,1,0,RAIN_CAL,0)
     '*** End of rain gauge measurement ***
 
     '    '*** Beginning of independent wind speed and direction measurement

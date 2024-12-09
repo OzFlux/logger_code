@@ -13,9 +13,9 @@
 ' inherent lag" and set the delay to the appropriate value. The raw data is not
 ' lagged.
 '
-' The site attendant must load in several constanTs and calibration values.
+' The site attendant must load in several constants and calibration values.
 ' Search for the text string "unique" to find the locations where unique
-' constanTs and calibration values are entered.
+' constants and calibration values are entered.
 
 '*** Unit Definitions ***
 
@@ -33,49 +33,49 @@
 's        seconds
 'umol     micromols
 'uSeconds microseconds
-'V        volTs
-'W        WatTs
+'V        volts
+'W        Watts
 
 '*** Search strings ***
 
-'General                    -> Station-based user constanTs: "Station-based user constanTs"
-'                           -> Other user constanTs: "General user constanTs"
-'                           -> Scientific constanTs: "Scientific constanTs"
+'General                    -> Station-based user constants: "Station-based user constants"
+'                           -> Other user constants: "General user constants"
+'                           -> Scientific constants: "Scientific constants"
 
-'VOLT116                    -> User constanTs: "VOLT116 user constanTs"
+'VOLT116                    -> User constants: "VOLT116 user constants"
 
-'IRGASON                    -> User constanTs and wiring: "IRGASON user constanTs / wiring"
-'                           -> Internal constanTs, variables and tables: "CSAT3B internal constanTs / variables / tables"
+'IRGASON                    -> User constants and wiring: "IRGASON user constants / wiring"
+'                           -> Internal constants, variables and tables: "CSAT3B internal constants / variables / tables"
 
-'Soil moisture              -> User constanTs and wiring: "Soil moisture user constanTs / wiring"
+'Soil moisture              -> User constants and wiring: "Soil moisture user constants / wiring"
 '                           -> Internal variables: "Soil moisture internal variables"
 
-'Rain gauge                 -> User constanTs and wiring: "Rain gauge user constanTs / wiring"
+'Rain gauge                 -> User constants and wiring: "Rain gauge user constants / wiring"
 '                           -> Internal variables: "Rain gauge internal variables"
 
-'Soil heat flux             -> User constanTs and wiring: "Soil heat flux user constanTs / wiring"
+'Soil heat flux             -> User constants and wiring: "Soil heat flux user constants / wiring"
 '                           -> Internal variables: "Soil heat flux internal variables"
 
-'Soil temperature           -> User constanTs / wiring: "Soil temperature user constanTs / wiring"
-'                           -> Internal constanTs and variables: "Soil temperature internal variables / tables" 
+'Soil temperature           -> User constants / wiring: "Soil temperature user constants / wiring"
+'                           -> Internal constants and variables: "Soil temperature internal variables / tables" 
 
-'Air temperature / humidity -> User constanTs and wiring: "T and RH user constanTs / wiring"
+'Air temperature / humidity -> User constants and wiring: "T and RH user constants / wiring"
 '                           -> Internal variables and tables: "T and RH internal variables / tables"
 
-'Radiation                  -> User constanTs and wiring: "4-component radiation user constanTs / wiring"
-'                           -> Internal constanTs and variables: "4-component radiation internal constanTs / variables"
+'Radiation                  -> User constants and wiring: "4-component radiation user constants / wiring"
+'                           -> Internal constants and variables: "4-component radiation internal constants / variables"
 
 '############################################################################
 
 '############################################################################
-' *** Begin user-customised station / logger / instrument constanTs and wiring ***
+' *** Begin user-customised station / logger / instrument constants and wiring ***
 
-' -> Station-based user constanTs
+' -> Station-based user constants
 
 Const STATION_NAME = "Dookie1_EC"
 Const PAKBUS_ADDR = 1
 
-' -> General user constanTs
+' -> General user constants
 
 Const SCAN_INTERVAL = 100  'Unique value, measurement rate 100 ms (10 Hz) or 50 ms (20 Hz).
 Const OUTPUT_INTERVAL = 30 'Unique value, online flux data output interval in minutes.
@@ -83,13 +83,13 @@ Const ANALOG_INTEGRATION = _50Hz      ' Slow sequence analog measurement integra
 Const NUM_DAY_CRD = 356    'Unique value, number of days of flux data to store on a 16 GB CF card (44 days = 2 GB). This value will vary with configuration.
 Const SDM_PER = 30         'Unique value, default SDM clock speed.
 
-' -> VOLT116 user constanTs (constanTs only - wiring N/A, connection via CPI)
+' -> VOLT116 user constants (constants only - wiring N/A, connection via CPI)
 
 Const CDMVOLT116_1_SN = 1111              ' CDM-VOLT116 serial number
 Const CDMVOLT116_1_ADDR = 1               ' CDM-VOLT116 CPI address
 Const CDMVOLT116_1_DESC = "Mast_top_MUX"  ' CDM-VOLT116 descriptor
 
-' -> IRGASON user constanTs / wiring (CR1000X)
+' -> IRGASON user constants / wiring (CR1000X)
 
 Const EC100_SDM_ADDR = 1             'Unique SDM address for EC100.
 Const CO2_SIG_STRGTH_THRESHOLD = 0.7 'Unique value - filter gas analyzer CO2 data when CO2 signal strength is less than sig_str_CO2.
@@ -105,7 +105,7 @@ Const H2O_SIG_STRGTH_THRESHOLD = 0.7 'Unique value - filter gas analyzer H2O dat
 'G       power reference (black)
 '        power shield (clear)
 
-' -> Soil heat flux user constanTs / wiring (CR1000X - read calibration coefficienTs into memory on compile)
+' -> Soil heat flux user constants / wiring (CR1000X - read calibration coefficienTs into memory on compile)
 
 Const SHF_ANALOG_INPUT = 1           'Unique differential analog input channel.
 Const NMBR_SHF = 2                   'Unique number of HFP01 to measure.
@@ -124,7 +124,7 @@ Data SHF_CAL_2
 '2L      Signal reference (green)
 'gnd     Shield (clear)
 
-' -> Soil temperature user constanTs / wiring (CR1000X)
+' -> Soil temperature user constants / wiring (CR1000X)
 
 Const TSOIL_ANALOG_INPUT = 3          'Unique differential analog input channel.
 Const NMBR_TSOIL = 2                  'Unique number of TCAV to measure.
@@ -139,7 +139,7 @@ Const NMBR_TSOIL = 2                  'Unique number of TCAV to measure.
 '12L     Signal reference (red)
 'gnd     Shield (clear)
 
-' -> Soil moisture user constanTs / wiring (CR1000X)
+' -> Soil moisture user constants / wiring (CR1000X)
 
 Const CS65X_1_SDI12_PORT = C5         'Unique control port.
 Const CS65X_2_SDI12_PORT = C7         'Unique control port.
@@ -159,7 +159,7 @@ Const NMBR_CS65X = 2                 'Unique number of CS65X to measure.
 
 'Search for text "Duplicate above for additional probes." to add code for additional probes.
 
-' -> Rain gauge user constanTs / wiring (CR1000X)
+' -> Rain gauge user constants / wiring (CR1000X)
 
 Const RAIN_PULSE_INPUT = P1        'Unique pulse input channel for tipping bucket.
 Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
@@ -168,7 +168,7 @@ Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
 'G       Signal reference (white)
 '        Shield (clear)
 
-' -> T and RH user constanTs / wiring (VOLT116)
+' -> T and RH user constants / wiring (VOLT116)
 
 Const T_RH_ANALOG_INPUT = 1       'Unique differential input channel for temperature and humidity probe.
 Const T_RH_T_MULT = 0.14          'Unique multiplier for temperature; HC2S3 = 0.1, HMP155A = 0.14, or HMP45C = 0.1.
@@ -182,7 +182,7 @@ Const T_RH_T_OFFSET = -40         'Unique offset for temperature; HC2S3 = -40, H
 '12V     Power (red)
 'G       Power reference (black)
 
-' -> 4-component radiation user constanTs / wiring (VOLT116)
+' -> 4-component radiation user constants / wiring (VOLT116)
 
 Const NR_ANALOG_INPUT = 3            'Unique differential analog input channel.
 Const NR_TsENS_ANALOG_INPUT = 13     'Unique single-ended analog input channel for body T
@@ -210,14 +210,14 @@ Const NR_LW_OUTGOING_CAL = 1000/8    'Unique multiplier for CNR 4 longwave outgo
 '        Shield (clear)
 'X2      Thermistor excitation (red)
 
-' *** End user-customised station / logger / instrument constanTs and wiring ***
+' *** End user-customised station / logger / instrument constants and wiring ***
 ' *** CUSTOMISE THE BELOW AT YOUR OWN RISK!!!
 '############################################################################
 
 '############################################################################
-' *** Begin internal constanTs, variables, working data tables ***
+' *** Begin internal constants, variables, working data tables ***
 
-' -> Internal and secondary constanTs
+' -> Internal and secondary constants
 
 Const OFFSET = 17                                                  'An offset delay that will be introduced to the eddy covariance data used to compute online fluxes.
 Const SCAN_BUFFER_SIZE = 60*INT (1000/SCAN_INTERVAL)               'Compute a 60 second scan buffer.
@@ -225,7 +225,7 @@ Const NUM_DAY_CPU = 1                                              'Number of da
 Const FLUX_SIZE_CPU = Ceiling ((NUM_DAY_CPU*1440)/OUTPUT_INTERVAL) 'Size of flux data table on CPU [days].
 Const FLUX_SIZE_CRD = Ceiling ((NUM_DAY_CRD*1440)/OUTPUT_INTERVAL) 'Size of flux data table on CRD [days].
 
-' -> Scientific constanTs
+' -> Scientific constants
 
 Const MU_WPL = 28.97/18.02                               'Ratio of the molecular weight of dry air to that of water vapor.
 Const R = 8.3143e-3                                      'Universal gas constant [kPa m^3/(K mol)].
@@ -267,7 +267,7 @@ units process_time = us
 units buff_depth = scans
 units n = samples
 
-' -> EC100 internal constanTs / variables / subroutines
+' -> EC100 internal constants / variables / subroutines
 
 ' Constants
 
@@ -416,7 +416,7 @@ DataTable (comp_cov_3d,TRUE,1)
   WindVector (1,Uy,Ux,IEEE4,sonic_disable_f,0,1,2)
 EndTable
 
-' -> EC150 internal constanTs / variables / tables / menus
+' -> EC150 internal constants / variables / tables / menus
 
 ' Constants
 
@@ -628,7 +628,7 @@ DataTable (stats_tmpr_rh,TRUE,1)
   Average (1,e_sat_tmpr_rh,IEEE4,slowsequence_disable_f)
 EndTable
 
-' -> 4-component radiation internal constanTs / variables
+' -> 4-component radiation internal constants / variables
 
 ' Constants
 
@@ -654,7 +654,7 @@ units Tbody_RAD = K
 
 ' -> Soil temperature variables / tables
 
-'*** Beginning of TCAV constanTs and variables ***
+'*** Beginning of TCAV constants and variables ***
 Public Tsoil(NMBR_TSOIL)                'TCAV soil thermocouples.
 Public del_Tsoil(NMBR_TSOIL)            'Change in soil temperature.
 Dim prev_Tsoil(NMBR_TSOIL)
@@ -696,7 +696,7 @@ units shf = W/m^2
 Public precip
 units precip = mm
 
-'*** End internal constanTs, variables, working data tables ***
+'*** End internal constants, variables, working data tables ***
 '############################################################################
 
 '############################################################################

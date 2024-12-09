@@ -1,4 +1,4 @@
-'CR6 Datalogger
+'CR1000X Datalogger
 ' The datalogger type listed on line 1 determines the default instruction set,
 ' compiler, and help files used for a program that uses the .DLD or .CRB program
 ' extension. These options can also be set using the Set Datalogger Type dialog box
@@ -82,7 +82,7 @@
 
 ' -> Station-based user constants
 
-Const STATION_NAME = "WombatStateForest_EC"
+Const STATION_NAME = "<YOURSITEHERE>_EC"
 Const PAKBUS_ADDR = 1
 
 ' -> General user constants
@@ -99,7 +99,7 @@ Const CDMVOLT116_1_SN = 4634              ' CDM-VOLT116 serial number
 Const CDMVOLT116_1_ADDR = 1               ' CDM-VOLT116 CPI address
 Const CDMVOLT116_1_DESC = "Mast_top_MUX"  ' CDM-VOLT116 descriptor
 
-' -> CSAT3B user constants / wiring (CR6 -> note that CSAT and IRGA signals 
+' -> CSAT3B user constants / wiring (CR1000X -> note that CSAT and IRGA signals 
 '    are combined at top of mast and brought down to logger on a single cable 
 '    for tall towers; as such, wiring colours may vary for cabling used).
 
@@ -116,7 +116,7 @@ Const AZ_CSAT = 210                ' CSAT3B azimuth
 'G       power reference (black)
 '        power shield (clear)
 
-' -> LI7500RS user constants / wiring (CR6 - as per CSAT above)
+' -> LI7500RS user constants / wiring (CR1000X - as per CSAT above)
 
 Const LI7500_SDM_ADDR = 7          ' IRGA SDM address
 Const IRGA_SIG_STR_THRESHOLD = 60  ' Unique value - filter LI-7500(RS) data with signal strength < SIG_STR_THRESHOLD.
@@ -131,14 +131,14 @@ Const IRGA_SIG_STR_THRESHOLD = 60  ' Unique value - filter LI-7500(RS) data with
 'G       power reference (red with black/black)
 '        ground (green/not used)
 
-' -> Soil moisture user constants / wiring (CR6)
-
-Const NMBR_CS65X = 5                  'Number of CS65X to measure.
-Const CS65X_SDI12_PORT = U9           'Measurement port.
-Const CS65X_1_ADDR = 1                'Address for this probe.
-Const CS65X_2_ADDR = 2                'Address for this probe.
-Const CS65X_3_ADDR = 3                'Address for this probe.
-Const CS65X_4_ADDR = 4                'Address for this probe.
+' -> Soil moisture user constants / wiring (CR1000X)
+'
+'Const NMBR_CS65X = 2                  'Number of CS65X to measure.
+'Const CS65X_SDI12_PORT = C5           'Measurement port.
+'Const CS65X_1_ADDR = 1                'Address for this probe.
+'Const CS65X_2_ADDR = 2                'Address for this probe.
+'Const CS65X_3_ADDR = 3                'Address for this probe.
+'Const CS65X_4_ADDR = 4                'Address for this probe.
 
 'Search for text "Duplicate above for additional probes." to add code for additional probes.
 
@@ -151,51 +151,62 @@ Const CS65X_4_ADDR = 4                'Address for this probe.
 '        SDI-12 data/power reference #2 (black)
 '        Shield #2 (clear)
 
-' -> Rain gauge user constants / wiring (CR6)
+' -> Rain gauge user constants / wiring (CR1000X)
 
 'Note: for the CR6 and CR1000X, triggering conflicts may occur when a companion terminal is used for
 'a triggering instruction such As TimerInput(), PulseCount(), OR WaitDigTrig(). For
 'example, If the WindSonic4 Is connected To C3 on a CR1000X, C4 cannot be used in the
 'TimerInput(), PulseCount(), OR WaitDigTrig() instructions. Hence, we put the pulse port at U3.
 
-Const RAIN_PULSE_INPUT = U12       'Unique pulse input channel for tipping bucket.
+Const RAIN_PULSE_INPUT = P1        'Unique pulse input channel for tipping bucket.
 Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
 
-'U3      Signal (black)
+'P1      Signal (black)
 'G       Signal reference (white)
 '        Shield (clear)
 
-' -> Soil heat flux user constants / wiring (CR6 - read calibration coefficients into memory on compile)
+' -> Soil heat flux user constants / wiring (CR1000X - read calibration coefficients into memory on compile)
 
-Const SHF_ANALOG_INPUT = U1           'Unique single-ended analog input channel.
-Const NMBR_SHF = 2                    'n plates
-Const SHF_FIELDS = "Fg_01,Fg_02"      'Field names
-Const SHF_CAL_1 = -33.1               'Unique multiplier for HFP #1 (1000/sensitivity).
-Const SHF_CAL_2 = 15.11               'Unique multiplier for HFP #2 (1000/sensitivity).
+Const SHF_ANALOG_INPUT = 8             'Unique single-ended analog input channel.
+Const NMBR_SHF = 3                     'n plates
+Const SHF_FIELDS = "Fg_01,Fg_02,Fg_03" 'Field names
+Const SHF_CAL_1 = 1000/66.16           'Unique multiplier for HFP #1 (1000/sensitivity).
+Const SHF_CAL_2 = 1000/66.26           'Unique multiplier for HFP #2 (1000/sensitivity).
+Const SHF_CAL_3 = 1000/64.57           'Unique multiplier for HFP #2 (1000/sensitivity).
 Data SHF_CAL_1
 Data SHF_CAL_2
+Data SHF_CAL_3
 
 'HFP01 #1
-'U5      Signal (white)
+'SE8     Signal (white)
 'gnd     Signal reference (green)
 'gnd     Shield (clear)
 'HFP01 #2
-'U6      Signal (white)
+'SE9     Signal (white)
+'gnd     Signal reference (green)
+'gnd     Shield (clear)
+'HFP01 #3
+'SE9     Signal (white)
 'gnd     Signal reference (green)
 'gnd     Shield (clear)
 
-' -> Soil temperature user constants / wiring (CR6)
 
-Const TSOIL_ANALOG_INPUT = U3         'Unique differential analog input channel.
-Const NMBR_TSOIL = 2                  'n sensors
+' -> Soil temperature user constants / wiring (CR1000X)
+
+Const TSOIL_ANALOG_INPUT = 6          'Unique differential analog input channel.
+Const NMBR_TSOIL = 3                  'n sensors
 
 'TCAV1
-'3H      Signal #1 (purple)
-'3L      Signal reference #1 (red)
+'6H      Signal #1 (purple)
+'6L      Signal reference #1 (red)
 'gnd     Shield #1 (clear)
 'TCAV2
-'4H      Signal #2 (purple)
-'4L      Signal reference #2 (red)
+'7H      Signal #2 (purple)
+'7L      Signal reference #2 (red)
+'gnd     Shield #2 (clear)
+'TCAV3
+'8H      Signal #2 (purple)
+'8L      Signal reference #2 (red)
 'gnd     Shield #2 (clear)
 
 ' -> T and RH user constants / wiring (VOLT116)
@@ -609,19 +620,19 @@ EndTable
 
 ' -> Soil moisture variables
 
-Public sws_cs650(NMBR_CS65X)           'Volumetric soil water content.
-Public ec_cs650(NMBR_CS65X)            'Electrical conductivity.
-Public T_cs650(NMBR_CS65X)             'Temperature.
-Public perm_cs650(NMBR_CS65X)          'Permittivity.
-Public PerAvg_cs650(NMBR_CS65X)        'Period average.
-Public VoltR_cs650(NMBR_CS65X)         'Voltage ratio.
-Dim cs65x_raw(6)
-Units sws_cs650 = frac_v_wtr
-Units ec_cs650 = dS/m
-Units T_cs650 = degC
-Units perm_cs650 = None
-Units PerAvg_cs650 = us
-Units VoltR_cs650 = None
+'Public sws_cs650(NMBR_CS65X)           'Volumetric soil water content.
+'Public ec_cs650(NMBR_CS65X)            'Electrical conductivity.
+'Public T_cs650(NMBR_CS65X)             'Temperature.
+'Public perm_cs650(NMBR_CS65X)          'Permittivity.
+'Public PerAvg_cs650(NMBR_CS65X)        'Period average.
+'Public VoltR_cs650(NMBR_CS65X)         'Voltage ratio.
+'Dim cs65x_raw(6)
+'Units sws_cs650 = frac_v_wtr
+'Units ec_cs650 = dS/m
+'Units T_cs650 = degC
+'Units perm_cs650 = None
+'Units PerAvg_cs650 = us
+'Units VoltR_cs650 = None
 
 ' -> Soil heat flux variables
 
@@ -710,12 +721,12 @@ DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
   '*** End of soil T output data ***
 
   '*** Beginning of soil moisture output data ***
-  Average (NMBR_CS65X,sws_cs650(1),IEEE4,slowsequence_disable_f)
-  Average (NMBR_CS65X,ec_cs650(1),IEEE4,slowsequence_disable_f)
-  Average (NMBR_CS65X,T_cs650(1),IEEE4,slowsequence_disable_f)
-  Average (NMBR_CS65X,perm_cs650(1),IEEE4,slowsequence_disable_f)
-  Average (NMBR_CS65X,PerAvg_cs650(1),IEEE4,slowsequence_disable_f)
-  Average (NMBR_CS65X,VoltR_cs650(1),IEEE4,slowsequence_disable_f)
+'  Average (NMBR_CS65X,sws_cs650(1),IEEE4,slowsequence_disable_f)
+'  Average (NMBR_CS65X,ec_cs650(1),IEEE4,slowsequence_disable_f)
+'  Average (NMBR_CS65X,T_cs650(1),IEEE4,slowsequence_disable_f)
+'  Average (NMBR_CS65X,perm_cs650(1),IEEE4,slowsequence_disable_f)
+'  Average (NMBR_CS65X,PerAvg_cs650(1),IEEE4,slowsequence_disable_f)
+'  Average (NMBR_CS65X,VoltR_cs650(1),IEEE4,slowsequence_disable_f)
   '*** End of soil moisture output data ***
 
   '*** Beginning of HFP output data ***
@@ -791,6 +802,9 @@ EndSub
 
 BeginProg
 
+  ' Set port 7 to switch on CCFC
+  PortsConfig (&B01000000,&B01000000)
+
   ' Load NMBR_SHF plate calibration.
   For i = 1 To NMBR_SHF
     Read shf_cal(i)
@@ -824,7 +838,7 @@ BeginProg
     '*** End of LI-7500(RS) measurement processing ***
 
     '*** Beginning of rain gauge measurement ***
-    PulseCount (rain,1,RAIN_PULSE_INPUT,2,0,RAIN_CAL,0)
+    PulseCount (rain,1,RAIN_PULSE_INPUT,1,0,RAIN_CAL,0)
     '*** End of rain gauge measurement ***
 
     '    '*** Beginning of independent wind speed and direction measurement
@@ -1033,7 +1047,7 @@ BeginProg
     'Measure battery voltage.
     Battery (Vbat)
 
-    '*** Beginning of CR6 measurements ***
+    '*** Beginning of CR1000X measurements ***
 
     '*** Beginning of SHF measurements ***
     VoltSe (shf(),NMBR_SHF,mV200C,SHF_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,shf_cal(),0)
@@ -1044,41 +1058,26 @@ BeginProg
     '*** End of soil temperature measurements ***
     
     '*** Beginning of CS65X measurements ***
-    SDI12Recorder (cs65x_raw(1),CS65X_SDI12_PORT,CS65X_1_ADDR,"M3!",1,0)
-    sws_cs650(1) = cs65x_raw(1)
-    ec_cs650(1) = cs65x_raw(2)
-    T_cs650(1) = cs65x_raw(3)
-    perm_cs650(1) = cs65x_raw(4)
-    PerAvg_cs650(1) = cs65x_raw(5)
-    VoltR_cs650(1) = cs65x_raw(6)
+'    SDI12Recorder (cs65x_raw(1),CS65X_SDI12_PORT,CS65X_1_ADDR,"M3!",1,0)
+'    sws_cs650(1) = cs65x_raw(1)
+'    ec_cs650(1) = cs65x_raw(2)
+'    T_cs650(1) = cs65x_raw(3)
+'    perm_cs650(1) = cs65x_raw(4)
+'    PerAvg_cs650(1) = cs65x_raw(5)
+'    VoltR_cs650(1) = cs65x_raw(6)
+'    
+'    SDI12Recorder (cs65x_raw(1),CS65X_SDI12_PORT,CS65X_2_ADDR,"M3!",1,0)
+'    sws_cs650(2) = cs65x_raw(1)
+'    ec_cs650(2) = cs65x_raw(2)
+'    T_cs650(2) = cs65x_raw(3)
+'    perm_cs650(2) = cs65x_raw(4)
+'    PerAvg_cs650(2) = cs65x_raw(5)
+'    VoltR_cs650(2) = cs65x_raw(6)
     
-    SDI12Recorder (cs65x_raw(1),CS65X_SDI12_PORT,CS65X_2_ADDR,"M3!",1,0)
-    sws_cs650(2) = cs65x_raw(1)
-    ec_cs650(2) = cs65x_raw(2)
-    T_cs650(2) = cs65x_raw(3)
-    perm_cs650(2) = cs65x_raw(4)
-    PerAvg_cs650(2) = cs65x_raw(5)
-    VoltR_cs650(2) = cs65x_raw(6)
-    
-    SDI12Recorder (cs65x_raw(1),CS65X_SDI12_PORT,CS65X_3_ADDR,"M3!",1,0)
-    sws_cs650(3) = cs65x_raw(1)
-    ec_cs650(3) = cs65x_raw(2)
-    T_cs650(3) = cs65x_raw(3)
-    perm_cs650(3) = cs65x_raw(4)
-    PerAvg_cs650(3) = cs65x_raw(5)
-    VoltR_cs650(3) = cs65x_raw(6)
-    
-    SDI12Recorder (cs65x_raw(1),CS65X_SDI12_PORT,CS65X_4_ADDR,"M3!",1,0)
-    sws_cs650(4) = cs65x_raw(1)
-    ec_cs650(4) = cs65x_raw(2)
-    T_cs650(4) = cs65x_raw(3)
-    perm_cs650(4) = cs65x_raw(4)
-    PerAvg_cs650(4) = cs65x_raw(5)
-    VoltR_cs650(4) = cs65x_raw(6)
     'Duplicate above for additional probes.
     '*** End of CS65X measurements ***
 
-    '*** End of CR6 measurements ***
+    '*** End of CR1000X measurements ***
 
     '*** Beginning of CDM-VOLT116 measurements ***
 
