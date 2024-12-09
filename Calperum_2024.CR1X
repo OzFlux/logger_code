@@ -95,7 +95,7 @@ Const OUTPUT_INTERVAL = 30            ' Unique value, online flux data output in
 
 ' -> VOLT116 user constants (constants only - wiring N/A, connection via CPI)
 
-Const CDMVOLT116_1_SN = 4634              ' CDM-VOLT116 serial number
+Const CDMVOLT116_1_SN = 6117              ' CDM-VOLT116 serial number
 Const CDMVOLT116_1_ADDR = 1               ' CDM-VOLT116 CPI address
 Const CDMVOLT116_1_DESC = "Mast_top_MUX"  ' CDM-VOLT116 descriptor
 
@@ -104,7 +104,7 @@ Const CDMVOLT116_1_DESC = "Mast_top_MUX"  ' CDM-VOLT116 descriptor
 '    for tall towers; as such, wiring colours may vary for cabling used).
 
 Const CSAT3B_SDM_ADDR = 3          ' CSAT3B SDM address
-Const AZ_CSAT = 210                ' CSAT3B azimuth
+Const AZ_CSAT = 261.5              ' CSAT3B azimuth
 
 'SDM-C1  SDM Data (green)
 'SDM-C2  SDM Clock (white)
