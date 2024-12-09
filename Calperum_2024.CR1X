@@ -167,7 +167,7 @@ Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
 
 ' -> Soil heat flux user constants / wiring (CR1000X - read calibration coefficients into memory on compile)
 
-Const SHF_ANALOG_INPUT = 8             'Unique single-ended analog input channel.
+Const SHF_ANALOG_INPUT = 7             'Unique single-ended analog input channel.
 Const NMBR_SHF = 3                     'n plates
 Const SHF_FIELDS = "Fg_01,Fg_02,Fg_03" 'Field names
 Const SHF_CAL_1 = 1000/66.16           'Unique multiplier for HFP #1 (1000/sensitivity).
@@ -178,11 +178,11 @@ Data SHF_CAL_2
 Data SHF_CAL_3
 
 'HFP01 #1
-'SE8     Signal (white)
+'SE7     Signal (white)
 'gnd     Signal reference (green)
 'gnd     Shield (clear)
 'HFP01 #2
-'SE9     Signal (white)
+'SE8     Signal (white)
 'gnd     Signal reference (green)
 'gnd     Shield (clear)
 'HFP01 #3
