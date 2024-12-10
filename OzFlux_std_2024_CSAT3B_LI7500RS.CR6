@@ -395,8 +395,8 @@ Const LI7500_REC_BCK = OFFSET-delay_irga7500-1 'Number of records back to align 
 ' Variables
 
 Public irga(8)
-Alias irga(1) = CO2_irga
-Alias irga(2) = H2O_irga
+Alias irga(1) = CO2
+Alias irga(2) = H2O
 Alias irga(3) = amb_press_irga
 Alias irga(4) = sig_str_irga
 Alias irga(5) = diag_irga
@@ -404,8 +404,8 @@ Alias irga(6) = Tc_irga
 Alias irga(7) = Xc
 Alias irga(8) = Xv
 Public diag_irga_aggregate As Long
-Units CO2_irga = mg/m^3
-Units H2O_irga = g/m^3
+Units CO2 = mg/m^3
+Units H2O = g/m^3
 Units amb_press_irga = kPa
 Units sig_str_irga = %
 Units diag_irga = arb
@@ -432,58 +432,58 @@ Dim irga_raw(5)                           'Raw and not lagged LI-7500(RS) data.
 'LI-7500(RS) output variables.
 Dim cov_array_irga(3,4)                   'Arrays used to hold the input data for the covariance instructions (sonic and LI-7500(RS)).
 Dim cov_out_irga(26)                      'LI-7500(RS) statistics.
-Alias cov_out_irga(1) = Fco2         'Carbon dioxide flux (LI-7500(RS)), with Webb et al. term.
-Alias cov_out_irga(2) = Fe           'Latent heat flux (LI-7500(RS)), with Webb et al. term.
+Alias cov_out_irga(1) = Fco2              'Carbon dioxide flux (LI-7500(RS)), with Webb et al. term.
+Alias cov_out_irga(2) = Fe                'Latent heat flux (LI-7500(RS)), with Webb et al. term.
 Alias cov_out_irga(3) = Fh_irga           'Sensible heat flux using sonic temperature corrected for water vapor measured by the LI-7500(RS).
-Alias cov_out_irga(4) = CO2_irga_stdev
+Alias cov_out_irga(4) = co2_stdev
 Alias cov_out_irga(5) = CO2_Ux_cov
 Alias cov_out_irga(6) = CO2_Uy_cov
 Alias cov_out_irga(7) = CO2_Uz_cov
-Alias cov_out_irga(8) = H2O_irga_stdev
+Alias cov_out_irga(8) = H2O_stdev
 Alias cov_out_irga(9) = H2O_Ux_cov
 Alias cov_out_irga(10) = H2O_Uy_cov
 Alias cov_out_irga(11) = H2O_Uz_cov
-Alias cov_out_irga(12) = Tc_irga_stdev
-Alias cov_out_irga(13) = Tc_irga_Ux_cov
-Alias cov_out_irga(14) = Tc_irga_Uy_cov
-Alias cov_out_irga(15) = Tc_irga_Uz_cov
-Alias cov_out_irga(16) = CO2_irga_mean
-Alias cov_out_irga(17) = H2O_irga_mean
-Alias cov_out_irga(18) = amb_press_irga_mean
-Alias cov_out_irga(19) = Tc_irga_mean       'Sonic temperature corrected for humidity.
-Alias cov_out_irga(20) = rho_a_irga_mean
-Alias cov_out_irga(21) = Fco2_no_wpl     'Carbon dioxide flux (LI-7500(RS)), without Webb et al. term.
-Alias cov_out_irga(22) = Fe_no_wpl     'Latent heat flux (LI-7500(RS)), without Webb et al. term.
-Alias cov_out_irga(23) = CO2_irga_wpl_Fe    'Carbon dioxide flux (LI-7500(RS)), Webb et al. term due to latent heat flux.
-Alias cov_out_irga(24) = CO2_irga_wpl_Fh     'Carbon dioxide flux (LI-7500(RS)), Webb et al. term due to sensible heat flux.
-Alias cov_out_irga(25) = H2O_irga_wpl_Fe    'Latent heat flux (LI-7500(RS)), Webb et al. term due to latent heat flux.
-Alias cov_out_irga(26) = H2O_irga_wpl_Fh     'Latent heat flux (LI-7500(RS)), Webb et al. term due to sensible heat flux.
+Alias cov_out_irga(12) = Tc_stdev
+Alias cov_out_irga(13) = Tc_Ux_cov
+Alias cov_out_irga(14) = Tc_Uy_cov
+Alias cov_out_irga(15) = Tc_Uz_cov
+Alias cov_out_irga(16) = CO2_mean
+Alias cov_out_irga(17) = H2O_mean
+Alias cov_out_irga(18) = amb_press_mean
+Alias cov_out_irga(19) = Tc_mean          'Sonic temperature corrected for humidity.
+Alias cov_out_irga(20) = rho_a_mean
+Alias cov_out_irga(21) = Fco2_no_wpl      'Carbon dioxide flux (LI-7500(RS)), without Webb et al. term.
+Alias cov_out_irga(22) = Fe_no_wpl        'Latent heat flux (LI-7500(RS)), without Webb et al. term.
+Alias cov_out_irga(23) = CO2_wpl_Fe       'Carbon dioxide flux (LI-7500(RS)), Webb et al. term due to latent heat flux.
+Alias cov_out_irga(24) = CO2_wpl_Fh       'Carbon dioxide flux (LI-7500(RS)), Webb et al. term due to sensible heat flux.
+Alias cov_out_irga(25) = H2O_wpl_Fe       'Latent heat flux (LI-7500(RS)), Webb et al. term due to latent heat flux.
+Alias cov_out_irga(26) = H2O_wpl_Fh       'Latent heat flux (LI-7500(RS)), Webb et al. term due to sensible heat flux.
 Units Fco2 = mg/(m^2 s)
 Units Fe = W/m^2
 Units Fh_irga = W/m^2
-Units CO2_irga_stdev = mg/m^3
+Units co2_stdev = mg/m^3
 Units CO2_Ux_cov = mg/(m^2 s)
 Units CO2_Uy_cov = mg/(m^2 s)
 Units CO2_Uz_cov = mg/(m^2 s)
-Units H2O_irga_stdev = g/m^3
+Units H2O_stdev = g/m^3
 Units H2O_Ux_cov = g/(m^2 s)
 Units H2O_Uy_cov = g/(m^2 s)
 Units H2O_Uz_cov = g/(m^2 s)
-Units Tc_irga_stdev = degC
-Units Tc_irga_Ux_cov = m.degC/s
-Units Tc_irga_Uy_cov = m.degC/s
-Units Tc_irga_Uz_cov = m.degC/s
-Units CO2_irga_mean = mg/m^3
-Units H2O_irga_mean = g/m^3
-Units amb_press_irga_mean = kPa
-Units Tc_irga_mean = degC
-Units rho_a_irga_mean = kg/m^3
+Units Tc_stdev = degC
+Units Tc_Ux_cov = m.degC/s
+Units Tc_Uy_cov = m.degC/s
+Units Tc_Uz_cov = m.degC/s
+Units CO2_mean = mg/m^3
+Units H2O_mean = g/m^3
+Units amb_press_mean = kPa
+Units Tc_mean = degC
+Units rho_a_mean = kg/m^3
 Units Fco2_no_wpl = mg/(m^2 s)
 Units Fe_no_wpl = W/m^2
-Units CO2_irga_wpl_Fe = mg/(m^2 s)
-Units CO2_irga_wpl_Fh = mg/(m^2 s)
-Units H2O_irga_wpl_Fe = W/m^2
-Units H2O_irga_wpl_Fh = W/m^2
+Units CO2_wpl_Fe = mg/(m^2 s)
+Units CO2_wpl_Fh = mg/(m^2 s)
+Units H2O_wpl_Fe = W/m^2
+Units H2O_wpl_Fh = W/m^2
 
 ' Tables
 
@@ -496,13 +496,13 @@ DataTable (comp_cov_irga,TRUE,1)    ' IRGA covariance table
   TableHide
   DataInterval (0,OUTPUT_INTERVAL,Min,1)
 
-  'Compute covariance of CO2_irga against sonic wind data.
+  'Compute covariance of CO2 against sonic wind data.
   Covariance (4,cov_array_irga(1,1),IEEE4,sonic_irga_disable_f,4)
-  'Compute covariance of H2O_irga against sonic wind data.
+  'Compute covariance of H2O against sonic wind data.
   Covariance (4,cov_array_irga(2,1),IEEE4,sonic_irga_disable_f,4)
   'Compute covariance of Tc_irga (computed fast response temperature) against sonic wind data.
   Covariance (4,cov_array_irga(3,1),IEEE4,sonic_irga_disable_f,4)
-  Average (3,CO2_irga,IEEE4,irga_disable_f)
+  Average (3,CO2,IEEE4,irga_disable_f)
   Average (1,Tc_irga,IEEE4,sonic_irga_disable_f)
 EndTable
 
@@ -687,12 +687,12 @@ DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
   Totalize (1,n,IEEE4,irga_disable_f)
   FieldNames ("irga_samples_Tot")
   Sample (1,diag_irga_aggregate,IEEE4)
-  Totalize (1,n,IEEE4,CO2_irga<>NAN)
+  Totalize (1,n,IEEE4,CO2<>NAN)
   FieldNames ("no_new_irga_data_Tot")
-  Totalize (1,n,IEEE4,CO2_irga<>-99999)
-  FieldNames ("sig_error_irga_Tot")
-  Average (1,sig_str_irga,IEEE4,H2O_irga=NAN)
-  Totalize (1,n,IEEE4,(sig_str_irga<=IRGA_SIG_STR_THRESHOLD) IMP (H2O_irga=NAN))
+  Totalize (1,n,IEEE4,CO2<>-99999)
+  FieldNames ("sig_error_Tot")
+  Average (1,sig_str_irga,IEEE4,H2O=NAN)
+  Totalize (1,n,IEEE4,(sig_str_irga<=IRGA_SIG_STR_THRESHOLD) IMP (H2O=NAN))
   FieldNames ("sig_str_thrshld_excded_Tot")
   '*** End of LI-7500(RS) output data ***
 
@@ -762,7 +762,7 @@ DataTable (ts_data,TRUE,-1)
 
   '*** Beginning of LI-7500(RS) time series output ***
   Sample (4,irga_raw(1),IEEE4)
-  FieldNames ("CO2_irga,H2O_irga,amb_press_irga,sig_str_irga")
+  FieldNames ("CO2,H2O,amb_press_irga,sig_str_irga")
   '*** End of LI-7500(RS) time series output ***
   
 EndTable
@@ -890,7 +890,7 @@ BeginProg
         GetRecord (Ta_sensor_mean,stats_tmpr_rh,1)
 
         AH_sensor_mean = e_sensor_mean/((Ta_sensor_mean+273.15)*RV)
-        rho_d_sensor = (amb_press_irga_mean-e_sensor_mean)/((Ta_sensor_mean+273.15)*RD)
+        rho_d_sensor = (amb_press_mean-e_sensor_mean)/((Ta_sensor_mean+273.15)*RD)
         rho_a_sensor_mean = (rho_d_sensor+AH_sensor_mean)/1000
         RH_sensor_mean = 100*e_sensor_mean/e_sat_sensor_mean
       EndIf
@@ -900,7 +900,7 @@ BeginProg
       'Load in the LI-7500(RS) data that has been lagged by LI7500_REC_BCK scans.
       GetRecord (dly_data_out(1),delay_irga,LI7500_REC_BCK)
 
-      Move (CO2_irga,5,dly_data_out(1),5) 'CO2_irga, H2O, press, signal strength, diag
+      Move (CO2,5,dly_data_out(1),5) 'CO2, H2O, press, signal strength, diag
 
       diag_irga_tmp = IIF (diag_irga <> NAN,diag_irga,&h00)
       diag_irga_aggregate = diag_irga_aggregate OR diag_irga_tmp
@@ -913,56 +913,56 @@ BeginProg
 
       'Compute fast response air temperature from sonic temperature and IRGA
       ' vapor density (see sonic manual).
-      Tc_irga = Tsonic_absolute/(1+0.32*H2O_irga*R*Tsonic_absolute/(amb_press_irga*18.02)) 'Kaimal and Gaynor (1991) Eq. 3
+      Tc_irga = Tsonic_absolute/(1+0.32*H2O*R*Tsonic_absolute/(amb_press_irga*18.02)) 'Kaimal and Gaynor (1991) Eq. 3
 
-      'Compute the molar mixing ratio of CO2_irga and H2O.
-      divisor_irga = (amb_press_irga/(R*Tc_irga))-(H2O_irga/18.02)
-      Xc = CO2_irga/(0.044*divisor_irga)
-      Xv = H2O_irga/(0.01802*divisor_irga)
+      'Compute the molar mixing ratio of CO2 and H2O.
+      divisor_irga = (amb_press_irga/(R*Tc_irga))-(H2O/18.02)
+      Xc = CO2/(0.044*divisor_irga)
+      Xv = H2O/(0.01802*divisor_irga)
 
       'Convert the fast response air temperature to degrees C.
       Tc_irga = Tc_irga-273.15
 
       'Filter data in the covariance instruction if the LI-7500(RS) reports bad data.
-      irga_disable_f = (sig_str_irga < IRGA_SIG_STR_THRESHOLD) OR (H2O_irga = NAN)
+      irga_disable_f = (sig_str_irga < IRGA_SIG_STR_THRESHOLD) OR (H2O = NAN)
 
       'Load the arrays that hold the input data for the covariance instructions.
-      cov_array_irga(1,1) = CO2_irga
+      cov_array_irga(1,1) = CO2
       Move (cov_array_irga(1,2),3,Ux,3)
-      cov_array_irga(2,1) = H2O_irga
+      cov_array_irga(2,1) = H2O
       Move (cov_array_irga(2,2),3,Ux,3)
       cov_array_irga(3,1) = Tc_irga
       Move (cov_array_irga(3,2),3,Ux,3)
       CallTable comp_cov_irga
 
       If ( comp_cov_irga.Output(1,1) ) Then
-        GetRecord (CO2_irga_stdev,comp_cov_irga,1)
+        GetRecord (co2_stdev,comp_cov_irga,1)
 
-        rho_d_irga_mean = (amb_press_irga_mean/((Tc_irga_mean+273.15)*RD))-(H2O_irga_mean*MU_WPL)
-        Cp = 1004.67*(1+0.84*(0.622*H2O_irga_mean*RV*(Tc_irga_mean+273.15)/amb_press_irga_mean)) 'Stull (1989)
-        rho_a_irga_mean = (rho_d_irga_mean+H2O_irga_mean)/1000
-        Lv = 2501-(2.37*Tc_irga_mean) 'Stull (1989)
+        rho_d_irga_mean = (amb_press_mean/((Tc_mean+273.15)*RD))-(H2O_mean*MU_WPL)
+        Cp = 1004.67*(1+0.84*(0.622*H2O_mean*RV*(Tc_mean+273.15)/amb_press_mean)) 'Stull (1989)
+        rho_a_mean = (rho_d_irga_mean+H2O_mean)/1000
+        Lv = 2501-(2.37*Tc_mean) 'Stull (1989)
 
         'Compute online fluxes.
         Fco2_no_wpl = CO2_Uz_cov
         Fe_no_wpl = Lv*H2O_Uz_cov
 
         'Compute the standard deviation from the variance.
-        CO2_irga_stdev = SQR (CO2_irga_stdev)
-        H2O_irga_stdev = SQR (H2O_irga_stdev)
-        Tc_irga_stdev = SQR (Tc_irga_stdev)
+        co2_stdev = SQR (co2_stdev)
+        H2O_stdev = SQR (H2O_stdev)
+        Tc_stdev = SQR (Tc_stdev)
 
-        sigma_wpl_irga = H2O_irga_mean/rho_d_irga_mean
+        sigma_wpl_irga = H2O_mean/rho_d_irga_mean
 
         'LI-7500(RS) Webb et al. term for carbon dioxide Eq. (24).
-        CO2_irga_wpl_Fe = MU_WPL*CO2_irga_mean/rho_d_irga_mean*H2O_Uz_cov
-        CO2_irga_wpl_Fh = (1+(MU_WPL*sigma_wpl_irga))*CO2_irga_mean/(Tc_irga_mean+273.15)*Tc_irga_Uz_cov
-        Fco2 = Fco2_no_wpl+CO2_irga_wpl_Fe+CO2_irga_wpl_Fh
+        CO2_wpl_Fe = MU_WPL*CO2_mean/rho_d_irga_mean*H2O_Uz_cov
+        CO2_wpl_Fh = (1+(MU_WPL*sigma_wpl_irga))*CO2_mean/(Tc_mean+273.15)*Tc_Uz_cov
+        Fco2 = Fco2_no_wpl+CO2_wpl_Fe+CO2_wpl_Fh
 
         'LI-7500(RS) Webb et al. term for water vapor Eq. (25).
-        CO2_irga_wpl_Fe = MU_WPL*sigma_wpl_irga*Fe_no_wpl
-        CO2_irga_wpl_Fh = (1+(MU_WPL*sigma_wpl_irga))*H2O_irga_mean/(Tc_irga_mean+273.15)*Lv*Tc_irga_Uz_cov
-        Fe = Fe_no_wpl+CO2_irga_wpl_Fe+CO2_irga_wpl_Fh
+        CO2_wpl_Fe = MU_WPL*sigma_wpl_irga*Fe_no_wpl
+        CO2_wpl_Fh = (1+(MU_WPL*sigma_wpl_irga))*H2O_mean/(Tc_mean+273.15)*Lv*Tc_Uz_cov
+        Fe = Fe_no_wpl+CO2_wpl_Fe+CO2_wpl_Fh
       EndIf
       '*** End of LI-7500(RS) processing ***
 
@@ -975,7 +975,7 @@ BeginProg
         tau = rho_a_sensor_mean*tau               'Air density computed from temperature and humidity probe.
 
         'Sensible heat flux using sonic temperature corrected for water vapor measured by the LI-7500(RS).
-        Fh_irga = rho_a_sensor_mean*Cp*Tc_irga_Uz_cov 'Air density computed from temperature and humidity probe.
+        Fh_irga = rho_a_sensor_mean*Cp*Tc_Uz_cov 'Air density computed from temperature and humidity probe.
       EndIf
       '*** End of sensible heat flux processing ***
 

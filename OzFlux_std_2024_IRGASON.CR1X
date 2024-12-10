@@ -508,10 +508,10 @@ Alias cov_out_cs(19) = Tc_mean              'Sonic temperature corrected for hum
 Alias cov_out_cs(20) = rho_a_mean
 Alias cov_out_cs(21) = Fco2_no_wpl          'Carbon dioxide flux (EC150), without Webb et al. term.
 Alias cov_out_cs(22) = Fe_no_wpl            'Latent heat flux (EC150), without Webb et al. term.
-Alias cov_out_cs(23) = CO2_irga_wpl_Fe      'Carbon dioxide flux (EC150), Webb et al. term due to latent heat flux.
-Alias cov_out_cs(24) = CO2_irga_wpl_Fh      'Carbon dioxide flux (EC150), Webb et al. term due to sensible heat flux.
-Alias cov_out_cs(25) = H2O_irga_wpl_Fe      'Latent heat flux (EC150), Webb et al. term due to latent heat flux.
-Alias cov_out_cs(26) = H2O_irga_wpl_Fh      'Latent heat flux (EC150), Webb et al. term due to sensible heat flux.
+Alias cov_out_cs(23) = CO2_wpl_Fe      'Carbon dioxide flux (EC150), Webb et al. term due to latent heat flux.
+Alias cov_out_cs(24) = CO2_wpl_Fh      'Carbon dioxide flux (EC150), Webb et al. term due to sensible heat flux.
+Alias cov_out_cs(25) = H2O_wpl_Fe      'Latent heat flux (EC150), Webb et al. term due to latent heat flux.
+Alias cov_out_cs(26) = H2O_wpl_Fh      'Latent heat flux (EC150), Webb et al. term due to sensible heat flux.
 units Fco2 = mg/(m^2 s)
 units Fe = W/m^2
 units Fh_irga = W/m^2
@@ -534,10 +534,10 @@ Units Tc_mean = degC
 units rho_a_mean = kg/m^3
 units Fco2_no_wpl = mg/(m^2 s)
 units Fe_no_wpl = W/m^2
-units CO2_irga_wpl_Fe = mg/(m^2 s)
-units CO2_irga_wpl_Fh = mg/(m^2 s)
-units H2O_irga_wpl_Fe = W/m^2
-units H2O_irga_wpl_Fh = W/m^2
+units CO2_wpl_Fe = mg/(m^2 s)
+units CO2_wpl_Fh = mg/(m^2 s)
+units H2O_wpl_Fe = W/m^2
+units H2O_wpl_Fh = W/m^2
 
 ' Tables
 
@@ -645,12 +645,12 @@ Alias nr(3) = Fsd
 Alias nr(4) = Fsu
 Alias nr(5) = Fld
 Alias nr(6) = Flu
-Alias nr(7) = Tbody_RAD
+Alias nr(7) = Tb
 Alias nr(8) = Fld_meas
 Alias nr(9) = Flu_meas
 Units nr = W/m^2
 units albedo = arb
-units Tbody_RAD = K
+units Tb = K
 
 ' -> Soil temperature variables / tables
 
@@ -1052,14 +1052,14 @@ BeginProg
         sigma_wpl = H2O_mean/rho_d_mean
 
         'EC150 Webb et al. (1980) term for carbon dioxide Eq. (24).
-        CO2_irga_wpl_Fe = MU_WPL*CO2_mean/rho_d_mean*H2O_Uz_cov
-        CO2_irga_wpl_Fh = (1+(MU_WPL*sigma_wpl))*CO2_mean/(Tc_mean+273.15)*Tc_Uz_cov
-        Fco2 = Fco2_no_wpl+CO2_irga_wpl_Fe+CO2_irga_wpl_Fh
+        CO2_wpl_Fe = MU_WPL*CO2_mean/rho_d_mean*H2O_Uz_cov
+        CO2_wpl_Fh = (1+(MU_WPL*sigma_wpl))*CO2_mean/(Tc_mean+273.15)*Tc_Uz_cov
+        Fco2 = Fco2_no_wpl+CO2_wpl_Fe+CO2_wpl_Fh
 
         'EC150 Webb et al. (1980) term for water vapor Eq. (25).
-        H2O_irga_wpl_Fe = MU_WPL*sigma_wpl*Fe_no_wpl
-        H2O_irga_wpl_Fh = (1+(MU_WPL*sigma_wpl))*H2O_mean/(Tc_mean+273.15)*Lv*Tc_Uz_cov
-        Fe = Fe_no_wpl+H2O_irga_wpl_Fe+H2O_irga_wpl_Fh
+        H2O_wpl_Fe = MU_WPL*sigma_wpl*Fe_no_wpl
+        H2O_wpl_Fh = (1+(MU_WPL*sigma_wpl))*H2O_mean/(Tc_mean+273.15)*Lv*Tc_Uz_cov
+        Fe = Fe_no_wpl+H2O_wpl_Fe+H2O_wpl_Fh
       EndIf
       '*** End of EC150 processing ***
 
@@ -1157,15 +1157,15 @@ SlowSequence
 
     CDM_BrHalf (VOLT116,CDMVOLT116_1_ADDR,X_nr,1,mV5000,NR_TsENS_ANALOG_INPUT,NR_TsENS_VX,1,2500,True,0,ANALOG_INTEGRATION,1.0,0)
     ln_R = LOG (1000*X_nr/(1-X_nr))
-    Tbody_RAD = (1/(A_SHH+B_SHH*ln_R+C_SHH*ln_R*ln_R*ln_R))
+    Tb = (1/(A_SHH+B_SHH*ln_R+C_SHH*ln_R*ln_R*ln_R))
 
     'Compute net radiation, albedo, incoming and outgoing longwave radiation.
     Fn = Fsd-Fsu+Fld-Flu
     albedo = Fsu/Fsd
     Fld_meas = Fld
     Flu_meas = Flu
-    Fld = Fld+(5.67e-8*Tbody_RAD*Tbody_RAD*Tbody_RAD*Tbody_RAD)
-    Flu = Flu+(5.67e-8*Tbody_RAD*Tbody_RAD*Tbody_RAD*Tbody_RAD)
+    Fld = Fld+(5.67e-8*Tb*Tb*Tb*Tb)
+    Flu = Flu+(5.67e-8*Tb*Tb*Tb*Tb)
     '*** End of CNR 4 measurements ***
 
 
