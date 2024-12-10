@@ -254,7 +254,7 @@ Dim slowsequence_disable_f As Boolean = TRUE             'Flag used to decimate 
 Dim dly_data_out(7)                                      'Array used to temporarily store the lagged record.
 Dim sys_conf_var_file As Long                            'Filehandle for the file that contains the system configuration variables in the CPU.
 Dim sys_conf_var_file_size As Long                       'Size of the system configuration file stored on the CPU.
-Dim sys_conf_var(2) = {0,0}                              'Variable saved are:  sonic_azimuth and irga_off_flg
+Dim sys_conf_var(2) = {0,0}                              'Variable saved are:  AZ_CSAT and irga_off_flg
 Dim process_time
 Dim buff_depth
 Dim i As Long                                            'Main scan index variable.
@@ -330,8 +330,8 @@ EndSub
 
 ' Variables
 
-Public sonic_azimuth                       'Enter sonic azimuth using keyboard after program has compiled (azimuth of the CSAT3(A) negative x-axis see Section 3.2.1 CSAT3A Azimuth in the OPEC manual).
-units sonic_azimuth = degrees
+Public AZ_CSAT                       'Enter sonic azimuth using keyboard after program has compiled (azimuth of the CSAT3(A) negative x-axis see Section 3.2.1 CSAT3A Azimuth in the OPEC manual).
+units AZ_CSAT = degrees
 
 Public sonic(5)
 Alias sonic(1) = Ux
@@ -361,7 +361,7 @@ Dim sonic_irga_raw(12)                     'EC150 w/CSAT3A sonic head (not lagge
 
 Dim sonic_disable_f As Boolean             'TRUE when CSAT3A sonic head diagnostic warning flags are on or CSAT3A sonic head has not sent data or an SDM signature error is reported.
 Dim Tsonic_absolute                            'Sonic temperature (K).
-Dim sonic_azimuth_prev
+Dim AZ_CSAT_prev
 
 Dim cov_array_sonic(1,4)                   'Arrays used to hold the input data for the covariance instructions (CSAT3A sonic head).
 Dim cov_out_sonic(18)                      'CSAT3A sonic head statistics.
@@ -564,7 +564,7 @@ EndTable
 ' Menus
 
 DisplayMenu ("System Control",TRUE)
-  MenuItem ("Sonic Azmth",sonic_azimuth)
+  MenuItem ("Sonic Azmth",AZ_CSAT)
   MenuItem ("IRGA Off",irga_off_flg)
     MenuPick (True,False)
   SubMenu ("Change Press Source")
@@ -693,8 +693,8 @@ units shf = W/m^2
 ' -> Rain gauge internal variables
 
 ' Variables
-Public precip
-units precip = mm
+Public rain
+units rain = mm
 
 '*** End internal constants, variables, working data tables ***
 '############################################################################
@@ -717,7 +717,6 @@ PipeLineMode
 '############################################################################
 '*** Begin output data tables ***
 
-'*** Output data tables ***
 DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
   DataInterval (0,OUTPUT_INTERVAL,Min,10)
   CardOut (0,FLUX_SIZE_CRD)
@@ -725,7 +724,7 @@ DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
   '*** Beginning of CSAT3A sonic head output data ***
   Sample (18,Fh,IEEE4)
   Average (4,Ux,IEEE4,sonic_disable_f)
-  Sample (1,sonic_azimuth,IEEE4)
+  Sample (1,AZ_CSAT,IEEE4)
   Totalize (1,n,IEEE4,sonic_disable_f)
   FieldNames ("sonic_samples_Tot")
   Sample (1,diag_sonic_aggregate,IEEE4)
@@ -812,7 +811,7 @@ DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
   '*** End of HFP01 output data ***
 
   '*** Beginning of TE525 output data ***
-  Totalize (1,precip,IEEE4,FALSE)
+  Totalize (1,rain,IEEE4,FALSE)
   '*** End of TE525 output data ***
 
   '*** Beginning of other output data ***
@@ -888,8 +887,8 @@ BeginProg
     Calfile (sys_conf_var(1),2,"CPU:sys_conf_var.dat",1) 'Read the values from the file.
   EndSelect
 
-  sonic_azimuth = sys_conf_var(1)
-  sonic_azimuth_prev = sonic_azimuth
+  AZ_CSAT = sys_conf_var(1)
+  AZ_CSAT_prev = AZ_CSAT
 
   irga_off_flg = sys_conf_var(2)
   irga_off_flg_prev = irga_off_flg
@@ -937,7 +936,7 @@ BeginProg
     '*** End of EC150 w/ CSAT3A sonic head measurement processing ***
 
     '*** Beginning of TE525 measurement ***
-    PulseCount (precip,1,RAIN_PULSE_INPUT,1,0,RAIN_CAL,0)
+    PulseCount (rain,1,RAIN_PULSE_INPUT,1,0,RAIN_CAL,0)
     '*** End of TE525 measurement ***
 
 
@@ -974,7 +973,7 @@ BeginProg
         GetRecord (Tsonic_stdev,comp_cov_3d,1)
 
         'Rotate the CSAT3A sonic head RHC system so the negative x-axis poinTs north.
-        wnd_dir_compass = (360+sonic_azimuth-wnd_dir_sonic) MOD 360
+        wnd_dir_compass = (360+AZ_CSAT-wnd_dir_sonic) MOD 360
 
         'Make the CSAT3A sonic head wind direction fall between 0 to 180 degrees and 0 to -180 degrees.
         If ( wnd_dir_sonic > 180 ) Then ( wnd_dir_sonic = wnd_dir_sonic-360 )
@@ -1202,17 +1201,17 @@ SlowSequence
 
 
     'Update CPU configuration file if sonic azimuth has changed.
-    If ( sonic_azimuth_prev <> sonic_azimuth ) Then
+    If ( AZ_CSAT_prev <> AZ_CSAT ) Then
       Erase (curr_value_str)
       Erase (prev_value_str)
       Erase (err_message_str)
-      curr_value_str = sonic_azimuth
-      prev_value_str = sonic_azimuth_prev
+      curr_value_str = AZ_CSAT
+      prev_value_str = AZ_CSAT_prev
       err_message_str = "Sonic Azimuth was changed and saved."
       CallTable sys_log
 
-      sonic_azimuth_prev = sonic_azimuth
-      sys_conf_var(1) = sonic_azimuth
+      AZ_CSAT_prev = AZ_CSAT
+      sys_conf_var(1) = AZ_CSAT
       Calfile (sys_conf_var(1),2,"CPU:sys_conf_var.dat",0)
     EndIf
 
