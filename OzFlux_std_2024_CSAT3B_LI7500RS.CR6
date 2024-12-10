@@ -82,7 +82,7 @@
 
 ' -> Station-based user constants
 
-Const STATION_NAME = "WombatStateForest_EC"
+Const STATION_NAME = "<YOURSITEHERE>_EC"
 Const PAKBUS_ADDR = 1
 
 ' -> General user constants
@@ -104,7 +104,7 @@ Const CDMVOLT116_1_DESC = "Mast_top_MUX"  ' CDM-VOLT116 descriptor
 '    for tall towers; as such, wiring colours may vary for cabling used).
 
 Const CSAT3B_SDM_ADDR = 3          ' CSAT3B SDM address
-Const AZ_CSAT = 210                ' CSAT3B azimuth
+Const AZ_SONIC = 210                ' CSAT3B azimuth
 
 'SDM-C1  SDM Data (green)
 'SDM-C2  SDM Clock (white)
@@ -664,8 +664,8 @@ DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
   '*** Beginning of CSAT3B output data ***
   Sample (18,Fh,IEEE4)
   Average (4,Ux,IEEE4,sonic_disable_f)
-  Sample (1,AZ_CSAT,IEEE4)
-  FieldNames ("AZ_CSAT")
+  Sample (1,AZ_SONIC,IEEE4)
+  FieldNames ("AZ_SONIC")
   Totalize (1,n,IEEE4,sonic_disable_f)
   FieldNames ("sonic_samples_Tot")
   Sample (1,diag_sonic_aggregate,IEEE4)
@@ -867,7 +867,7 @@ BeginProg
         GetRecord (Tsonic_stdev,comp_cov_sonic,1)
 
         'Rotate the CSAT3B RHC system so the negative x-axis points north.
-        wnd_dir_compass = (360+AZ_CSAT-wnd_dir_sonic) MOD 360
+        wnd_dir_compass = (360+AZ_SONIC-wnd_dir_sonic) MOD 360
 
         'Make the CSAT3B wind direction fall between 0 to 180 degrees and 0 to -180 degrees.
         If ( wnd_dir_sonic > 180 ) Then ( wnd_dir_sonic = wnd_dir_sonic-360 )
