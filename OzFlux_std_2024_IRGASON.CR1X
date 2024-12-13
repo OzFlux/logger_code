@@ -323,7 +323,7 @@ Sub Config (cmd_array(4,2),num_cmd As Long,retry_config_f As Boolean)
     If ( config_result <> NAN ) Then ( retry_config_f = FALSE )
   EndIf
 
-  SeTstatus ("SkippedScan",0)
+  SetStatus ("SkippedScan",0)
 EndSub
 
 ' -> CSAT3A internal variables / tables
@@ -348,13 +348,13 @@ units diag_sonic = arb
 units diag_sonic_aggregate = arb
 
 Dim diag_biTs_sonic(6) As Long             'Sonic warning flags.
-Alias diag_biTs_sonic(1) = sonic_amp_l_f   'Amplitude low warning flag.
-Alias diag_biTs_sonic(2) = sonic_amp_h_f   'Amplitude high warning flag.
-Alias diag_biTs_sonic(3) = sonic_sig_lck_f 'Poor signal lock warning flag.
-Alias diag_biTs_sonic(4) = sonic_del_T_f   'Delta temperature warning flag.
-Alias diag_biTs_sonic(5) = sonic_aq_sig_f  'Sonic acquiring signals warning flag.
-Alias diag_biTs_sonic(6) = sonic_cal_err_f 'Signature error in reading CSAT3A sonic head calibration data.
-units diag_biTs_sonic = arb
+Alias diag_bits_sonic(1) = sonic_amp_l_f   'Amplitude low warning flag.
+Alias diag_bits_sonic(2) = sonic_amp_h_f   'Amplitude high warning flag.
+Alias diag_bits_sonic(3) = sonic_sig_lck_f 'Poor signal lock warning flag.
+Alias diag_bits_sonic(4) = sonic_del_T_f   'Delta temperature warning flag.
+Alias diag_bits_sonic(5) = sonic_aq_sig_f  'Sonic acquiring signals warning flag.
+Alias diag_bits_sonic(6) = sonic_cal_err_f 'Signature error in reading CSAT3A sonic head calibration data.
+units diag_bits_sonic = arb
 Dim diag_sonic_tmp As Long                 'Temporary variable used to break out the CSAT3A sonic head diagnostic biTs.
 
 Dim sonic_irga_raw(12)                     'EC150 w/CSAT3A sonic head (not lagged).
@@ -873,7 +873,7 @@ BeginProg
   Next i
 
   SemaphoreGet (1)
-  sys_conf_var_file = FileOpen ("CPU:sys_conf_var.dat","rb",0) 'Check if a file exisTs.
+  sys_conf_var_file = FileOpen ("CPU:sys_conf_var.dat","rb",0) 'Check if a file exists.
   sys_conf_var_file_size = FileSize (sys_conf_var_file)
   FileClose (sys_conf_var_file)
   SemaphoreRelease (1)
@@ -1006,7 +1006,7 @@ BeginProg
 
       'Extract the twenty two flags from the gas analyzer diagnostic word.
       For i = 1 To 22
-        diag_biTs_irga(i) = diag_irga_tmp AND &h1
+        diag_bits_irga(i) = diag_irga_tmp AND &h1
         diag_irga_tmp = diag_irga_tmp >> 1
       Next i
 
@@ -1128,7 +1128,7 @@ BeginProg
     '*** Beginning of EC150 w/ CSAT3A sonic head measurements ***
     EC100 (sonic_irga_raw(1),EC100_SDM_ADDR,1)
     '*** End of EC150 w/ CSAT3A sonic head measurements ***
-  NexTscan
+  NextScan
 
 
 SlowSequence
@@ -1149,7 +1149,7 @@ SlowSequence
 
 
     '*** Beginning of CNR 4 measurements ***
-    VoltDiff (Fsd,4,AutoRange,NR_ANALOG_INPUT,TRUE,0,ANALOG_INTEGRATION,1,0)
+    CDM_VoltDiff (VOLT116,CDMVOLT116_1_ADDR,Fsd,4,mV5000,NR_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,1.0,0)
     Fsd = Fsd*NR_SW_INCOMING_CAL
     Fsu = Fsu*NR_SW_OUTGOING_CAL
     Fld = Fld*NR_LW_INCOMING_CAL

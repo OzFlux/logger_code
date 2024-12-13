@@ -7,6 +7,7 @@
 ' To do (IMcHugh):
 ' check all added measurements are in data tables
 ' put instrument order in constants and variables section in same order as the user-set constants and wiring
+' outstanding issues appended with 'CHECK THIS' substring
 
 ' The sign convention for the fluxes is positive away from the surface and
 ' negative towards the surface.
@@ -66,14 +67,23 @@
 'Soil temperature           -> User constants / wiring: "Soil temperature user constants / wiring"
 '                           -> Internal constants and variables: "Soil temperature internal variables / tables" 
 
-'Ancillary wind sensor      -> User constants and wiring: ""
-'                           -> Internal variables: "Ancillary wind sensing internal variables"
+'Auxiliary wind sensor      -> User constants and wiring: "Auxiliary wind speed and direction sensor user constants / wiring"
+'                           -> Internal variables: "Auxiliary wind speed and direction sensor internal variables"
 
 'Air temperature / humidity -> User constants and wiring: "T and RH user constants / wiring"
 '                           -> Internal variables and tables: "T and RH internal variables / tables"
 
 'Radiation                  -> User constants and wiring: "4-component radiation user constants / wiring"
 '                           -> Internal constants and variables: "4-component radiation internal constants / variables"
+
+'Infrared thermometer       -> User constants and wiring: "IR temperature user constants / wiring"
+'                           -> Internal constants and variables: "IR temperature sensor internal constants / variables"
+
+'Barometric pressure sensor -> User constants and wiring: "Barometric pressure sensor user constants / wiring"
+'                           -> Internal constants and variables: "Barometric pressure sensor internal variables"
+
+'Auxiliary pyranometer      -> User constants and wiring: "Auxiliary pyranometer user constants / wiring"
+'                           -> Internal constants and variables: "Auxiliary pyranometer internal variables"
 
 '############################################################################
 
@@ -82,13 +92,13 @@
 
 ' -> Station-based user constants
 
-Const STATION_NAME = "<YOURSITEHERE>_EC"
+Const STATION_NAME = "Calperum_EC"
 Const PAKBUS_ADDR = 1
 
 ' -> General user constants
 
 Const NUM_DAY_CRD = 200               ' Unique value, number of days of flux data to store on a 16 GB CF card (44 days = 2 GB). This value will vary with configuration.
-Const SDM_PER = 30                    ' Unique value, default SDM clock speed.
+Const SDM_PER = 90                    ' Unique value, default SDM clock speed.
 Const ANALOG_INTEGRATION = _50Hz      ' Slow sequence analog measurement integration time, _60Hz or _50Hz.
 Const SCAN_INTERVAL = 100             ' Unique value, measurement rate 100 ms (10 Hz) or 50 ms (20 Hz).
 Const OUTPUT_INTERVAL = 30            ' Unique value, online flux data output interval in minutes.
@@ -97,13 +107,13 @@ Const OUTPUT_INTERVAL = 30            ' Unique value, online flux data output in
 
 Const CDMVOLT116_1_SN = 6117              ' CDM-VOLT116 serial number
 Const CDMVOLT116_1_ADDR = 1               ' CDM-VOLT116 CPI address
-Const CDMVOLT116_1_DESC = "Mast_top_MUX"  ' CDM-VOLT116 descriptor
+Const CDMVOLT116_1_DESC = "MUX"  ' CDM-VOLT116 descriptor
 
 ' -> CSAT3B user constants / wiring (CR1000X -> note that CSAT and IRGA signals 
 '    are combined at top of mast and brought down to logger on a single cable 
 '    for tall towers; as such, wiring colours may vary for cabling used).
 
-Const CSAT3B_SDM_ADDR = 3          ' CSAT3B SDM address
+Const CSAT3B_SDM_ADDR = 3           ' CSAT3B SDM address
 Const AZ_SONIC = 210                ' CSAT3B azimuth
 
 'SDM-C1  SDM Data (green)
@@ -158,12 +168,36 @@ Const IRGA_SIG_STR_THRESHOLD = 60  ' Unique value - filter LI-7500(RS) data with
 'example, If the WindSonic4 Is connected To C3 on a CR1000X, C4 cannot be used in the
 'TimerInput(), PulseCount(), OR WaitDigTrig() instructions. Hence, we put the pulse port at U3.
 
-Const RAIN_PULSE_INPUT = P1        'Unique pulse input channel for tipping bucket.
+Const RAIN_PULSE_INPUT = C4        'Unique pulse input channel for tipping bucket.
 Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
 
-'P1      Signal (black)
+'C4      Signal (black)
 'G       Signal reference (white)
 '        Shield (clear)
+
+' -> Auxiliary wind speed and direction sensor user constants / wiring (CR1000X)
+
+Const WS1_PULSE_INPUT =  P1               'Unique pulse input channel for wind speed 1 (2m)
+Const WD1_ANALOG_INPUT = 1                'Unique single-ended analog input channel for wind direction 1 (2m)
+Const WD1_VX = VX1                        'Unique voltage excitation channel for wind direction
+Const WS2_PULSE_INPUT = P2                'Unique differential analog input channel for wind speed 1 (2m)
+Const WD2_ANALOG_INPUT = 2                'Unique single-ended analog input channel for wind direction 1 (2m)
+Const WD2_VX = VX2                        'Unique voltage excitation channel for wind direction
+Const WS_MULT = 0.75                      'Unique multiplier for RM Young 03002 wind speed sensor
+Const WS_OFFSET = 0.2                     'Unique offset for RM Young 03002 wind speed sensor
+Const WD_MULT = 352                       'Unique multiplier for RM Young 03002 wind direction sensor
+
+' Sensor 1 (2m)
+'SE1     Wind direction signal (green)
+'G       Wind direction signal reference (white)
+'P1      Wind speed signal (red)
+'G       Wind speed signal reference (black)
+'VX1     Wind speed excitation (blue)
+'SE2     Wind direction signal (green)
+'G       Wind direction signal reference (white)
+'P2      Wind speed signal (red)
+'G       Wind speed signal reference (black)
+'VX2     Wind speed excitation (blue)
 
 ' -> Soil heat flux user constants / wiring (CR1000X - read calibration coefficients into memory on compile)
 
@@ -189,7 +223,6 @@ Data SHF_CAL_3
 'SE9     Signal (white)
 'gnd     Signal reference (green)
 'gnd     Shield (clear)
-
 
 ' -> Soil temperature user constants / wiring (CR1000X)
 
@@ -253,9 +286,68 @@ Const NR_LW_OUTGOING_CAL = 1000/9.00     'Unique multiplier for CNR 4 longwave o
 '        Shield (clear)
 'X1      Thermistor excitation (red)
 
-' -> quantum sensor incoming
+' -> Infrared thermometer user constants / wiring (VOLT116)
 
-' -> quantum sensor outgoing
+Const IR_THERM_INPUT = 8 
+Const IR_TEMP_INPUT = 17
+Const IR_TSENS_VX = X2
+
+'*********************************************************** 
+' There are TWO versions of wiring (CHECK THIS):
+
+' From Apogee: 
+
+' for serial # 0 -> 7282 (consistent with Campbell)
+
+'8H      Thermopile signal (red)
+'8L      Thermopile signal reference (black)
+'G       Thermopile ground (clear)
+'9H      Thermistor signal (green)
+'G       Thermistor signal reference (blue)
+'X2      Thermistor excitation (white)
+
+' For serial # 7283 ->
+
+'8H      Thermopile signal (white)
+'8L      Thermopile signal reference (black)
+'G       Thermopile ground (clear)
+'9H      Thermistor signal (green)
+'G       Thermistor signal reference (blue)
+'X2      Thermistor excitation (red)
+
+'*********************************************************** 
+
+'***********************************************************
+' WARNING: Original wiring (below) from original Calperum prog VERY DIFFERENT!!!!!!!!!
+' NOTE: Apogee SI-131 Thermistor ground (blue) not connected
+' 10H     Apogee SI-131 Thermopile positive (red)
+' 10L     Apogee SI-131 Thermopile negative (white)
+' 10G     Apogee SI-131 Thermopile ground (clear)
+' 11H     Apogee SI-131 Thermistor positive (black)
+' 11L     Apogee SI-131 Thermistor negative (green)
+'***********************************************************
+
+' -> Barometric pressure sensor user constants / wiring (VOLT116)
+
+Const PRESS_ANALOG_INPUT = 10
+Const PRESS_MULT = 0.24
+Const PRESS_OFFSET = 500
+
+'10H     signal (blue)
+'10L     signal reference (yellow)
+'5V      trigger (green)
+'12V     power (red)
+'G       power reference (clear? -> not black? CHECK THIS!)
+
+' -> Auxiliary pyranometer user constants / wiring
+
+Const PYRAN_ANALOG_INPUT = 11
+Const PYRAN_MULT = -100
+
+'11H     signal (red)
+'11L     signal reference (black)
+'G       ground (white)
+'G       shield (clear)
 
 ' *** End user-customised station / logger / instrument constants and wiring ***
 ' *** CUSTOMISE THE BELOW AT YOUR OWN RISK!!!
@@ -524,30 +616,34 @@ EndTable
 Public rain
 Units rain = mm
 
-' -> Ancillary wind sensing internal variables
+' -> Auxiliary wind speed and direction sensor internal variables
 
 ' Variables
 
-'Public WS_AUX
-'Public WD_AUX
-'Units WS_AUX = meters/second
-'Units WD_AUX = degrees
+Public ws_aux_2m
+Public wd_aux_2m
+Units ws_aux_2m = m/s
+Units wd_aux_2m = degrees
+Public ws_aux_8m
+Public wd_aux_8m
+Units ws_aux_8m = m/s
+Units wd_aux_8m = degrees
 
 ' -> T and RH internal variables / tables
 
 ' Variables
 
 Public tmpr_rh(3)
-Alias tmpr_rh(1) = Ta_sensor                    'Temperature/humidity probe temperature.
-Alias tmpr_rh(2) = RH_sensor                    'Temperature/humidity probe relative humidity.
-Alias tmpr_rh(3) = e_sensor                     'Temperature/humidity probe vapor pressure.
+Alias tmpr_rh(1) = Ta_sensor                     'Temperature/humidity probe temperature.
+Alias tmpr_rh(2) = RH_sensor                     'Temperature/humidity probe relative humidity.
+Alias tmpr_rh(3) = e_sensor                      'Temperature/humidity probe vapor pressure.
 Units Ta_sensor = degC
 Units RH_sensor = %
 Units e_sensor = kPa
-Dim es_sensor                                  'Temperature/humidity probe saturation vapor pressure.
-Dim rho_d_sensor                          'Density of dry air used in Webb et al. term [kg / m^3].
+Dim es_sensor                                    'Temperature/humidity probe saturation vapor pressure.
+Dim rho_d_sensor                                 'Density of dry air used in Webb et al. term [kg / m^3].
 
-Dim stats_out_tmpr_rh(6)                        'Temperature/humidity probe statistics.
+Dim stats_out_tmpr_rh(6)                         'Temperature/humidity probe statistics.
 Alias stats_out_tmpr_rh(1) = Ta_sensor_mean      'Mean temperature/humidity probe temperature.
 Alias stats_out_tmpr_rh(2) = e_sensor_mean       'Mean temperature/humidity probe vapor pressure.
 Alias stats_out_tmpr_rh(3) = e_sat_sensor_mean   'Mean temperature/humidity probe saturation vapor pressure.
@@ -598,7 +694,33 @@ Units nr = W/m^2
 Units albedo = arb
 Units Tb = K
 
-' -> Soil temperature variables / tables
+' -> Infrared thermometer internal constants / variables
+
+' Constants
+
+Const mC0 = 4204170000
+Const mC1 = 22159800
+Const mC2 = 252447
+Const bC0 = -22740100
+Const bC1 = 150254
+Const bC2 = -203.08
+
+' Variables
+
+Public SBTempC                    ' Sensor body temperature of detector thermistor, C
+Public SBTempK                    ' Sensor body temperature of detector thermistor, K
+Public targ_raw                   ' Thermopile output, mV
+Public TargTempK                  ' Temperature of target, K
+Public m                          ' Sensitivity to detector-target temperature difference
+Public b                          ' Offset to detector-target temperature difference
+Public Tcanopy                    ' Temperature of SI-131 target
+Units SBTempC = degC
+Units SBTempK = K
+Units targ_raw = mV
+Units TargTempK = K
+
+
+' -> Soil temperature internal variables / tables
 
 ' Variables
 
@@ -634,18 +756,21 @@ EndTable
 'Units PerAvg_cs650 = us
 'Units VoltR_cs650 = None
 
-' -> Soil heat flux variables
+' -> Soil heat flux internal variables
 
 Public shf(NMBR_SHF)                   ' HFP01 soil heat flux plates.
 Units shf = W/m^2
 Dim shf_cal(NMBR_SHF)
 
-''*** Beginning of PAR constants and variables ***
-'Public Fpar(2)
-'Alias Fpar(1) = Fpard    ' Downwelling PPFD
-'Alias Fpar(2) = Fparu    ' Upwelling PPFD
-'Units Fpar = umol/m^2/s
-''*** End of PAR constants and variables ***
+' -> Barometric pressure sensor internal variables
+
+Public press_aux
+Units press_aux = hPa
+
+' -> Auxiliary pyranometer internal variables
+
+Public Fsd_aux
+Units Fsd_aux = W/m^2
 
 '*** End internal constants, variables, working data tables ***
 '############################################################################
@@ -715,6 +840,12 @@ DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
   Average (9,Fn,IEEE4,slowsequence_disable_f)
   '*** End of radiometer output data ***
 
+  '*** Beginning of infrared thermometer output data ***
+  Average (1,targ_raw,IEEE4,False)
+  Average (1,SBTempC,IEEE4,False)
+  Average (1,Tcanopy,IEEE4,False)
+  '*** End of infrared thermometer output data ***
+
   '*** Beginning of soil T output data ***
   Sample (NMBR_TSOIL,Tsoil_mean(1),IEEE4)
   Sample (NMBR_TSOIL,del_Tsoil(1),IEEE4)
@@ -738,10 +869,20 @@ DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
   Totalize (1,rain,IEEE4,FALSE)
   '*** End of precipitation output data ***
 
-  '  '*** Beginning of auxiliary wind output data ***
-  '  WindVector(1,WS_AUX,WD_AUX,FP2,False,0,0,0)
-  '  FieldNames(WIND_AUX_FIELDS)
-  '  '*** End of CNR 4 output data ***
+  '*** Beginning of auxiliary wind output data ***
+  WindVector (1,ws_aux_2m,wd_aux_2m,IEEE4,False,0,0,0)
+  FieldNames ("Ws_aux_2m,Wd_aux_2m,Wd_aux_2m_Sd")
+  WindVector (1,ws_aux_8m,wd_aux_8m,IEEE4,False,0,0,0)
+  FieldNames ("Ws_aux_8m,Wd_aux_8m,Wd_aux_8m_Sd")
+  '*** End of auxiliary wind output data ***
+
+  '*** Beginning of auxiliary pressure sensor data ***
+  Sample (1,press_aux,IEEE4)
+  '*** End of auxiliary pressure sensor data ***
+
+  '*** Beginning of auxiliary pyranometer data ***
+  Average (1,Fsd_aux,IEEE4,False)
+  '*** End of auxiliary pyranometer data ***
 
   '*** Beginning of other output data ***
   Average (1,Tpanel,IEEE4,FALSE)
@@ -841,12 +982,11 @@ BeginProg
     PulseCount (rain,1,RAIN_PULSE_INPUT,1,0,RAIN_CAL,0)
     '*** End of rain gauge measurement ***
 
-    '    '*** Beginning of independent wind speed and direction measurement
-    '    PulseCount(WS_AUX,1,WIND_SPD_PULSE_INPUT,5,1,0.098,0)
-    '    BrHalf (WD_AUX,1,AutoRange,WIND_DIR_ANALOG_INPUT,WIND_DIR_VX_PORT,1,WIND_DIR_VX_MV,True,0,ANALOG_INTEGRATION,355,0)
-    '    If WD_AUX >=360 Then WD_AUX = 0
-    '    If WD_AUX <0 Then WD_AUX = 0
-    '    '*** End of independent wind speed and direction
+    '*** Beginning of independent wind speed measurement
+    PulseCount(ws_aux_2m,1,WS1_PULSE_INPUT,1,1,WS_MULT,WS_OFFSET)
+    PulseCount(ws_aux_8m,1,WS2_PULSE_INPUT,1,1,WS_MULT,WS_OFFSET)
+    If ws_aux_2m < 0.21 Then ws_aux_2m=0     
+    '*** End of auxiliary wind speed measurement ***
 
     'Save time series data.
     CallTable ts_data
@@ -1049,6 +1189,13 @@ BeginProg
 
     '*** Beginning of CR1000X measurements ***
 
+    '*** Beginning of auxiliary wind speed and direction sensor measurements ***
+    BrHalf(wd_aux_2m,1,mv5000,WD1_ANALOG_INPUT,WD1_VX,1,2500,False,0,250,WD_MULT,0)       ' Wind direction at 2m
+    If wd_aux_2m >= 360 OR wd_aux_2m <0 Then wd_aux_2m = 0
+    BrHalf(wd_aux_8m,1,mv5000,WD2_ANALOG_INPUT,WD2_VX,1,2500,False,0,250,WD_MULT,0)       ' Wind direction at 8m
+    If wd_aux_2m >= 360 OR wd_aux_2m <0 Then wd_aux_2m = 0    
+    '*** End of auxiliary wind speed and direction sensor measurements ***
+
     '*** Beginning of SHF measurements ***
     VoltSe (shf(),NMBR_SHF,mV200C,SHF_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,shf_cal(),0)
     '*** End of SHF measurements ***
@@ -1056,7 +1203,7 @@ BeginProg
     '*** Beginning of soil temperature measurements ***
     TCDiff (Tsoil,NMBR_TSOIL,mV200c,TSOIL_ANALOG_INPUT,TypeE,Tpanel,True,0,ANALOG_INTEGRATION,1.0,0)
     '*** End of soil temperature measurements ***
-    
+
     '*** Beginning of CS65X measurements ***
 '    SDI12Recorder (cs65x_raw(1),CS65X_SDI12_PORT,CS65X_1_ADDR,"M3!",1,0)
 '    sws_cs650(1) = cs65x_raw(1)
@@ -1082,8 +1229,8 @@ BeginProg
     '*** Beginning of CDM-VOLT116 measurements ***
 
     '*** Beginning of temperature and humidity probe measurements ***
-    CDM_VoltDiff (VOLT116,1,Ta_sensor,1,AutoRange,T_RH_MAIN_INPUT,True,0,ANALOG_INTEGRATION,T_RH_T_MULT,T_RH_T_OFFSET)
-    CDM_VoltDiff (VOLT116,1,RH_sensor,1,AutoRange,T_RH_MAIN_INPUT+1,True,0,ANALOG_INTEGRATION,T_RH_RH_MULT,T_RH_RH_OFFSET)
+    CDM_VoltDiff (VOLT116,CDMVOLT116_1_ADDR,Ta_sensor,1,AutoRange,T_RH_MAIN_INPUT,True,0,ANALOG_INTEGRATION,T_RH_T_MULT,T_RH_T_OFFSET)
+    CDM_VoltDiff (VOLT116,CDMVOLT116_1_ADDR,RH_sensor,1,AutoRange,T_RH_MAIN_INPUT+1,True,0,ANALOG_INTEGRATION,T_RH_RH_MULT,T_RH_RH_OFFSET)
     VaporPressure (e_sensor,Ta_sensor,RH_sensor)
     SatVP (es_sensor,Ta_sensor)
     '*** End of temperature and humidity probe measurements ***
@@ -1097,7 +1244,7 @@ BeginProg
     Flu = Flu*NR_LW_OUTGOING_CAL
 
     'Compute net radiation, albedo, incoming and outgoing longwave radiation.
-    CDM_BrHalf (VOLT116,1,X_nr,1,mV5000,NR_TSENS_ANALOG_INPUT,NR_TSENS_VX,1,5000,True,0,ANALOG_INTEGRATION,1.0,0)
+    CDM_BrHalf (VOLT116,CDMVOLT116_1_ADDR,X_nr,1,mV5000,NR_TSENS_ANALOG_INPUT,NR_TSENS_VX,1,5000,True,0,ANALOG_INTEGRATION,1.0,0)
     ln_R = LOG (1000*X_nr/(1-X_nr))
     Tb = (1/(A_SHH+B_SHH*ln_R+C_SHH*ln_R*ln_R*ln_R))
     Fld_meas = Fld
@@ -1108,10 +1255,30 @@ BeginProg
     albedo = Fsu/Fsd
     '*** End of net radiometer measurements ***
 
-    '    '*** Beginning of quantum sensor measurements ***
-    '    CDM_VoltDiff (VOLT116,1,Fpar(),2,AutoRange,PAR_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,5,0)
-    '    '*** End of quantum sensor measurements ***
+    '*** Beginning of infrared thermometer measurements ***
+    ' Measure raw thermopile
+    CDM_VoltDiff (VOLT116,CDMVOLT116_1_ADDR,targ_raw,1,mV200,IR_THERM_INPUT,True,0,ANALOG_INTEGRATION,1.0,0)
+    
+    ' Measure sensor body temperature thermistor
+    CDM_Therm109 (VOLT116,CDMVOLT116_1_ADDR,SBTempC,1,IR_TEMP_INPUT,IR_TSENS_VX,0,ANALOG_INTEGRATION,1.0,0)
+    ' Calculation of m (slope) and b (intercept) coefficients for target temperature calculation
+    m = mC2 * SBTempC^2 + mC1 * SBTempC + mC0
+    b = bC2 * SBTempC^2 + bC1 * SBTempC + bC0
+    'Calculation of target temperature
+    SBTempK = SBTempC + 273.15
+    TargTempK = ((SBTempK^4) + m * targ_raw + b)^0.25
+    Tcanopy = TargTempK - 273.15
+    '*** End of infrared thermometer measurements ***
 
+    '*** Beginning of barometric pressure sensor measurements ***
+    CDM_VoltDiff (VOLT116,CDMVOLT116_1_ADDR,press_aux,1,mV5000,PRESS_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,PRESS_MULT,PRESS_OFFSET)
+    '*** End of barometric pressure sensor measurements ***
+
+    '*** Beginning of auxiliary pyranometer measurements ***
+    CDM_VoltDiff (VOLT116,CDMVOLT116_1_ADDR,Fsd_aux,1,AutoRange,PYRAN_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,PYRAN_MULT,0)
+    If Fsd_aux < 0 Then Fsd_aux = 0     
+    '*** End of auxiliary pyranometer measurements ***
+        
     '*** End of CDM-VOLT116 measurements ***
 
     slowsequence_finished_f = TRUE
