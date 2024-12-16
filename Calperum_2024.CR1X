@@ -334,11 +334,11 @@ Const IR_TSENS_IX = X2
 '***********************************************************
 ' WARNING: Original wiring (below) from original Calperum prog VERY DIFFERENT!!!!!!!!!
 ' NOTE: Apogee SI-131 Thermistor ground (blue) not connected
-' 10H     Apogee SI-131 Thermopile positive (red)
-' 10L     Apogee SI-131 Thermopile negative (white)
-' 10G     Apogee SI-131 Thermopile ground (clear)
-' 11H     Apogee SI-131 Thermistor positive (black)
-' 11L     Apogee SI-131 Thermistor negative (green)
+' 9H      Apogee SI-131 Thermopile positive (red)
+' 9L      Apogee SI-131 Thermopile negative (white)
+' 9G      Apogee SI-131 Thermopile ground (clear)
+' 10H     Apogee SI-131 Thermistor positive (black)
+' 10L     Apogee SI-131 Thermistor negative (green)
 '***********************************************************
 
 ' -> Auxiliary pyranometer user constants / wiring
