@@ -206,7 +206,7 @@ Const NMBR_SHF = 3                     'n plates
 Const SHF_FIELDS = "Fg_01,Fg_02,Fg_03" 'Field names
 Const SHF_CAL_1 = 1000/66.16           'Unique multiplier for HFP #1 (1000/sensitivity).
 Const SHF_CAL_2 = 1000/66.26           'Unique multiplier for HFP #2 (1000/sensitivity).
-Const SHF_CAL_3 = 1000/64.57           'Unique multiplier for HFP #2 (1000/sensitivity).
+Const SHF_CAL_3 = 1000/64.57           'Unique multiplier for HFP #3 (1000/sensitivity).
 Data SHF_CAL_1
 Data SHF_CAL_2
 Data SHF_CAL_3
@@ -245,28 +245,38 @@ Const NMBR_TSOIL = 3                  'n sensors
 ' -> T and RH user constants / wiring (VOLT116)
 
 Const T_RH_MAIN_INPUT = 1          'Unique differential input channel for temperature and humidity probe.
-Const T_RH_T_MULT = 0.14           'Unique multiplier for temperature; HC2S3 = 0.1, HMP155A = 0.14, or HMP45C = 0.1.
-Const T_RH_T_OFFSET = -80          'Unique offset for temperature; HC2S3 = -40, HMP155A = -80, or HMP45C = -40.
+Const T_RH_T_MULT = 0.1            'Unique multiplier for temperature; HC2S3 = 0.1, HMP155A = 0.14, or HMP45C = 0.1.
+Const T_RH_T_OFFSET = -40          'Unique offset for temperature; HC2S3 = -40, HMP155A = -80, or HMP45C = -40.
 Const T_RH_RH_MULT = 0.1           'Unique multiplier for rh; HC2S3 = ?, HMP155A = 0.001, or HMP45C = ?.
 Const T_RH_RH_OFFSET = 0           'Unique offset for rh; HC2S3 = ?, HMP155A = 0, or HMP45C = ?.
 
-'1H      Temperature signal (yellow)
-'1L      Temperature signal reference (orange in loop with 11L, was purple, was white)  --> Jumper to white
-'gnd     Shield
-'2H      RH signal (blue)
-'2L      RH signal reference (orange, was purple, was white)
-'12V     Power (red)
-'G       Power reference (black)
+'1H      Temperature signal (black)
+'1L      Humidity signal reference (white)
+'12V     Power (brown)
+'gnd     Signal reference / power ground (blue)
+
+' -> Barometric pressure sensor user constants / wiring (VOLT116)
+
+Const PRESS_ANALOG_INPUT = 2
+Const PRESS_MULT = 0.24
+Const PRESS_OFFSET = 500
+Const PRESS_SWITCH_PORT = 1
+
+'10H     signal (blue)
+'10L     signal reference (yellow)
+'5V      trigger (green)
+'12V     power (red)
+'G       power reference (clear? -> not black? CHECK THIS!)
 
 ' -> 4-component radiation user constants / wiring (VOLT116)
 
-Const NR_ANALOG_INPUT = 3                'Unique differential analog input channel for raw measurements
-Const NR_TSENS_ANALOG_INPUT = 13         'Unique single-ended analog input channel for body T
-Const NR_TSENS_VX = X1                   'Unique voltage excitation channel for thermistor
-Const NR_SW_INCOMING_CAL = 1000/12.71    'Unique multiplier for CNR 4 shortwave incoming radiation (1000/sensitivity).
-Const NR_SW_OUTGOING_CAL = 1000/12.98    'Unique multiplier for CNR 4 shortwave outgoing radiation (1000/sensitivity).
-Const NR_LW_INCOMING_CAL = 1000/8.75     'Unique multiplier for CNR 4 longwave incoming radiation (1000/sensitivity).
-Const NR_LW_OUTGOING_CAL = 1000/9.00     'Unique multiplier for CNR 4 longwave outgoing radiation (1000/sensitivity).
+Const NR_ANALOG_INPUT = 3                 'Unique differential analog input channel for raw measurements
+Const NR_TSENS_ANALOG_INPUT = 7           'Unique differential analog input channel for body T
+Const NR_TSENS_IX = X1                    'Unique voltage excitation channel for thermistor
+Const NR_SW_INCOMING_CAL = 1000/15.25     'Unique multiplier for CNR 4 shortwave incoming radiation (1000/sensitivity).
+Const NR_SW_OUTGOING_CAL = 1000/12.32     'Unique multiplier for CNR 4 shortwave outgoing radiation (1000/sensitivity).
+Const NR_LW_INCOMING_CAL = 1000/11.29     'Unique multiplier for CNR 4 longwave incoming radiation (1000/sensitivity).
+Const NR_LW_OUTGOING_CAL = 1000/12.44     'Unique multiplier for CNR 4 longwave outgoing radiation (1000/sensitivity).
 
 '3H      Incoming shortwave radiation signal (red)
 '3L      Incoming shortwave radiation signal reference (blue)
@@ -282,15 +292,19 @@ Const NR_LW_OUTGOING_CAL = 1000/9.00     'Unique multiplier for CNR 4 longwave o
 '6L      Outgoing longwave radiation signal reference (green)
 'gnd     short jumper wire to 5L
 '7H      Thermistor signal (white)
-'gnd     Thermistor signal reference (black)
-'        Shield (clear)
-'X1      Thermistor excitation (red)
+'7H      PT100 signal (yellow)
+'7L      PT100 signal reference (green)
+'gnd     Shield (clear)
+'X1      PT100 excitation (brown)
+'gnd     PT100 Excitation return (grey)
 
 ' -> Infrared thermometer user constants / wiring (VOLT116)
 
 Const IR_THERM_INPUT = 8 
-Const IR_TEMP_INPUT = 17
-Const IR_TSENS_VX = X2
+'Const IR_TEMP_INPUT = 31
+Const IR_RES_INPUT = 9
+'Const IR_TSENS_VX = X2
+Const IR_TSENS_IX = X2
 
 '*********************************************************** 
 ' There are TWO versions of wiring (CHECK THIS):
@@ -327,24 +341,12 @@ Const IR_TSENS_VX = X2
 ' 11L     Apogee SI-131 Thermistor negative (green)
 '***********************************************************
 
-' -> Barometric pressure sensor user constants / wiring (VOLT116)
-
-Const PRESS_ANALOG_INPUT = 10
-Const PRESS_MULT = 0.24
-Const PRESS_OFFSET = 500
-
-'10H     signal (blue)
-'10L     signal reference (yellow)
-'5V      trigger (green)
-'12V     power (red)
-'G       power reference (clear? -> not black? CHECK THIS!)
-
 ' -> Auxiliary pyranometer user constants / wiring
 
-Const PYRAN_ANALOG_INPUT = 11
+Const PYRAN_ANALOG_INPUT = 10
 Const PYRAN_MULT = -100
 
-'11H     signal (red)
+'10H     signal (red)
 '11L     signal reference (black)
 'G       ground (white)
 'G       shield (clear)
@@ -369,6 +371,7 @@ Const R = 8.3143e-3                   'Universal gas constant [kPa m^3/(K mol)].
 Const RD = R/28.97                    'Gas constant for dry air [kPa m^3/(K g)].
 Const RV = R/18.02                    'Gas constant for water vapor [kPa m^3/(K g)].
 Const SB = 5.67E-8                    'Stefan Boltzmann constant
+Const C2K = 273.15                    'Kelvin conversion
 Dim Lv                                'Latent heat of vaporization [J/g].
 Dim Cp                                'Specific heat capacity [J/(kg K)].
 
@@ -672,15 +675,20 @@ EndTable
 ' Constants
 
 'YSI 44031 Steinhart-Hart coefficients fit through -40 degrees C (239800 ohms), 20 degrees C (12260 ohms), and 80 degrees C (1458 ohms).
-Const A_SHH = 1.026613e-3                'Steinhart-Hart A coefficient.
-Const B_SHH = 2.395424e-4                'Steinhart-Hart B coefficient.
-Const C_SHH = 1.552561e-7                'Steinhart-Hart C coefficient.
+'Const A_SHH = 1.026613e-3                'Steinhart-Hart A coefficient.
+'Const B_SHH = 2.395424e-4                'Steinhart-Hart B coefficient.
+'Const C_SHH = 1.552561e-7                'Steinhart-Hart C coefficient.
+
+Const SH_A = 1.129241E-3          'Steinhart-Hart equation coefficient A
+Const SH_B = 2.341077E-4          'Steinhart-Hart equation coefficient B
+Const SH_C = 8.775468E-8          'Steinhart-Hart equation coefficient C
 
 ' Variables
 
 Public nr(9)
-Dim X_nr
-Dim ln_R
+'Dim X_nr
+'Dim ln_R
+Public Rs_CNR4
 Alias nr(1) = Fn
 Alias nr(2) = albedo
 Alias nr(3) = Fsd
@@ -714,6 +722,7 @@ Public TargTempK                  ' Temperature of target, K
 Public m                          ' Sensitivity to detector-target temperature difference
 Public b                          ' Offset to detector-target temperature difference
 Public Tcanopy                    ' Temperature of SI-131 target
+Public Rs_SI131                   ' Resistance of the SI-131 thermistor
 Units SBTempC = degC
 Units SBTempK = K
 Units targ_raw = mV
@@ -766,6 +775,7 @@ Dim shf_cal(NMBR_SHF)
 
 Public press_aux
 Units press_aux = hPa
+Dim press_port_state
 
 ' -> Auxiliary pyranometer internal variables
 
@@ -945,7 +955,7 @@ BeginProg
 
   ' Set port 7 to switch on CCFC
   PortsConfig (&B01000000,&B01000000)
-
+  
   ' Load NMBR_SHF plate calibration.
   For i = 1 To NMBR_SHF
     Read shf_cal(i)
@@ -1229,8 +1239,8 @@ BeginProg
     '*** Beginning of CDM-VOLT116 measurements ***
 
     '*** Beginning of temperature and humidity probe measurements ***
-    CDM_VoltDiff (VOLT116,CDMVOLT116_1_ADDR,Ta_sensor,1,AutoRange,T_RH_MAIN_INPUT,True,0,ANALOG_INTEGRATION,T_RH_T_MULT,T_RH_T_OFFSET)
-    CDM_VoltDiff (VOLT116,CDMVOLT116_1_ADDR,RH_sensor,1,AutoRange,T_RH_MAIN_INPUT+1,True,0,ANALOG_INTEGRATION,T_RH_RH_MULT,T_RH_RH_OFFSET)
+    CDM_VoltSe (VOLT116,CDMVOLT116_1_ADDR,Ta_sensor,1,mV1000,T_RH_MAIN_INPUT,1,0,ANALOG_INTEGRATION,T_RH_T_MULT,T_RH_T_OFFSET)
+    CDM_VoltSe (VOLT116,CDMVOLT116_1_ADDR,RH_sensor,1,mV1000,T_RH_MAIN_INPUT+1,1,0,ANALOG_INTEGRATION,T_RH_RH_MULT,T_RH_RH_OFFSET)
     VaporPressure (e_sensor,Ta_sensor,RH_sensor)
     SatVP (es_sensor,Ta_sensor)
     '*** End of temperature and humidity probe measurements ***
@@ -1244,9 +1254,11 @@ BeginProg
     Flu = Flu*NR_LW_OUTGOING_CAL
 
     'Compute net radiation, albedo, incoming and outgoing longwave radiation.
-    CDM_BrHalf (VOLT116,CDMVOLT116_1_ADDR,X_nr,1,mV5000,NR_TSENS_ANALOG_INPUT,NR_TSENS_VX,1,5000,True,0,ANALOG_INTEGRATION,1.0,0)
-    ln_R = LOG (1000*X_nr/(1-X_nr))
-    Tb = (1/(A_SHH+B_SHH*ln_R+C_SHH*ln_R*ln_R*ln_R))
+    CDM_Resistance (VOLT116,CDMVOLT116_1_ADDR,Rs_CNR4,1,mV200,NR_TSENS_ANALOG_INPUT,NR_TSENS_IX,1,1675,True,True,200,ANALOG_INTEGRATION,1.0,0)
+    PRT(Tb,1,Rs_CNR4/100,1,C2K)                   ' Temperature of CNR4 body, K    
+'    CDM_BrHalf (VOLT116,CDMVOLT116_1_ADDR,X_nr,1,mV5000,NR_TSENS_ANALOG_INPUT,NR_TSENS_IX,1,5000,True,0,ANALOG_INTEGRATION,1.0,0)
+'    ln_R = LOG (1000*X_nr/(1-X_nr))
+'    Tb = (1/(A_SHH+B_SHH*ln_R+C_SHH*ln_R*ln_R*ln_R))
     Fld_meas = Fld
     Flu_meas = Flu
     Flu=Flu+(SB*Tb^4)         ' Corrected upwelling longwave
@@ -1256,21 +1268,45 @@ BeginProg
     '*** End of net radiometer measurements ***
 
     '*** Beginning of infrared thermometer measurements ***
+
     ' Measure raw thermopile
     CDM_VoltDiff (VOLT116,CDMVOLT116_1_ADDR,targ_raw,1,mV200,IR_THERM_INPUT,True,0,ANALOG_INTEGRATION,1.0,0)
     
     ' Measure sensor body temperature thermistor
-    CDM_Therm109 (VOLT116,CDMVOLT116_1_ADDR,SBTempC,1,IR_TEMP_INPUT,IR_TSENS_VX,0,ANALOG_INTEGRATION,1.0,0)
+    CDM_Resistance (VOLT116,CDMVOLT116_1_ADDR,Rs_SI131,1,mV5000,1,IR_TSENS_IX,1,100,True,True,0,ANALOG_INTEGRATION,1.0,0)
     ' Calculation of m (slope) and b (intercept) coefficients for target temperature calculation
     m = mC2 * SBTempC^2 + mC1 * SBTempC + mC0
-    b = bC2 * SBTempC^2 + bC1 * SBTempC + bC0
-    'Calculation of target temperature
-    SBTempK = SBTempC + 273.15
-    TargTempK = ((SBTempK^4) + m * targ_raw + b)^0.25
-    Tcanopy = TargTempK - 273.15
+    b = bC2 * SBTempC^2 + bC1 * SBTempC + bC0    
+
+    ' Calculate the IR temperature from the Apogee SI-131
+    ' Steinhart-Hart equation to get detector temperature from thermistor resistance
+    SBTempK = 1/(SH_A+SH_B*LN(Rs_SI131)+SH_C*(LN(Rs_SI131^3)))
+    ' SI-131 detector sensitivity and offset at detector temperature
+    m = mC2 * SBTempK^2 + mC1 * SBTempK + mC0
+    b = bC2 * SBTempK^2 + bC1 * SBTempK + bC0
+    ' Target temperature
+    Tcanopy = ((SBTempK^4) + m * targ_raw + b)^0.25 - 273.15
+    
+'    ' Measure sensor body temperature thermistor
+'    CDM_Therm109 (VOLT116,CDMVOLT116_1_ADDR,SBTempC,1,IR_TEMP_INPUT,IR_TSENS_VX,0,ANALOG_INTEGRATION,1.0,0)
+'    ' Calculation of m (slope) and b (intercept) coefficients for target temperature calculation
+'    m = mC2 * SBTempC^2 + mC1 * SBTempC + mC0
+'    b = bC2 * SBTempC^2 + bC1 * SBTempC + bC0
+'    'Calculation of target temperature
+'    SBTempK = SBTempC + 273.15
+'    TargTempK = ((SBTempK^4) + m * targ_raw + b)^0.25
+'    Tcanopy = TargTempK - 273.15
+    
     '*** End of infrared thermometer measurements ***
 
     '*** Beginning of barometric pressure sensor measurements ***
+    If TimeIntoInterval (29,OUTPUT_INTERVAL,Min)
+      press_port_state = 1
+    EndIf
+    If TimeIntoInterval (1,OUTPUT_INTERVAL,Min)
+      press_port_state = 0
+    EndIf    
+    CDM_SW5 (VOLT116,CDMVOLT116_1_ADDR,PRESS_SWITCH_PORT,press_port_state)   
     CDM_VoltDiff (VOLT116,CDMVOLT116_1_ADDR,press_aux,1,mV5000,PRESS_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,PRESS_MULT,PRESS_OFFSET)
     '*** End of barometric pressure sensor measurements ***
 
