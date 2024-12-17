@@ -114,7 +114,7 @@ Const CDMVOLT116_1_DESC = "MUX"  ' CDM-VOLT116 descriptor
 '    for tall towers; as such, wiring colours may vary for cabling used).
 
 Const CSAT3B_SDM_ADDR = 3           ' CSAT3B SDM address
-Const AZ_SONIC = 210                ' CSAT3B azimuth
+Const AZ_SONIC = 261.5              ' CSAT3B azimuth
 
 'SDM-C1  SDM Data (green)
 'SDM-C2  SDM Clock (white)
@@ -261,8 +261,8 @@ Const PRESS_ANALOG_INPUT = 5
 Const PRESS_MULT = 0.24
 Const PRESS_OFFSET = 500
 
-'2H      signal (blue)
-'2L      signal reference (yellow)
+'3H      signal (blue)
+'G       signal reference (yellow)
 '5V      trigger (green)
 '12V     power (red)
 'G       power reference (clear? -> not black? CHECK THIS!)
@@ -299,10 +299,10 @@ Const NR_LW_OUTGOING_CAL = 1000/12.44     'Unique multiplier for CNR 4 longwave 
 ' -> Infrared thermometer user constants / wiring (VOLT116)
 
 Const IR_THERM_INPUT = 8 
-'Const IR_TEMP_INPUT = 31
-Const IR_RES_INPUT = 9
-'Const IR_TSENS_VX = X2
-Const IR_TSENS_IX = X2
+Const IR_TEMP_INPUT = 31
+'Const IR_RES_INPUT = 16
+Const IR_TSENS_VX = X2
+'Const IR_TSENS_IX = X2
 
 '*********************************************************** 
 ' There are TWO versions of wiring (CHECK THIS):
@@ -323,8 +323,8 @@ Const IR_TSENS_IX = X2
 '8H      Thermopile signal (white)
 '8L      Thermopile signal reference (black)
 'G       Thermopile ground (clear)
-'9H      Thermistor signal (green)
-'G       Thermistor signal reference (blue)
+'16H     Thermistor signal (green)
+'16L     Thermistor signal reference (blue)
 'X2      Thermistor excitation (red)
 
 '*********************************************************** 
@@ -342,10 +342,10 @@ Const IR_TSENS_IX = X2
 ' -> Auxiliary pyranometer user constants / wiring
 
 Const PYRAN_ANALOG_INPUT = 10
-Const PYRAN_MULT = -100
+Const PYRAN_MULT = 100
 
 '10H     signal (red)
-'11L     signal reference (black)
+'10L     signal reference (black)
 'G       ground (white)
 'G       shield (clear)
 
@@ -716,15 +716,14 @@ Const bC2 = -203.08
 Public SBTempC                    ' Sensor body temperature of detector thermistor, C
 Public SBTempK                    ' Sensor body temperature of detector thermistor, K
 Public targ_raw                   ' Thermopile output, mV
-'Public TargTempK                  ' Temperature of target, K
+Public TargTempK                  ' Temperature of target, K
 Public m                          ' Sensitivity to detector-target temperature difference
 Public b                          ' Offset to detector-target temperature difference
 Public Tcanopy                    ' Temperature of SI-131 target
-Public Rs_SI131                   ' Resistance of the SI-131 thermistor
 Units SBTempC = degC
 Units SBTempK = K
 Units targ_raw = mV
-'Units TargTempK = K
+Units TargTempK = K
 
 
 ' -> Soil temperature internal variables / tables
@@ -990,8 +989,8 @@ BeginProg
     '*** End of rain gauge measurement ***
 
     '*** Beginning of independent wind speed measurement
-    PulseCount(ws_aux_2m,1,WS1_PULSE_INPUT,1,1,WS_MULT,WS_OFFSET)
-    PulseCount(ws_aux_8m,1,WS2_PULSE_INPUT,1,1,WS_MULT,WS_OFFSET)
+    PulseCount(ws_aux_2m,1,WS1_PULSE_INPUT,5,1,WS_MULT,WS_OFFSET)
+    PulseCount(ws_aux_8m,1,WS2_PULSE_INPUT,5,1,WS_MULT,WS_OFFSET)
     If ws_aux_2m < 0.21 Then ws_aux_2m=0     
     '*** End of auxiliary wind speed measurement ***
 
@@ -1198,9 +1197,6 @@ BeginProg
 
     '*** Beginning of barometric pressure sensor measurements ***
     VoltSe (press_aux,1,mV5000,PRESS_ANALOG_INPUT,1,0,ANALOG_INTEGRATION,PRESS_MULT,PRESS_OFFSET)
-    
-    
-    CDM_VoltDiff (VOLT116,CDMVOLT116_1_ADDR,press_aux,1,mV5000,PRESS_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,PRESS_MULT,PRESS_OFFSET)
     '*** End of barometric pressure sensor measurements ***
 
     '*** Beginning of auxiliary wind speed and direction sensor measurements ***
@@ -1276,30 +1272,30 @@ BeginProg
     ' Measure raw thermopile
     CDM_VoltDiff (VOLT116,CDMVOLT116_1_ADDR,targ_raw,1,mV200,IR_THERM_INPUT,True,0,ANALOG_INTEGRATION,1.0,0)
     
-    ' Measure sensor body temperature thermistor
-    CDM_Resistance (VOLT116,CDMVOLT116_1_ADDR,Rs_SI131,1,mV5000,1,IR_TSENS_IX,1,100,True,True,0,ANALOG_INTEGRATION,1.0,0)
-    ' Calculation of m (slope) and b (intercept) coefficients for target temperature calculation
-    m = mC2 * SBTempC^2 + mC1 * SBTempC + mC0
-    b = bC2 * SBTempC^2 + bC1 * SBTempC + bC0    
-
-    ' Calculate the IR temperature from the Apogee SI-131
-    ' Steinhart-Hart equation to get detector temperature from thermistor resistance
-    SBTempK = 1/(SH_A+SH_B*LN(Rs_SI131)+SH_C*(LN(Rs_SI131^3)))
-    ' SI-131 detector sensitivity and offset at detector temperature
-    m = mC2 * SBTempK^2 + mC1 * SBTempK + mC0
-    b = bC2 * SBTempK^2 + bC1 * SBTempK + bC0
-    ' Target temperature
-    Tcanopy = ((SBTempK^4) + m * targ_raw + b)^0.25 - 273.15
-    
 '    ' Measure sensor body temperature thermistor
-'    CDM_Therm109 (VOLT116,CDMVOLT116_1_ADDR,SBTempC,1,IR_TEMP_INPUT,IR_TSENS_VX,0,ANALOG_INTEGRATION,1.0,0)
+'    CDM_Resistance (VOLT116,CDMVOLT116_1_ADDR,Rs_SI131,1,mV5000,IR_TSENS_IX,IR_TSENS_IX,1,100,True,True,0,ANALOG_INTEGRATION,1.0,0)
 '    ' Calculation of m (slope) and b (intercept) coefficients for target temperature calculation
 '    m = mC2 * SBTempC^2 + mC1 * SBTempC + mC0
-'    b = bC2 * SBTempC^2 + bC1 * SBTempC + bC0
-'    'Calculation of target temperature
-'    SBTempK = SBTempC + 273.15
-'    TargTempK = ((SBTempK^4) + m * targ_raw + b)^0.25
-'    Tcanopy = TargTempK - 273.15
+'    b = bC2 * SBTempC^2 + bC1 * SBTempC + bC0    
+
+'    ' Calculate the IR temperature from the Apogee SI-131
+'    ' Steinhart-Hart equation to get detector temperature from thermistor resistance
+'    SBTempK = 1/(SH_A+SH_B*LN(Rs_SI131)+SH_C*(LN(Rs_SI131^3)))
+'    ' SI-131 detector sensitivity and offset at detector temperature
+'    m = mC2 * SBTempK^2 + mC1 * SBTempK + mC0
+'    b = bC2 * SBTempK^2 + bC1 * SBTempK + bC0
+'    ' Target temperature
+'    Tcanopy = ((SBTempK^4) + m * targ_raw + b)^0.25 - 273.15
+    
+    ' Measure sensor body temperature thermistor
+    CDM_Therm109 (VOLT116,CDMVOLT116_1_ADDR,SBTempC,1,IR_TEMP_INPUT,IR_TSENS_VX,0,ANALOG_INTEGRATION,1.0,0)
+    ' Calculation of m (slope) and b (intercept) coefficients for target temperature calculation
+    m = mC2 * SBTempC^2 + mC1 * SBTempC + mC0
+    b = bC2 * SBTempC^2 + bC1 * SBTempC + bC0
+    'Calculation of target temperature
+    SBTempK = SBTempC + 273.15
+    TargTempK = ((SBTempK^4) + m * targ_raw + b)^0.25
+    Tcanopy = TargTempK - 273.15
     
     '*** End of infrared thermometer measurements ***
 
