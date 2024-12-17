@@ -387,9 +387,9 @@ Dim dly_data_out(7)                                      'Array used to temporar
 Dim process_time
 Dim buff_depth
 Dim PrevFileName As String *50                           'The name of the daily fast data file at time of closing
-Dim NewFileName As String *50                            'The filename that is constructed from date and time elements
 Dim NewFileFlag                                          'Status flag that goes high when file handle is closed (midnight)
-Dim timearray(6)                                         'Array that holds the date and time elements used to construct the new file name
+'Dim NewFileName As String *50                            'The filename that is constructed from date and time elements
+'Dim timearray(6)                                         'Array that holds the date and time elements used to construct the new file name
 Dim i As Long                                            'Main scan index variable.
 Dim n = 1
 Units process_time = us
@@ -911,7 +911,7 @@ EndTable
 'Time series data.
 DataTable (ts_data,TRUE,-1)
   DataInterval (0,SCAN_INTERVAL,mSec,100)
-  TableFile ("CRD:"&Status.SerialNumber(1,1)&".ts_data_",64,-1,0,1,Day,NewFileFlag,PrevFileName)
+  TableFile ("CRD:TOB3_"&STATION_NAME&".fast_data_",64,-1,0,1,Day,NewFileFlag,PrevFileName)
 
   '*** Beginning of sonic time series output ***
   Sample (5,sonic_raw(1),IEEE4)
@@ -925,24 +925,28 @@ DataTable (ts_data,TRUE,-1)
   
 EndTable
 
+DataTable (fast_files,TRUE,-1)
+  Sample(1,PrevFileName,String)
+EndTable
+
 '*** End output data tables ***
 '############################################################################
 
-'############################################################################
-'*** Begin subroutines ***
-
-Sub file_rename()
-  ' This subroutine creates a new filename and renames the file output to the card by tablefile
-  SplitStr(timearray(),TERNflux.TimeStamp(3,2),"",6,0)
-  NewFileName = _
-"CRD:TOB3_"&STATION_NAME&"_"&SCAN_INTERVAL&"ms_"&timearray(3)&"_"& _
-FormatFloat(timearray(2),"%02.0f")&"_"& _
-FormatFloat(timearray(1),"%02.0f")&".dat"
-FileRename(PrevFileName, NewFileName)
-EndSub
-
-'*** End subroutines ***
-'############################################################################
+''############################################################################
+''*** Begin subroutines ***
+'
+'Sub file_rename()
+'  ' This subroutine creates a new filename and renames the file output to the card by tablefile
+'  SplitStr(timearray(),TERNflux.TimeStamp(3,2),"",6,0)
+'  NewFileName = _
+'"CRD:TOB3_"&STATION_NAME&"_"&SCAN_INTERVAL&"ms_"&timearray(3)&"_"& _
+'FormatFloat(timearray(2),"%02.0f")&"_"& _
+'FormatFloat(timearray(1),"%02.0f")&".dat"
+'FileRename(PrevFileName, NewFileName)
+'EndSub
+'
+''*** End subroutines ***
+''############################################################################
 
 '############################################################################
 '*** Program ***
@@ -1180,9 +1184,9 @@ BeginProg
     CS7500 (irga_raw(1),1,LI7500_SDM_ADDR,6)
     '*** End of LI-7500(RS) measurements ***
 
-    '*** File rename subroutine ***
-    If NewFileFlag Then Call file_rename()
-    '*** End of file rename subroutine ***
+    '*** Begin capture filename closed when NewFileFlag goes high ***
+    If NewFileFlag Then CallTable fast_files
+    '*** Begin capture filename closed when NewFileFlag goes high ***
 
   NextScan
 
