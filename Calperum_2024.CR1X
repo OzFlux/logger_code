@@ -255,15 +255,14 @@ Const T_RH_RH_OFFSET = 0           'Unique offset for rh; HC2S3 = ?, HMP155A = 0
 '12V     Power (brown)
 'gnd     Signal reference / power ground (blue)
 
-' -> Barometric pressure sensor user constants / wiring (VOLT116)
+' -> Barometric pressure sensor user constants / wiring (CR1000X)
 
-Const PRESS_ANALOG_INPUT = 2
+Const PRESS_ANALOG_INPUT = 5
 Const PRESS_MULT = 0.24
 Const PRESS_OFFSET = 500
-Const PRESS_SWITCH_PORT = 1
 
-'10H     signal (blue)
-'10L     signal reference (yellow)
+'2H      signal (blue)
+'2L      signal reference (yellow)
 '5V      trigger (green)
 '12V     power (red)
 'G       power reference (clear? -> not black? CHECK THIS!)
@@ -291,7 +290,6 @@ Const NR_LW_OUTGOING_CAL = 1000/12.44     'Unique multiplier for CNR 4 longwave 
 '6H      Outgoing longwave radiation signal (brown)
 '6L      Outgoing longwave radiation signal reference (green)
 'gnd     short jumper wire to 5L
-'7H      Thermistor signal (white)
 '7H      PT100 signal (yellow)
 '7L      PT100 signal reference (green)
 'gnd     Shield (clear)
@@ -718,7 +716,7 @@ Const bC2 = -203.08
 Public SBTempC                    ' Sensor body temperature of detector thermistor, C
 Public SBTempK                    ' Sensor body temperature of detector thermistor, K
 Public targ_raw                   ' Thermopile output, mV
-Public TargTempK                  ' Temperature of target, K
+'Public TargTempK                  ' Temperature of target, K
 Public m                          ' Sensitivity to detector-target temperature difference
 Public b                          ' Offset to detector-target temperature difference
 Public Tcanopy                    ' Temperature of SI-131 target
@@ -726,7 +724,7 @@ Public Rs_SI131                   ' Resistance of the SI-131 thermistor
 Units SBTempC = degC
 Units SBTempK = K
 Units targ_raw = mV
-Units TargTempK = K
+'Units TargTempK = K
 
 
 ' -> Soil temperature internal variables / tables
@@ -775,7 +773,6 @@ Dim shf_cal(NMBR_SHF)
 
 Public press_aux
 Units press_aux = hPa
-Dim press_port_state
 
 ' -> Auxiliary pyranometer internal variables
 
@@ -1199,6 +1196,13 @@ BeginProg
 
     '*** Beginning of CR1000X measurements ***
 
+    '*** Beginning of barometric pressure sensor measurements ***
+    VoltSe (press_aux,1,mV5000,PRESS_ANALOG_INPUT,1,0,ANALOG_INTEGRATION,PRESS_MULT,PRESS_OFFSET)
+    
+    
+    CDM_VoltDiff (VOLT116,CDMVOLT116_1_ADDR,press_aux,1,mV5000,PRESS_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,PRESS_MULT,PRESS_OFFSET)
+    '*** End of barometric pressure sensor measurements ***
+
     '*** Beginning of auxiliary wind speed and direction sensor measurements ***
     BrHalf(wd_aux_2m,1,mv5000,WD1_ANALOG_INPUT,WD1_VX,1,2500,False,0,250,WD_MULT,0)       ' Wind direction at 2m
     If wd_aux_2m >= 360 OR wd_aux_2m <0 Then wd_aux_2m = 0
@@ -1298,17 +1302,6 @@ BeginProg
 '    Tcanopy = TargTempK - 273.15
     
     '*** End of infrared thermometer measurements ***
-
-    '*** Beginning of barometric pressure sensor measurements ***
-    If TimeIntoInterval (29,OUTPUT_INTERVAL,Min)
-      press_port_state = 1
-    EndIf
-    If TimeIntoInterval (1,OUTPUT_INTERVAL,Min)
-      press_port_state = 0
-    EndIf    
-    CDM_SW5 (VOLT116,CDMVOLT116_1_ADDR,PRESS_SWITCH_PORT,press_port_state)   
-    CDM_VoltDiff (VOLT116,CDMVOLT116_1_ADDR,press_aux,1,mV5000,PRESS_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,PRESS_MULT,PRESS_OFFSET)
-    '*** End of barometric pressure sensor measurements ***
 
     '*** Beginning of auxiliary pyranometer measurements ***
     CDM_VoltDiff (VOLT116,CDMVOLT116_1_ADDR,Fsd_aux,1,AutoRange,PYRAN_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,PYRAN_MULT,0)
