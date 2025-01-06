@@ -105,7 +105,7 @@ Const H2O_SIG_STRGTH_THRESHOLD = 0.7 'Unique value - filter gas analyzer H2O dat
 'G       power reference (black)
 '        power shield (clear)
 
-' -> Soil heat flux user constants / wiring (CR1000X - read calibration coefficienTs into memory on compile)
+' -> Soil heat flux user constants / wiring (CR1000X - read calibration coefficients into memory on compile)
 
 Const SHF_ANALOG_INPUT = 1           'Unique differential analog input channel.
 Const NMBR_SHF = 2                   'Unique number of HFP01 to measure.
@@ -185,7 +185,7 @@ Const T_RH_T_OFFSET = -40         'Unique offset for temperature; HC2S3 = -40, H
 ' -> 4-component radiation user constants / wiring (VOLT116)
 
 Const NR_ANALOG_INPUT = 3            'Unique differential analog input channel.
-Const NR_TsENS_ANALOG_INPUT = 13     'Unique single-ended analog input channel for body T
+Const NR_TSENS_ANALOG_INPUT = 13     'Unique single-ended analog input channel for body T
 Const NR_TsENS_VX = X2               'Unique voltage excitation channel for thermistor
 Const NR_SW_INCOMING_CAL = 1000/15   'Unique multiplier for CNR 4 shortwave incoming radiation (1000/sensitivity).
 Const NR_SW_OUTGOING_CAL = 1000/15   'Unique multiplier for CNR 4 shortwave outgoing radiation (1000/sensitivity).
@@ -249,7 +249,7 @@ Const SYSTEM_PWR_DEAD_BAND_WIDTH = 2
 ' -> Working variables
 
 Dim scan_count As Long                                   'Number scans executed.
-Dim slowsequence_finished_f As Boolean                   'Flag used to indicate the SlowSequence has finished iTs scan.
+Dim slowsequence_finished_f As Boolean                   'Flag used to indicate the SlowSequence has finished its scan.
 Dim slowsequence_disable_f As Boolean = TRUE             'Flag used to decimate statistics in main scan.
 Dim dly_data_out(7)                                      'Array used to temporarily store the lagged record.
 Dim sys_conf_var_file As Long                            'Filehandle for the file that contains the system configuration variables in the CPU.
@@ -347,7 +347,7 @@ Units Tsonic = degC
 units diag_sonic = arb
 units diag_sonic_aggregate = arb
 
-Dim diag_biTs_sonic(6) As Long             'Sonic warning flags.
+Dim diag_bits_sonic(6) As Long             'Sonic warning flags.
 Alias diag_bits_sonic(1) = sonic_amp_l_f   'Amplitude low warning flag.
 Alias diag_bits_sonic(2) = sonic_amp_h_f   'Amplitude high warning flag.
 Alias diag_bits_sonic(3) = sonic_sig_lck_f 'Poor signal lock warning flag.
@@ -355,7 +355,7 @@ Alias diag_bits_sonic(4) = sonic_del_T_f   'Delta temperature warning flag.
 Alias diag_bits_sonic(5) = sonic_aq_sig_f  'Sonic acquiring signals warning flag.
 Alias diag_bits_sonic(6) = sonic_cal_err_f 'Signature error in reading CSAT3A sonic head calibration data.
 units diag_bits_sonic = arb
-Dim diag_sonic_tmp As Long                 'Temporary variable used to break out the CSAT3A sonic head diagnostic biTs.
+Dim diag_sonic_tmp As Long                 'Temporary variable used to break out the CSAT3A sonic head diagnostic bits.
 
 Dim sonic_irga_raw(12)                     'EC150 w/CSAT3A sonic head (not lagged).
 
@@ -475,7 +475,7 @@ Alias diag_bits_irga(20) = irga_H2O_sig_strgth_f 'H2O signal strength warning fl
 Alias diag_bits_irga(21) = irga_cal_err_f        'Gas analyzer calibration data signature error.
 Alias diag_bits_irga(22) = irga_htr_ctrl_off_f   'Gas analyzer heater control disabled by EC100.
 Units diag_bits_irga = arb
-Dim diag_irga_tmp As Long                        'Temporary variable used to break out the gas analyzer diagnostic biTs.
+Dim diag_irga_tmp As Long                        'Temporary variable used to break out the gas analyzer diagnostic bits.
 
 Dim divisor                                 'Temporary variable used to find molar mixing ratio.
 Dim irga_disable_f As Boolean               'TRUE when EC150 sends bad data.
@@ -632,7 +632,7 @@ EndTable
 
 ' Constants
 
-'YSI 44031 Steinhart-Hart coefficienTs fit through -40 degrees C (239800 ohms), 20 degrees C (12260 ohms), and 80 degrees C (1458 ohms).
+'YSI 44031 Steinhart-Hart coefficients fit through -40 degrees C (239800 ohms), 20 degrees C (12260 ohms), and 80 degrees C (1458 ohms).
 Const A_SHH = 1.026613e-3              'Steinhart-Hart A coefficient.
 Const B_SHH = 2.395424e-4              'Steinhart-Hart B coefficient.
 Const C_SHH = 1.552561e-7              'Steinhart-Hart C coefficient.
@@ -662,7 +662,7 @@ Dim Tsoil_mean(NMBR_TSOIL)
 Units Tsoil_mean = degC
 Units del_Tsoil = degC
 
-DataTable (staTs_soil,TRUE,1)
+DataTable (stats_soil,TRUE,1)
   TableHide
   DataInterval (0,OUTPUT_INTERVAL,Min,1)
   Average (NMBR_TSOIL,Tsoil(1),IEEE4,slowsequence_disable_f)
@@ -847,9 +847,9 @@ EndTable
 
 
 'Time series data.
-DataTable (Ts_data,TRUE,-1)
+DataTable (ts_data,TRUE,-1)
   DataInterval (0,SCAN_INTERVAL,mSec,100)
-  TableFile ("CRD:"&Status.SerialNumber(1,1)&".Ts_data_",64,-1,0,1,Day,0,0)
+  TableFile ("CRD:TOB3_"&STATION_NAME&".fast_data_",64,-1,0,1,Day,0,0)
 
   '*** Beginning of sonic time series output ***
   Sample (5,sonic_irga_raw(1),IEEE4)
@@ -941,7 +941,7 @@ BeginProg
 
 
     'Save time series data.
-    CallTable Ts_data
+    CallTable ts_data
 
 
     If ( scan_count >= OFFSET ) Then
@@ -956,13 +956,13 @@ BeginProg
 
       'Extract the six warning flags from the sonic diagnostic word.
       For i = 1 To 6
-        diag_biTs_sonic(i) = diag_sonic_tmp AND &h1
+        diag_bits_sonic(i) = diag_sonic_tmp AND &h1
         diag_sonic_tmp = diag_sonic_tmp >> 1
       Next i
 
       Tsonic_absolute = Tsonic+273.15
 
-      'Filter data in the covariance instruction if the CSAT3A reporTs bad data.
+      'Filter data in the covariance instruction if the CSAT3A reports bad data.
       sonic_disable_f = (diag_sonic <> 0)
 
       'Load the arrays that hold the input data for the covariance instructions.
@@ -972,7 +972,7 @@ BeginProg
       If ( comp_cov_3d.Output(1,1) ) Then
         GetRecord (Tsonic_stdev,comp_cov_3d,1)
 
-        'Rotate the CSAT3A sonic head RHC system so the negative x-axis poinTs north.
+        'Rotate the CSAT3A sonic head RHC system so the negative x-axis points north.
         wnd_dir_compass = (360+AZ_SONIC-wnd_dir_sonic) MOD 360
 
         'Make the CSAT3A sonic head wind direction fall between 0 to 180 degrees and 0 to -180 degrees.
@@ -1021,7 +1021,7 @@ BeginProg
       'Convert the fast response air temperature to degrees C.
       Tc = Tc-273.15
 
-      'Filter data in the covariance instruction if the EC150 w/ CSAT3A sonic head reporTs bad data.
+      'Filter data in the covariance instruction if the EC150 w/ CSAT3A sonic head reports bad data.
       irga_disable_f = ( sig_str_CO2 < CO2_SIG_STRGTH_THRESHOLD ) OR ( sig_str_H2O < H2O_SIG_STRGTH_THRESHOLD ) OR (diag_irga <> 0 )
 
       'Load the arrays that hold the input data for the covariance instructions.
@@ -1065,9 +1065,9 @@ BeginProg
 
 
       '*** Beginning of temperature and humidity processing ***
-      CallTable staTs_tmpr_rh
-      If ( staTs_tmpr_rh.Output(1,1) ) Then
-        GetRecord (Ta_sensor_mean,staTs_tmpr_rh,1)
+      CallTable stats_tmpr_rh
+      If ( stats_tmpr_rh.Output(1,1) ) Then
+        GetRecord (Ta_sensor_mean,stats_tmpr_rh,1)
 
         AH_sensor_mean = e_sensor_mean/((Ta_sensor_mean+273.15)*RV)
         rho_d_tmpr_rh_mean = (amb_press_mean-e_sensor_mean)/((Ta_sensor_mean+273.15)*RD)
@@ -1092,9 +1092,9 @@ BeginProg
 
 
       '*** Beginning of soil temperature processing ***
-      CallTable staTs_soil
-      If ( staTs_soil.Output(1,1) ) Then
-        GetRecord (Tsoil_mean(1),staTs_soil,1)
+      CallTable stats_soil
+      If ( stats_soil.Output(1,1) ) Then
+        GetRecord (Tsoil_mean(1),stats_soil,1)
 
         'Compute the change in soil temperature.
         For i = 1 To NMBR_TSOIL
@@ -1155,7 +1155,7 @@ SlowSequence
     Fld = Fld*NR_LW_INCOMING_CAL
     Flu = Flu*NR_LW_OUTGOING_CAL
 
-    CDM_BrHalf (VOLT116,CDMVOLT116_1_ADDR,X_nr,1,mV5000,NR_TsENS_ANALOG_INPUT,NR_TsENS_VX,1,2500,True,0,ANALOG_INTEGRATION,1.0,0)
+    CDM_BrHalf (VOLT116,CDMVOLT116_1_ADDR,X_nr,1,mV5000,NR_TSENS_ANALOG_INPUT,NR_TsENS_VX,1,2500,True,0,ANALOG_INTEGRATION,1.0,0)
     ln_R = LOG (1000*X_nr/(1-X_nr))
     Tb = (1/(A_SHH+B_SHH*ln_R+C_SHH*ln_R*ln_R*ln_R))
 
@@ -1275,5 +1275,5 @@ SlowSequence
 
 
     slowsequence_finished_f = TRUE
-  NexTscan
+  NextScan
 EndProg
