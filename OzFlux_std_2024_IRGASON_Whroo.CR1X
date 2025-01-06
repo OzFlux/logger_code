@@ -102,10 +102,10 @@ Const T_RH_T_MULT = 0.14          'Unique multiplier for temperature; HC2S3 = 0.
 Const T_RH_T_OFFSET = -80         'Unique offset for temperature; HC2S3 = -40, HMP155A = -80, or HMP45C = -40.
 
 '1H      Temperature signal (yellow)
-'1L      Temperature signal reference (orange in loop with 11L, was purple, was white)  --> Jumper to white
+'1L      Temperature signal reference (white)
 'gnd     Shield
 '2H      RH signal (blue)
-'2L      RH signal reference (orange, was purple, was white)
+'2L      RH signal reference (jumper from 1L)
 '12V     Power (red)
 'G       Power reference (black)
 
