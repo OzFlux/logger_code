@@ -45,23 +45,17 @@
 'IRGASON                    -> User constants and wiring: "IRGASON user constants / wiring"
 '                           -> Internal constants, variables and tables: "CSAT3B internal constants / variables / tables"
 
-'Soil moisture              -> User constants and wiring: "Soil moisture user constants / wiring"
-'                           -> Internal variables: "Soil moisture internal variables"
-
-'Rain gauge                 -> User constants and wiring: "Rain gauge user constants / wiring"
-'                           -> Internal variables: "Rain gauge internal variables"
-
-'Soil heat flux             -> User constants and wiring: "Soil heat flux user constants / wiring"
-'                           -> Internal variables: "Soil heat flux internal variables"
-
-'Soil temperature           -> User constants / wiring: "Soil temperature user constants / wiring"
-'                           -> Internal constants and variables: "Soil temperature internal variables / tables" 
-
 'Air temperature / humidity -> User constants and wiring: "T and RH user constants / wiring"
 '                           -> Internal variables and tables: "T and RH internal variables / tables"
 
 'Radiation                  -> User constants and wiring: "4-component radiation user constants / wiring"
 '                           -> Internal constants and variables: "4-component radiation internal constants / variables"
+
+'PPFD                       -> User constants and wiring: "PAR user constants / wiring"
+'                           -> Internal variables: "PAR internal variables"
+
+'Rain gauge                 -> User constants and wiring: "Rain gauge user constants / wiring"
+'                           -> Internal variables: "Rain gauge internal variables"
 
 '############################################################################
 
@@ -70,8 +64,12 @@
 
 ' -> Station-based user constants
 
-Const STATION_NAME = "<YOURSITEHERE>_EC"
+Const STATION_NAME = "Whroo_EC"
 Const PAKBUS_ADDR = 1
+'server information for data upload
+Const Server = "live.fluxdata.cloud.edu.au"
+Const User = "logger"
+Const Pass = ""
 
 ' -> General user constants
 
@@ -97,69 +95,6 @@ Const H2O_SIG_STRGTH_THRESHOLD = 0.7 'Unique value - filter gas analyzer H2O dat
 'G       power reference (black)
 '        power shield (clear)
 
-' -> Soil heat flux user constants / wiring (CR1000X - read calibration coefficients into memory on compile)
-
-Const SHF_ANALOG_INPUT = 1           'Unique differential analog input channel.
-Const NMBR_SHF = 2                   'Unique number of HFP01 to measure.
-Const SHF_FIELDS = "Fg_01,Fg_02"     'Field names
-Const SHF_CAL_1 = -33.1              'Unique multiplier for HFP #1 (1000/sensitivity).
-Const SHF_CAL_2 = 15.11              'Unique multiplier for HFP #2 (1000/sensitivity).
-Data SHF_CAL_1 
-Data SHF_CAL_2
-
-'HFP01 #1
-'1H      Signal (white)
-'1L      Signal reference (green)
-'gnd     Shield (clear)
-'HFP01 #2
-'2H      Signal (white)
-'2L      Signal reference (green)
-'gnd     Shield (clear)
-
-' -> Soil temperature user constants / wiring (CR1000X)
-
-Const TSOIL_ANALOG_INPUT = 3          'Unique differential analog input channel.
-Const NMBR_TSOIL = 2                  'Unique number of TCAV to measure.
-
-'TCAV #1
-'11H     Signal (purple)
-'11L     Signal reference (red)
-'gnd     Shield (clear)
-
-'TCAV #2
-'12H     Signal (purple)
-'12L     Signal reference (red)
-'gnd     Shield (clear)
-
-' -> Soil moisture user constants / wiring (CR1000X)
-
-Const CS65X_1_SDI12_PORT = C5         'Unique control port.
-Const CS65X_2_SDI12_PORT = C7         'Unique control port.
-Const NMBR_CS65X = 2                 'Unique number of CS65X to measure.
-
-'C5      SDI-12 data #1 (SDI-12 address = 0) (green)
-'C7      SDI-12 data #2 (SDI-12 address = 0) (green)
-'G       RS-232 Rx #1 (orange)
-'        RS-232 Rx #2 (orange)
-
-'12V     SDI-12 power #1 (red)
-'        SDI-12 power #2 (red)
-'G       SDI-12 data/power reference #1 (black)
-'        Shield #1 (clear)
-'        SDI-12 data/power reference #2 (black)
-'        Shield #2 (clear)
-
-'Search for text "Duplicate above for additional probes." to add code for additional probes.
-
-' -> Rain gauge user constants / wiring (CR1000X)
-
-Const RAIN_PULSE_INPUT = P1        'Unique pulse input channel for tipping bucket.
-Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
-
-'P1      Signal (black)
-'G       Signal reference (white)
-'        Shield (clear)
-
 ' -> T and RH user constants / wiring (CR1000X)
 
 Const T_RH_ANALOG_INPUT = 1       'Unique single-ended input channel for temperature and humidity probe.
@@ -176,31 +111,47 @@ Const T_RH_T_OFFSET = -80         'Unique offset for temperature; HC2S3 = -40, H
 
 ' -> 4-component radiation user constants / wiring (CR1000X)
 
-Const NR_ANALOG_INPUT = 2            'Unique differential analog input channel.
-Const NR_TSENS_ANALOG_INPUT = 11     'Unique single-ended analog input channel for body T
-Const NR_TSENS_VX = VX1              'Unique voltage excitation channel for thermistor
+Const NR_ANALOG_INPUT = 3            'Unique differential analog input channel.
+Const NR_TSENS_ANALOG_INPUT = 13     'Unique single-ended analog input channel for body T
+Const NR_TSENS_VX = VX4              'Unique voltage excitation channel for thermistor
 Const NR_SW_INCOMING_CAL = 1000/15   'Unique multiplier for CNR 4 shortwave incoming radiation (1000/sensitivity).
 Const NR_SW_OUTGOING_CAL = 1000/15   'Unique multiplier for CNR 4 shortwave outgoing radiation (1000/sensitivity).
 Const NR_LW_INCOMING_CAL = 1000/8    'Unique multiplier for CNR 4 longwave incoming radiation (1000/sensitivity).
 Const NR_LW_OUTGOING_CAL = 1000/8    'Unique multiplier for CNR 4 longwave outgoing radiation (1000/sensitivity).
 
-'2H      Incoming shortwave radiation signal (red)
-'2L      Incoming shortwave radiation signal reference (blue)
+'3H      Incoming shortwave radiation signal (red)
+'3L      Incoming shortwave radiation signal reference (blue)
 'gnd     Shield (clear)
 '        short jumper wire to 5L
-'3H      Outgoing shortwave radiation signal (white)
-'3L      Outgoing shortwave radiation signal reference (black)
+'4H      Outgoing shortwave radiation signal (white)
+'4L      Outgoing shortwave radiation signal reference (black)
 'gnd     short jumper wire to 6L
-'4H      Incoming longwave radiation signal (gray)
-'4L      Incoming longwave radiation signal reference (yellow)
+'5H      Incoming longwave radiation signal (gray)
+'5L      Incoming longwave radiation signal reference (yellow)
 'gnd     short jumper wire to 7L
-'5H      Outgoing longwave radiation signal (brown)
-'5L      Outgoing longwave radiation signal reference (green)
+'6H      Outgoing longwave radiation signal (brown)
+'6L      Outgoing longwave radiation signal reference (green)
 'gnd     short jumper wire to 5L
-'6H      Thermistor signal (white)
+'7H      Thermistor signal (white)
 'gnd     Thermistor signal reference (black)
 '        Shield (clear)
 'VX1     Thermistor excitation (red)
+
+' -> PAR user constants / wiring (CR1000X)
+Const PAR_ANALOG_INPUT = 14 ' Unique SE analog input channel
+Const PAR_MULT = 100
+
+'7L      PAR signal (?)
+'gnd     PAR signal reference (?)
+
+' -> Rain gauge user constants / wiring (CR1000X)
+
+Const RAIN_PULSE_INPUT = P1        'Unique pulse input channel for tipping bucket.
+Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
+
+'P1      Signal (black)
+'G       Signal reference (white)
+'        Shield (clear)
 
 ' *** End user-customised station / logger / instrument constants and wiring ***
 ' *** CUSTOMISE THE BELOW AT YOUR OWN RISK!!!
@@ -337,7 +288,8 @@ units Uy = m/s
 units Uz = m/s
 Units Tsonic = degC
 units diag_sonic = arb
-units diag_sonic_aggregate = arb
+Units diag_sonic_aggregate = arb
+Dim U_rslt                                 'Used to calculate Maximum resultant wind speed in an averaging period (Markus)
 
 Dim diag_bits_sonic(6) As Long             'Sonic warning flags.
 Alias diag_bits_sonic(1) = sonic_amp_l_f   'Amplitude low warning flag.
@@ -356,7 +308,7 @@ Dim Tsonic_absolute                            'Sonic temperature (K).
 Dim AZ_SONIC_prev
 
 Dim cov_array_sonic(1,4)                   'Arrays used to hold the input data for the covariance instructions (CSAT3A sonic head).
-Dim cov_out_sonic(18)                      'CSAT3A sonic head statistics.
+Dim cov_out_sonic(19)                      'CSAT3A sonic head statistics.
 Alias cov_out_sonic(1) = Fh                'Sensible heat flux using sonic temperature.
 Alias cov_out_sonic(2) = tau               'Momentum flux.
 Alias cov_out_sonic(3) = u_star            'Friction velocity.
@@ -375,6 +327,7 @@ Alias cov_out_sonic(15) = rslt_wnd_spd
 Alias cov_out_sonic(16) = wnd_dir_sonic
 Alias cov_out_sonic(17) = std_wnd_dir
 Alias cov_out_sonic(18) = wnd_dir_compass
+Alias cov_out_sonic(19) = wnd_spd_max
 units Fh = W/m^2
 units tau = kg/(m s^2)
 units u_star = m/s
@@ -389,10 +342,17 @@ units Uy_stdev = m/s
 units Uy_Uz_cov = (m/s)^2
 units Uz_stdev = m/s
 units wnd_spd = m/s
+Units wnd_spd_max = m/s   ' wind gust
 units rslt_wnd_spd = m/s
 units wnd_dir_sonic = degrees
 units std_wnd_dir = degrees
 units wnd_dir_compass = degrees
+' Upload related (Markus
+Public Upload_status_TERNflux
+'Public Upload_status_TERNflux_ssh
+Public Upload_status_diagnostic
+Public Upload_status_ts_data
+Public TStamp As String * 9 ' create a daily timestamp for ts_data
 
 ' Tables
 
@@ -406,6 +366,8 @@ DataTable (comp_cov_3d,TRUE,1)
   DataInterval (0,OUTPUT_INTERVAL,Min,1)
   Covariance (4,cov_array_sonic(1,1),IEEE4,sonic_disable_f,10)
   WindVector (1,Uy,Ux,IEEE4,sonic_disable_f,0,1,2)
+  'Compute the maximum of wind speed in an averaging interval (Markus)
+  Maximum (1, U_rslt, IEEE4, sonic_disable_f, False)
 EndTable
 
 ' -> EC150 internal constants / variables / tables / menus
@@ -644,6 +606,10 @@ Units nr = W/m^2
 units albedo = arb
 units Tb = K
 
+' -> PAR internal variables
+Public PAR
+Units PAR = umol/s/m^2
+
 ' -> Rain gauge internal variables
 
 ' Variables
@@ -691,6 +657,8 @@ DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
   Totalize (1,sonic_del_T_f,IEEE4,FALSE)
   Totalize (1,sonic_aq_sig_f,IEEE4,FALSE)
   Totalize (1,sonic_cal_err_f,IEEE4,FALSE)
+  'Sample  (1,cov_out_sonic(19),IEEE4,FALSE,0) ' gust
+  Sample (1, wnd_spd_max, IEEE4)  'Maximum wind speed. Markus
   '*** End of CSAT3A sonic head output data ***
 
   '*** Beginning of EC150 output data ***
@@ -744,6 +712,10 @@ DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
   Average (9,Fn,IEEE4,slowsequence_disable_f)
   '*** End of CNR 4 output data ***
 
+  '*** Beginning of PAR output data ***
+  Average(1,PAR,IEEE4,False)
+  '*** End of PAR output data ***  
+  
   '*** Beginning of TE525 output data ***
   Totalize (1,rain,IEEE4,FALSE)
   '*** End of TE525 output data ***
@@ -783,7 +755,7 @@ EndTable
 'Time series data.
 DataTable (ts_data,TRUE,-1)
   DataInterval (0,SCAN_INTERVAL,mSec,100)
-  TableFile ("CRD:"&Status.SerialNumber(1,1)&".ts_data_",64,-1,0,1,Day,0,0)
+  TableFile ("CRD:TOB3_"&STATION_NAME&".fast_data_",64,-1,0,1,Day,0,0)
 
   '*** Beginning of sonic time series output ***
   Sample (5,sonic_irga_raw(1),IEEE4)
@@ -881,6 +853,7 @@ BeginProg
 
       Move (Ux,5,dly_data_out(1),5) 'Ux, Uy, Uz, Tsonic, diag_sonic
 
+      U_rslt = SQR(Ux*Ux + Uy*Uy + Uz*Uz) 'Maximum wind speed (Markus)
       diag_sonic_tmp = IIF ((diag_sonic <> NAN) AND (diag_sonic <> -1),diag_sonic,&h3f)
       diag_sonic_aggregate = diag_sonic_aggregate OR diag_sonic_tmp
 
@@ -1055,7 +1028,7 @@ SlowSequence
     Battery (Vbat)
 
     '*** Beginning of temperature and humidity probe measurements ***
-    VoltSe (T_tmpr_rh,2,mV1000,T_RH_ANALOG_INPUT,1,0,ANALOG_INTEGRATION,1.0,0)
+    VoltDiff (T_tmpr_rh,2,mV1000,T_RH_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,1.0,0)
     T_tmpr_rh = T_tmpr_rh*T_RH_T_MULT+T_RH_T_OFFSET
     RH_tmpr_rh = RH_tmpr_rh*0.1
     VaporPressure (e_tmpr_rh,T_tmpr_rh,RH_tmpr_rh)
@@ -1083,7 +1056,12 @@ SlowSequence
     Flu = Flu+(5.67e-8*Tb*Tb*Tb*Tb)
     '*** End of CNR 4 measurements ***
 
-    'Update CPU configuration file if sonic azimuth has changed.
+    '*** Beginning of PAR measurements
+    VoltSe(PAR,1,AutoRange,PAR_ANALOG_INPUT,False,0,50,1,0)
+    If PAR<0 Then PAR=0
+    'Calculate photon flux density
+    PAR=PAR*PAR_MULT
+    '*** End of PAR measurements    'Update CPU configuration file if sonic azimuth has changed.
     If ( AZ_SONIC_prev <> AZ_SONIC ) Then
       Erase (curr_value_str)
       Erase (prev_value_str)
@@ -1156,7 +1134,21 @@ SlowSequence
     EndIf
     '*** End of system power control ***
 
-
     slowsequence_finished_f = TRUE
+
+  NextScan
+
+  SlowSequence
+  
+  ' Markus ftp upload
+  'Scan (OUTPUT_INTERVAL ,Min,5,0)
+    Scan (5 ,Min,5,0)
+    Delay(1, 25, Sec) ' Spread out the delay to take the load off simultaneous uploads to server
+    TStamp = Public.Timestamp(5,1)
+
+    Upload_status_TERNflux   = FTPClient (Server,User,Pass,"TERNflux","/mnt/data/ftp/WhrooCR1/Whroo_EC_TERNflux.dat",28,0,0,0,-1008)
+    Upload_status_diagnostic = FTPClient (Server,User,Pass,"diagnostic","/mnt/data/ftp/WhrooCR1/Whroo_EC_diagnostic.dat",28,0,0,0,-1008)
+    Upload_status_ts_data    = FTPClient (Server,User,Pass,"Ts_data","/mnt/data/ftp/WhrooCR1/Whroo_EC_" & TStamp & "ts_data.dat",28,0,0,0,-1008)
+  
   NextScan
 EndProg
