@@ -329,7 +329,7 @@ Alias cov_out_sonic(17) = std_wnd_dir
 Alias cov_out_sonic(18) = wnd_dir_compass
 Alias cov_out_sonic(19) = wnd_spd_max
 units Fh = W/m^2
-units tau = kg/(m s^2)
+Units tau = kg/(m s^2)
 units u_star = m/s
 Units Tsonic_stdev = degC
 Units Tsonic_Ux_cov = degC m/s
@@ -346,7 +346,7 @@ Units wnd_spd_max = m/s   ' wind gust
 units rslt_wnd_spd = m/s
 units wnd_dir_sonic = degrees
 units std_wnd_dir = degrees
-units wnd_dir_compass = degrees
+Units wnd_dir_compass = degrees
 ' Upload related (Markus
 Public Upload_status_TERNflux
 'Public Upload_status_TERNflux_ssh
@@ -362,12 +362,12 @@ DataTable (delay_3d,TRUE,OFFSET)
 EndTable
 
 DataTable (comp_cov_3d,TRUE,1)
-  TableHide
+  'TableHide
   DataInterval (0,OUTPUT_INTERVAL,Min,1)
   Covariance (4,cov_array_sonic(1,1),IEEE4,sonic_disable_f,10)
   WindVector (1,Uy,Ux,IEEE4,sonic_disable_f,0,1,2)
   'Compute the maximum of wind speed in an averaging interval (Markus)
-  Maximum (1, U_rslt, IEEE4, sonic_disable_f, False)
+  Maximum (1,U_rslt,IEEE4,sonic_disable_f,False)
 EndTable
 
 ' -> EC150 internal constants / variables / tables / menus

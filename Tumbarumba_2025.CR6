@@ -1,0 +1,980 @@
+'CR6 Datalogger
+' The datalogger type listed on line 1 determines the default instruction set,
+' compiler, and help files used for a program that uses the .DLD or .CRB program
+' extension. These options can also be set using the Set Datalogger Type dialog box
+' (CRBasic Editor|Tools|Set Datalogger Type).
+
+' To do (IMcHugh):
+' check all added measurements are in data tables
+' put instrument order in constants and variables section in same order as the user-set constants and wiring
+
+' The sign convention for the fluxes is positive away from the surface and
+' negative towards the surface.
+'
+' Before computing online fluxes, the datalogger will introduce lags into the
+' eddy covariance data to account for the fixed instrument delays. The lags are
+' dependent on the instrument setting and/or the scan interval. Search for "Fixed
+' inherent lag" and set the delay to the appropriate value. The raw data is not
+' lagged.
+'
+' The site attendant must load in several constants and calibration values.
+' Search for the text string "unique" to find the locations where unique
+' constants and calibration values are entered.
+
+'*** Unit Definitions ***
+
+'Symbol   Units
+'degC        Celsius
+'degrees  degrees (angle)
+'g        grams
+'J        Joules
+'kg       kilograms
+'kPa      kilopascals
+'m        meters
+'mg       milligrams
+'mmol     millimoles
+'mol      moles
+'s        seconds
+'umol     micromols
+'uSeconds microseconds
+'V        volts
+'W        Watts
+
+'*** Search strings ***
+
+'General                    -> Station-based user constants: "Station-based user constants"
+'                           -> Other user constants: "General user constants"
+'                           -> Scientific constants: "Scientific constants"
+
+'VOLT116                    -> User constants: "VOLT116 user constants"
+
+'CSAT3B                     -> User constants and wiring: "CSAT3B user constants / wiring"
+'                           -> Internal constants, variables and tables: "CSAT3B internal constants / variables / tables"
+
+'LI7500RS                   -> User constants and wiring: "LI7500RS user constants / wiring"
+'                           -> Internal constants, variables and tables: "LI7500RS internal constants / variables / tables"
+
+'Rain gauge                 -> User constants and wiring: "Rain gauge user constants / wiring"
+'                           -> Internal variables: "Rain gauge internal variables"
+
+'PPFD                       -> User constants and wiring: "PAR user constants / wiring"
+'                           -> Internal variables: "PAR internal variables"
+
+'Ancillary wind sensor      -> User constants and wiring: ""
+'                           -> Internal variables: "Ancillary wind sensing internal variables"
+
+'Air temperature / humidity -> User constants and wiring: "T and RH user constants / wiring"
+'                           -> Internal variables and tables: "T and RH internal variables / tables"
+
+'Radiation                  -> User constants and wiring: "4-component radiation user constants / wiring"
+'                           -> Internal constants and variables: "4-component radiation internal constants / variables"
+
+'############################################################################
+
+'############################################################################
+' *** Begin user-customised station / logger / instrument constants and wiring ***
+
+' -> Station-based user constants
+
+Const STATION_NAME = "Tumbarumba_EC"
+Const PAKBUS_ADDR = 1
+
+' Markus
+' server information for data upload
+Const Server = "live.fluxdata.cloud.edu.au"
+'Const FTP_Port = 4221
+Const User = "logger"
+Const Pass = ""
+Const Folder = "/mnt/data/ftp/Tumbarumba/"
+
+
+
+
+' -> General user constants
+
+Const NUM_DAY_CRD = 200               ' Unique value, number of days of flux data to store on a 16 GB CF card (44 days = 2 GB). This value will vary with configuration.
+Const SDM_PER = 30                    ' Unique value, default SDM clock speed.
+Const ANALOG_INTEGRATION = _50Hz      ' Slow sequence analog measurement integration time, _60Hz or _50Hz.
+Const SCAN_INTERVAL = 100             ' Unique value, measurement rate 100 ms (10 Hz) or 50 ms (20 Hz).
+Const OUTPUT_INTERVAL = 30            ' Unique value, online flux data output interval in minutes.
+
+' -> VOLT116 user constants (constants only - wiring N/A, connection via CPI)
+
+Const CDMVOLT116_1_SN = 5271              ' CDM-VOLT116 serial number
+Const CDMVOLT116_1_ADDR = 1               ' CDM-VOLT116 CPI address
+Const CDMVOLT116_1_DESC = "Mast_top_MUX"  ' CDM-VOLT116 descriptor
+
+' -> CSAT3B user constants / wiring (CR6 -> note that CSAT and IRGA signals
+'    are combined at top of mast and brought down to logger on a single cable
+'    for tall towers; as such, wiring colours may vary for cabling used).
+
+Const CSAT3B_SDM_ADDR = 3          ' CSAT3B SDM address
+Const AZ_SONIC = 195                ' CSAT3B azimuth
+
+'SDM-C1  SDM Data (green)
+'SDM-C2  SDM Clock (white)
+'SDM-C3  SDM Enable (brown)
+'G       SDM reference (black)
+'        SDM shield (clear)
+
+'+12V    power (red)
+'G       power reference (black)
+'        power shield (clear)
+
+' -> LI7500RS user constants / wiring (CR6 - as per CSAT above)
+
+Const LI7500_SDM_ADDR = 7          ' IRGA SDM address
+Const IRGA_SIG_STR_THRESHOLD = 60  ' Unique value - filter LI-7500(RS) data with signal strength < SIG_STR_THRESHOLD.
+
+'SDM-C1  SDM Data (gray/blue)
+'SDM-C2  SDM Clock (blue/white)
+'SDM-C3  Enable (brown/brown)
+'G       SDM reference (black/black)
+'        SDM shield (white/bare)
+
+'+12V    power (red with white/red)
+'G       power reference (red with black/black)
+'        ground (green/not used)
+
+' -> Rain gauge user constants / wiring (CR6)
+
+'Note: for the CR6 and CR1000X, triggering conflicts may occur when a companion terminal is used for
+'a triggering instruction such As TimerInput(), PulseCount(), OR WaitDigTrig(). For
+'example, If the WindSonic4 Is connected To C3 on a CR1000X, C4 cannot be used in the
+'TimerInput(), PulseCount(), OR WaitDigTrig() instructions. Hence, we put the pulse port at U3.
+
+Const RAIN_PULSE_INPUT = U1        'Unique pulse input channel for tipping bucket.
+Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
+
+'U3      Signal (black)
+'G       Signal reference (white)
+'        Shield (clear)
+
+' -> PAR user constants / wiring Li190b (Volt116) or Apogee CS310 (CR1000)
+Const PAR_ANALOG_INPUT = 9 ' Unique SE analog input channel or Volt116 input
+Const PAR_MULT = 218.4207 ' calculated as 1000 / (7.58 uA sensor Calib factor * 0.604), see manual Campbell Li190b!
+
+'Apogee CS310 #4951, mult = 100.0 on CR1000x
+'PPFD #1
+'5H (=SE9) Signal (white)
+'gnd       Black
+'gnd       Clear
+
+'Licor Li190b on Volt116 mult = 7.58uA/1000umol, see manual for multiplier
+' PPFD #1
+'1H Red   Signal
+'1L Black Reference
+'gnd      Clear
+'Jumper 1L to gnd
+
+' -> T and RH user constants / wiring (VOLT116)
+
+Const T_RH_MAIN_INPUT = 1          'Unique differential input channel for temperature and humidity probe.
+Const T_RH_T_MULT = 0.7            'Unique multiplier for temperature; HC2S3 = 0.1, HMP155A = 0.14, or HMP45C = 0.1.
+Const T_RH_T_OFFSET = -40          'Unique offset for temperature; HC2S3 = -40, HMP155A = -80, or HMP45C = -40.
+Const T_RH_RH_MULT = 0.5           'Unique multiplier for rh; HC2S3 = ?, HMP155A = 0.001, or HMP45C = ?.
+Const T_RH_RH_OFFSET = 0           'Unique offset for rh; HC2S3 = ?, HMP155A = 0, or HMP45C = ?.
+
+'1H      Temperature signal (yellow)
+'1L      Temperature signal reference (orange in loop with 11L, was purple, was white)  --> Jumper to white
+'gnd     Shield
+'2H      RH signal (blue)
+'2L      RH signal reference (orange, was purple, was white)
+'12V     Power (red)
+'G       Power reference (black)
+
+' -> 4-component radiation user constants / wiring (VOLT116)
+
+Const NR_ANALOG_INPUT = 3                'Unique differential analog input channel for raw measurements
+Const NR_TSENS_ANALOG_INPUT = 13         'Unique single-ended analog input channel for body T
+Const NR_TSENS_VX = X2                   'Unique voltage excitation channel for thermistor
+Const NR_SW_INCOMING_CAL = 1000/11    'Unique multiplier for CNR 4 shortwave incoming radiation (1000/sensitivity).
+Const NR_SW_OUTGOING_CAL = 1000/11    'Unique multiplier for CNR 4 shortwave outgoing radiation (1000/sensitivity).
+Const NR_LW_INCOMING_CAL = 1000/9     'Unique multiplier for CNR 4 longwave incoming radiation (1000/sensitivity).
+Const NR_LW_OUTGOING_CAL = 1000/9     'Unique multiplier for CNR 4 longwave outgoing radiation (1000/sensitivity).
+
+'3H      Incoming shortwave radiation signal (red)
+'3L      Incoming shortwave radiation signal reference (blue)
+'gnd     Shield (clear)
+'        short jumper wire to 5L
+'4H      Outgoing shortwave radiation signal (white)
+'4L      Outgoing shortwave radiation signal reference (black)
+'gnd     short jumper wire to 6L
+'5H      Incoming longwave radiation signal (gray)
+'5L      Incoming longwave radiation signal reference (yellow)
+'gnd     short jumper wire to 7L
+'6H      Outgoing longwave radiation signal (brown)
+'6L      Outgoing longwave radiation signal reference (green)
+'gnd     short jumper wire to 5L
+'7H      Thermistor signal (white)
+'gnd     Thermistor signal reference (black)
+'        Shield (clear)
+'X1      Thermistor excitation (red)
+
+' -> quantum sensor incoming
+
+' -> quantum sensor outgoing
+
+' *** End user-customised station / logger / instrument constants and wiring ***
+' *** CUSTOMISE THE BELOW AT YOUR OWN RISK!!!
+'############################################################################
+
+'############################################################################
+' *** Begin internal constants, variables, working data tables ***
+
+' -> Internal and secondary constants
+Const OFFSET = 17                                                  'An offset delay that will be introduced to the eddy covariance data used to compute online fluxes.
+Const SCAN_BUFFER_SIZE = 60*INT (1000/SCAN_INTERVAL)               'Compute a 60 second scan buffer.
+Const NUM_DAY_CPU = 1                                              'Number of days of flux data to store on the CPU.
+Const FLUX_SIZE_CPU = Ceiling ((NUM_DAY_CPU*1440)/OUTPUT_INTERVAL) 'Size of flux data table on CPU [days].
+Const FLUX_SIZE_CRD = Ceiling ((NUM_DAY_CRD*1440)/OUTPUT_INTERVAL) 'Size of flux data table on CRD [days].
+
+' -> Scientific constants
+Const MU_WPL = 28.97/18.02            'Ratio of the molecular weight of dry air to that of water vapor.
+Const R = 8.3143e-3                   'Universal gas constant [kPa m^3/(K mol)].
+Const RD = R/28.97                    'Gas constant for dry air [kPa m^3/(K g)].
+Const RV = R/18.02                    'Gas constant for water vapor [kPa m^3/(K g)].
+Const SB = 5.67E-8                    'Stefan Boltzmann constant
+Dim Lv                                'Latent heat of vaporization [J/g].
+Dim Cp                                'Specific heat capacity [J/(kg K)].
+
+' -> Logger diagnostic variables
+Public Tpanel
+Public Vbat
+Units Tpanel = degC
+Units Vbat = V
+
+' -> Working variables
+Dim scan_count As Long                                   'Number scans executed.
+Dim slowsequence_finished_f As Boolean                   'Flag used to indicate the SlowSequence has finished its scan.
+Dim slowsequence_disable_f As Boolean = TRUE             'Flag used to decimate statistics in main scan.
+Dim dly_data_out(7)                                      'Array used to temporarily store the lagged record for sonic or irga.
+Dim process_time
+Dim buff_depth
+Dim PrevFileName As String *50                           'The name of the daily fast data file at time of closing
+Dim NewFileName As String *50                            'The filename that is constructed from date and time elements
+Dim NewFileFlag                                          'Status flag that goes high when file handle is closed (midnight)
+Dim timearray(6)                                         'Array that holds the date and time elements used to construct the new file name
+Dim i As Long                                            'Main scan index variable.
+Dim n = 1
+Units process_time = us
+Units buff_depth = scans
+Units n = samples
+
+' -> CSAT3B internal constants / variables / tables
+
+' Constants
+
+Const DELAY_CSAT3 = 1                 'Fixed CSAT3B delay.
+Const CSAT3_REC_BCK = OFFSET-DELAY_CSAT3-1 'Number of records back to align CSAT3B data. Minus one scan because the SDM instruction is at the end of the program.
+
+' Variables
+
+Public sonic(5)
+Alias sonic(1) = Ux
+Alias sonic(2) = Uy
+Alias sonic(3) = Uz
+Alias sonic(4) = Tsonic
+Alias sonic(5) = diag_sonic
+Public diag_sonic_aggregate As Long
+Units Ux = m/s
+Units Uy = m/s
+Units Uz = m/s
+Units Tsonic = degC
+Units diag_sonic = arb
+Units diag_sonic_aggregate = arb
+
+Dim diag_bits_sonic(9) As Long                  'Sonic warning flags.
+Alias diag_bits_sonic(1) = sonic_amp_l_f        'Amplitude low warning flag.
+Alias diag_bits_sonic(2) = sonic_amp_h_f        'Amplitude high warning flag.
+Alias diag_bits_sonic(3) = sonic_sig_lck_f      'Poor signal lock warning flag.
+Alias diag_bits_sonic(4) = sonic_del_T_f        'Delta temperature warning flag.
+Alias diag_bits_sonic(5) = sonic_aq_sig_f       'Sonic acquiring signals warning flag.
+Alias diag_bits_sonic(6) = sonic_low_volt_f     'Sonic voltage low warning flag.
+Alias diag_bits_sonic(7) = sonic_trig_f         'Datalogger trigger error flag.
+Alias diag_bits_sonic(8) = sonic_intrnl_hmdty_f 'Internal humidity warning flag.
+Alias diag_bits_sonic(9) = sonic_cal_err_f      'Signature error in reading CSAT3A sonic head calibration data.
+Units diag_bits_sonic = arb
+
+Dim diag_sonic_tmp As Long            'Temporary variable used to break out the CSAT3B diagnostic bits.
+Dim sonic_raw(5)                      'CSAT3B (not lagged).
+Dim sonic_disable_f As Boolean        'TRUE when CSAT3B diagnostic warning flags are on or CSAT3B has not sent data or an SDM signature error is reported.
+Dim Tsonic_absolute                       'Sonic temperature (K).
+Dim cov_array_sonic(1,4)              'Arrays used to hold the input data for the covariance instructions (CSAT3B).
+
+Dim cov_out_sonic(18)                 'CSAT3B statistics.
+Alias cov_out_sonic(1) = Fh           'Sensible heat flux using sonic temperature.
+Alias cov_out_sonic(2) = tau          'Momentum flux.
+Alias cov_out_sonic(3) = u_star       'Friction velocity.
+Alias cov_out_sonic(4) = Tsonic_stdev
+Alias cov_out_sonic(5) = Tsonic_Ux_cov
+Alias cov_out_sonic(6) = Tsonic_Uy_cov
+Alias cov_out_sonic(7) = Tsonic_Uz_cov
+Alias cov_out_sonic(8) = Ux_stdev
+Alias cov_out_sonic(9) = Ux_Uy_cov
+Alias cov_out_sonic(10) = Ux_Uz_cov
+Alias cov_out_sonic(11) = Uy_stdev
+Alias cov_out_sonic(12) = Uy_Uz_cov
+Alias cov_out_sonic(13) = Uz_stdev
+Alias cov_out_sonic(14) = wnd_spd
+Alias cov_out_sonic(15) = rslt_wnd_spd
+Alias cov_out_sonic(16) = wnd_dir_sonic
+Alias cov_out_sonic(17) = std_wnd_dir
+Alias cov_out_sonic(18) = wnd_dir_compass
+Units Fh = W/m^2
+Units tau = kg/m/s^2
+Units u_star = m/s
+Units Tsonic_stdev = degC
+Units Tsonic_Ux_cov = m.degC/s
+Units Tsonic_Uy_cov = m.degC/s
+Units Tsonic_Uz_cov = m.degC/s
+Units Ux_stdev = m/s
+Units Ux_Uy_cov = m^2/s^2
+Units Ux_Uz_cov = m^2/s^2
+Units Uy_stdev = m/s
+Units Uy_Uz_cov = m^2/s^2
+Units Uz_stdev = m/s
+Units wnd_spd = m/s
+Units rslt_wnd_spd = m/s
+Units wnd_dir_sonic = degrees
+Units std_wnd_dir = degrees
+Units wnd_dir_compass = degrees
+
+' Tables
+
+DataTable (delay_3d,TRUE,OFFSET)      ' Raw sonic data delay table
+  TableHide
+  Sample (5,sonic_raw(1),IEEE4)
+EndTable
+
+DataTable (comp_cov_sonic,TRUE,1)     ' Sonic covariances table
+  TableHide
+  DataInterval (0,OUTPUT_INTERVAL,Min,1)
+  Covariance (4,cov_array_sonic(1,1),IEEE4,sonic_disable_f,10)  'Compute covariances from CSAT3B data.
+  WindVector (1,Uy,Ux,IEEE4,sonic_disable_f,0,1,2)
+EndTable
+
+' -> LI7500RS internal constants / variables / tables
+
+' Constants
+
+Const delay_irga7500 = INT (300/SCAN_INTERVAL) 'Fixed inherent lag of the LI-7500(RS) data (three scans at 10 Hz or six scans at 20 Hz).
+Const LI7500_REC_BCK = OFFSET-delay_irga7500-1 'Number of records back to align LI-7500(RS) data. Minus one scan because the SDM instruction is at the end of the program.
+
+' Variables
+
+Public irga(8)
+Alias irga(1) = CO2
+Alias irga(2) = H2O
+Alias irga(3) = amb_press_irga
+Alias irga(4) = sig_str_irga
+Alias irga(5) = diag_irga
+Alias irga(6) = Tc_irga
+Alias irga(7) = Xc
+Alias irga(8) = Xv
+Public diag_irga_aggregate As Long
+Units CO2 = mg/m^3
+Units H2O = g/m^3
+Units amb_press_irga = kPa
+Units sig_str_irga = %
+Units diag_irga = arb
+Units Tc_irga = degC
+Units Xc = umol/mol
+Units Xv = mmol/mol
+Units diag_irga_aggregate = arb
+
+Dim diag_bits_irga(4) As Long             'Infrared gas analyzer warning flags.
+Alias diag_bits_irga(1) = irga_sync_f     'Synchronization warning flag.
+Alias diag_bits_irga(2) = irga_pll_f      'PLL warning flag.
+Alias diag_bits_irga(3) = irga_detector_f 'Detector warning flag.
+Alias diag_bits_irga(4) = irga_chopper_f  'Chopper warning flag.
+Dim diag_irga_tmp As Long                 'Temporary variable used to break out the LI-7500 diagnostic bits.
+
+Dim divisor_irga                          'Temporary variable used to find molar mixing ratio.
+Dim irga_disable_f As Boolean             'TRUE when LI-7500(RS) sends bad data.
+Dim sonic_irga_disable_f As Boolean       'TRUE when LI-7500(RS) or sonic sends bad data.
+Dim rho_d_irga_mean                       'Density of dry air used in Webb et al. term [kg / m^3].
+Dim sigma_wpl_irga                        'Webb et al. sigma = density of water vapor / density of dry air.
+
+Dim irga_raw(5)                           'Raw and not lagged LI-7500(RS) data.
+
+'LI-7500(RS) output variables.
+Dim cov_array_irga(3,4)                   'Arrays used to hold the input data for the covariance instructions (sonic and LI-7500(RS)).
+Dim cov_out_irga(26)                      'LI-7500(RS) statistics.
+Alias cov_out_irga(1) = Fco2         'Carbon dioxide flux (LI-7500(RS)), with Webb et al. term.
+Alias cov_out_irga(2) = Fe           'Latent heat flux (LI-7500(RS)), with Webb et al. term.
+Alias cov_out_irga(3) = Fh_irga           'Sensible heat flux using sonic temperature corrected for water vapor measured by the LI-7500(RS).
+Alias cov_out_irga(4) = co2_stdev
+Alias cov_out_irga(5) = CO2_Ux_cov
+Alias cov_out_irga(6) = CO2_Uy_cov
+Alias cov_out_irga(7) = CO2_Uz_cov
+Alias cov_out_irga(8) = H2O_stdev
+Alias cov_out_irga(9) = H2O_Ux_cov
+Alias cov_out_irga(10) = H2O_Uy_cov
+Alias cov_out_irga(11) = H2O_Uz_cov
+Alias cov_out_irga(12) = Tc_stdev
+Alias cov_out_irga(13) = Tc_Ux_cov
+Alias cov_out_irga(14) = Tc_Uy_cov
+Alias cov_out_irga(15) = Tc_Uz_cov
+Alias cov_out_irga(16) = CO2_mean
+Alias cov_out_irga(17) = H2O_mean
+Alias cov_out_irga(18) = amb_press_mean
+Alias cov_out_irga(19) = Tc_mean          'Sonic temperature corrected for humidity.
+Alias cov_out_irga(20) = rho_a_mean
+Alias cov_out_irga(21) = Fco2_no_wpl      'Carbon dioxide flux (LI-7500(RS)), without Webb et al. term.
+Alias cov_out_irga(22) = Fe_no_wpl        'Latent heat flux (LI-7500(RS)), without Webb et al. term.
+Alias cov_out_irga(23) = CO2_wpl_Fe       'Carbon dioxide flux (LI-7500(RS)), Webb et al. term due to latent heat flux.
+Alias cov_out_irga(24) = CO2_wpl_Fh       'Carbon dioxide flux (LI-7500(RS)), Webb et al. term due to sensible heat flux.
+Alias cov_out_irga(25) = H2O_wpl_Fe       'Latent heat flux (LI-7500(RS)), Webb et al. term due to latent heat flux.
+Alias cov_out_irga(26) = H2O_wpl_Fh       'Latent heat flux (LI-7500(RS)), Webb et al. term due to sensible heat flux.
+Units Fco2 = mg/(m^2 s)
+Units Fe = W/m^2
+Units Fh_irga = W/m^2
+Units co2_stdev = mg/m^3
+Units CO2_Ux_cov = mg/(m^2 s)
+Units CO2_Uy_cov = mg/(m^2 s)
+Units CO2_Uz_cov = mg/(m^2 s)
+Units H2O_stdev = g/m^3
+Units H2O_Ux_cov = g/(m^2 s)
+Units H2O_Uy_cov = g/(m^2 s)
+Units H2O_Uz_cov = g/(m^2 s)
+Units Tc_stdev = degC
+Units Tc_Ux_cov = m.degC/s
+Units Tc_Uy_cov = m.degC/s
+Units Tc_Uz_cov = m.degC/s
+Units CO2_mean = mg/m^3
+Units H2O_mean = g/m^3
+Units amb_press_mean = kPa
+Units Tc_mean = degC
+Units rho_a_mean = kg/m^3
+Units Fco2_no_wpl = mg/(m^2 s)
+Units Fe_no_wpl = W/m^2
+Units CO2_wpl_Fe = mg/(m^2 s)
+Units CO2_wpl_Fh = mg/(m^2 s)
+Units H2O_wpl_Fe = W/m^2
+Units H2O_wpl_Fh = W/m^2
+
+' Tables
+
+DataTable (delay_irga,TRUE,OFFSET)  ' Raw IRGA delay table
+  TableHide
+  Sample (5,irga_raw(1),IEEE4)
+EndTable
+
+DataTable (comp_cov_irga,TRUE,1)    ' IRGA covariance table
+  TableHide
+  DataInterval (0,OUTPUT_INTERVAL,Min,1)
+
+  'Compute covariance of CO2 against sonic wind data.
+  Covariance (4,cov_array_irga(1,1),IEEE4,sonic_irga_disable_f,4)
+  'Compute covariance of H2O against sonic wind data.
+  Covariance (4,cov_array_irga(2,1),IEEE4,sonic_irga_disable_f,4)
+  'Compute covariance of Tc_irga (computed fast response temperature) against sonic wind data.
+  Covariance (4,cov_array_irga(3,1),IEEE4,sonic_irga_disable_f,4)
+  Average (3,CO2,IEEE4,irga_disable_f)
+  Average (1,Tc_irga,IEEE4,sonic_irga_disable_f)
+EndTable
+
+' -> Rain gauge internal variables
+
+' Variables
+
+Public rain
+Units rain = mm
+
+' -> T and RH internal variables / tables
+
+' Variables
+
+Public tmpr_rh(3)
+Alias tmpr_rh(1) = Ta_sensor                     'Temperature/humidity probe temperature.
+Alias tmpr_rh(2) = RH_sensor                     'Temperature/humidity probe relative humidity.
+Alias tmpr_rh(3) = e_sensor                      'Temperature/humidity probe vapor pressure.
+Units Ta_sensor = degC
+Units RH_sensor = %
+Units e_sensor = kPa
+Public es_sensor                                    'Temperature/humidity probe saturation vapor pressure.
+Public rho_d_sensor                                 'Density of dry air used in Webb et al. term [kg / m^3].
+
+Dim stats_out_tmpr_rh(6)                        'Temperature/humidity probe statistics.
+Alias stats_out_tmpr_rh(1) = Ta_sensor_mean      'Mean temperature/humidity probe temperature.
+Alias stats_out_tmpr_rh(2) = e_sensor_mean       'Mean temperature/humidity probe vapor pressure.
+Alias stats_out_tmpr_rh(3) = e_sat_sensor_mean   'Mean temperature/humidity probe saturation vapor pressure.
+Alias stats_out_tmpr_rh(4) = AH_sensor_mean      'Mean temperature/humidity probe vapor density.
+Alias stats_out_tmpr_rh(5) = RH_sensor_mean      'Mean temperature/humidity probe relative humidity.
+Alias stats_out_tmpr_rh(6) = rho_a_sensor_mean   'Mean air density using Temperature/humidity probe measurements.
+Units Ta_sensor_mean = degC
+Units e_sensor_mean = kPa
+Units e_sat_sensor_mean = kPa
+Units AH_sensor_mean = g/m^3
+Units RH_sensor_mean = %
+Units rho_a_sensor_mean = kg/m^3
+
+' Tables
+
+DataTable (stats_tmpr_rh,TRUE,1)
+  TableHide
+  DataInterval (0,OUTPUT_INTERVAL,Min,1)
+  Average (1,Ta_sensor,IEEE4,slowsequence_disable_f)
+  Average (1,e_sensor,IEEE4,slowsequence_disable_f)
+  Average (1,es_sensor,IEEE4,slowsequence_disable_f)
+EndTable
+
+' -> 4-component radiation internal constants / variables
+
+' Constants
+
+'YSI 44031 Steinhart-Hart coefficients fit through -40 degrees C (239800 ohms), 20 degrees C (12260 ohms), and 80 degrees C (1458 ohms).
+Const A_SHH = 1.026613e-3                'Steinhart-Hart A coefficient.
+Const B_SHH = 2.395424e-4                'Steinhart-Hart B coefficient.
+Const C_SHH = 1.552561e-7                'Steinhart-Hart C coefficient.
+
+' Variables
+
+Public nr(9)
+Dim X_nr
+Dim ln_R
+Alias nr(1) = Fn
+Alias nr(2) = albedo
+Alias nr(3) = Fsd
+Alias nr(4) = Fsu
+Alias nr(5) = Fld
+Alias nr(6) = Flu
+Alias nr(7) = Tb
+Alias nr(8) = Fld_meas
+Alias nr(9) = Flu_meas
+Units nr = W/m^2
+Units albedo = arb
+Units Tb = K
+
+' -> PAR internal variables
+Public PAR 'PPFD
+Units PAR = umol/s/m^2
+
+' Upload related (Markus)
+Public Upload_TERNflux
+Public Upload_status_ts_data
+Public Upload_diagnostic
+Public TStamp As String * 22 ' create a daily timestamp for ts_data
+
+'*** End internal constants, variables, working data tables ***
+'############################################################################
+
+'############################################################################
+'*** Begin hardware config section ***
+
+CPIAddModule(VOLT116,CDMVOLT116_1_SN,CDMVOLT116_1_DESC,CDMVOLT116_1_ADDR)  ' Add CPI module for expanded measurements
+SetSetting ("StationName",STATION_NAME)                     'Station name
+SetSetting ("PakBusAddress",PAKBUS_ADDR)                    'Pakbus address
+SetSetting ("FTPEnabled",True)                              'FTP server settings
+SetSetting ("FTPPort",21)
+SetSetting ("FTPUserName","CCFC")
+SetSetting ("FTPPassword","EPCN")
+PipeLineMode
+
+'*** End hardware config section ***
+'############################################################################
+
+'############################################################################
+'*** Begin output data tables ***
+
+DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
+  DataInterval (0,OUTPUT_INTERVAL,Min,10)
+  CardOut (0,FLUX_SIZE_CRD)
+
+  '*** Beginning of CSAT3B output data ***
+  Sample (18,Fh,IEEE4)
+  Average (4,Ux,IEEE4,sonic_disable_f)
+  Sample (1,AZ_SONIC,IEEE4)
+  FieldNames ("AZ_SONIC")
+  Totalize (1,n,IEEE4,sonic_disable_f)
+  FieldNames ("sonic_samples_Tot")
+  Sample (1,diag_sonic_aggregate,IEEE4)
+  Totalize (1,n,IEEE4,diag_sonic<>NAN)
+  FieldNames ("no_new_sonic_data_Tot")
+  Totalize (1,sonic_amp_l_f,IEEE4,FALSE)
+  Totalize (1,sonic_amp_h_f,IEEE4,FALSE)
+  Totalize (1,sonic_sig_lck_f,IEEE4,FALSE)
+  Totalize (1,sonic_del_T_f,IEEE4,FALSE)
+  Totalize (1,sonic_aq_sig_f,IEEE4,FALSE)
+  Totalize (1,sonic_low_volt_f,IEEE4,FALSE)
+  Totalize (1,sonic_trig_f,IEEE4,FALSE)
+  Totalize (1,sonic_intrnl_hmdty_f,IEEE4,FALSE)
+  Totalize (1,sonic_cal_err_f,IEEE4,FALSE)
+  '*** End of CSAT3B output data ***
+
+  '*** Beginning of LI-7500(RS) output data ***
+  Sample (26,Fco2,IEEE4)
+  Totalize (1,n,IEEE4,irga_disable_f)
+  FieldNames ("irga_samples_Tot")
+  Sample (1,diag_irga_aggregate,IEEE4)
+  Totalize (1,n,IEEE4,CO2<>NAN)
+  FieldNames ("no_new_irga_data_Tot")
+  Totalize (1,n,IEEE4,CO2<>-99999)
+  FieldNames ("sig_error_Tot")
+  Average (1,sig_str_irga,IEEE4,H2O=NAN)
+  Totalize (1,n,IEEE4,(sig_str_irga<=IRGA_SIG_STR_THRESHOLD) IMP (H2O=NAN))
+  FieldNames ("sig_str_thrshld_excded_Tot")
+  '*** End of LI-7500(RS) output data ***
+
+  '*** Beginning of temperature and humidity probe output data ***
+  Sample (6,Ta_sensor_mean,IEEE4)
+  '*** End of temperature and humidity probe output data ***
+
+  '*** Beginning of radiometer output data ***
+  Average (9,Fn,IEEE4,slowsequence_disable_f)
+  '*** End of radiometer output data ***
+
+  '*** Beginning of precipitation output data ***
+  Totalize (1,rain,IEEE4,FALSE)
+  '*** End of precipitation output data ***
+
+  '*** Beginning of PAR output data ***
+  Average(1,PAR,IEEE4,False)
+  '*** End of PAR output data ***
+
+  '*** Beginning of other output data ***
+  Average (1,Tpanel,IEEE4,FALSE)
+  Average (1,Vbat,IEEE4,slowsequence_disable_f)
+  Average (1,process_time,IEEE4,FALSE)
+  Maximum (1,process_time,IEEE4,FALSE,FALSE)
+  Maximum (1,buff_depth,IEEE4,FALSE,FALSE)
+  '*** End of other output data ***
+
+'**** Testing what happens when the table changes regrding ssh upload
+   Sample (1,NaN,FP2)
+   FieldNames("Dummy")
+  '**** Testing what happens when the table changes regarding ssh upload
+
+  Totalize (1,n,IEEE4,slowsequence_disable_f)
+  FieldNames ("slowsequence_Tot")
+  
+  EndTable
+
+'Diagnostic data.
+DataTable (diagnostic,TRUE,1)
+  Sample (9,sonic_amp_l_f,Boolean)
+  Sample (4,irga_sync_f,Boolean)
+EndTable
+
+'Time series data.
+DataTable (ts_data,TRUE,-1)
+  DataInterval (0,SCAN_INTERVAL,mSec,100)
+  TableFile ("CRD:"&Status.SerialNumber(1,1)&".ts_data_",64,-1,0,1,Day,NewFileFlag,PrevFileName)
+
+  '*** Beginning of sonic time series output ***
+  Sample (5,sonic_raw(1),IEEE4)
+  FieldNames ("Ux,Uy,Uz,Tsonic,diag_sonic")
+  '*** End of sonic time series output ***
+
+  '*** Beginning of LI-7500(RS) time series output ***
+  Sample (4,irga_raw(1),IEEE4)
+  FieldNames ("CO2,H2O,amb_press_irga,sig_str_irga")
+  '*** End of LI-7500(RS) time series output ***
+  
+  '**** Testing what happens when the table changes regrding ssh upload
+   Sample (1,NaN,FP2)
+   FieldNames("Dummy")
+  '**** Testing what happens when the table changes regarding ssh upload
+
+EndTable
+
+'*** End output data tables ***
+'############################################################################
+
+'############################################################################
+'*** Begin subroutines ***
+
+Sub file_rename()
+  ' This subroutine creates a new filename and renames the file output to the card by tablefile
+  SplitStr(timearray(),TERNflux.TimeStamp(3,2),"",6,0)
+  NewFileName = _
+"CRD:TOB3_"&STATION_NAME&"_"&SCAN_INTERVAL&"ms_"&timearray(3)&"_"& _
+FormatFloat(timearray(2),"%02.0f")&"_"& _
+FormatFloat(timearray(1),"%02.0f")&".dat"
+FileRename(PrevFileName, NewFileName)
+EndSub
+
+'*** End subroutines ***
+'############################################################################
+
+'############################################################################
+'*** Program ***
+
+BeginProg
+
+  'Set the SDM clock speed.
+  SDMSpeed (SDM_PER)
+  Scan (SCAN_INTERVAL,mSec,SCAN_BUFFER_SIZE,0)
+
+    'Datalogger panel temperature.
+    PanelTemp (Tpanel,250)
+
+    '*** Beginning of sonic measurement processing ***
+    CallTable delay_3d
+    '*** End of sonic measurement processing ***
+
+    '*** Beginning of LI-7500(RS) measurement processing ***
+    'Convert LI-7500(RS) data from molar density [mmol/m^3] to mass density.
+    ' 44 [g/mol] - molecular weight of carbon dioxide
+    ' 0.01802 [g/mmol] - molecular weight of water vapor
+    If ( irga_raw(1) <> -99999 ) Then ( irga_raw(1) = irga_raw(1)*44 )
+    irga_raw(2) = irga_raw(2)*0.01802
+
+    'Extract LI-7500(RS) diagnostic bits.
+    irga_raw(5) = (irga_raw(4) AND &hf0) >> 4
+
+    'Compute the signal strength.
+    irga_raw(4) = (irga_raw(4) AND &hf)*6.67
+
+    CallTable delay_irga
+    '*** End of LI-7500(RS) measurement processing ***
+
+    '*** Beginning of rain gauge measurement ***
+    PulseCount (rain,1,RAIN_PULSE_INPUT,1,0,RAIN_CAL,0)
+    '*** End of rain gauge measurement ***
+
+    'Save time series data.
+    CallTable ts_data
+
+    If ( scan_count >= OFFSET ) Then
+
+      '*** Beginning of sonic processing ***
+      'Load in CSAT3B data that has been lagged by CSAT3_REC_BCK scans.
+      GetRecord (dly_data_out(1),delay_3d,CSAT3_REC_BCK)
+
+      Move (Ux,5,dly_data_out(1),5) 'Ux, Uy, Uz, Tsonic, diag_sonic
+
+      diag_sonic_tmp = IIF (diag_sonic <> NAN,diag_sonic,&h100)
+      diag_sonic_aggregate = diag_sonic_aggregate OR diag_sonic_tmp
+
+      'Extract the nine warning flags from the sonic diagnostic word.
+      For i = 1 To 9
+        diag_bits_sonic(i) = diag_sonic_tmp AND &h1
+        diag_sonic_tmp = diag_sonic_tmp >> 1
+      Next i
+
+      Tsonic_absolute = Tsonic+273.15
+
+      'Filter data in the covariance instruction if the CSAT3B reports bad data.
+      sonic_disable_f = (diag_sonic <> 0)
+
+      'Load the arrays that hold the input data for the covariance instructions.
+      cov_array_sonic(1,1) = Tsonic
+      Move (cov_array_sonic(1,2),3,Ux,3)
+      CallTable comp_cov_sonic
+      If ( comp_cov_sonic.Output(1,1) ) Then
+        GetRecord (Tsonic_stdev,comp_cov_sonic,1)
+
+        'Rotate the CSAT3B RHC system so the negative x-axis points north.
+        wnd_dir_compass = (360+AZ_SONIC-wnd_dir_sonic) MOD 360
+
+        'Make the CSAT3B wind direction fall between 0 to 180 degrees and 0 to -180 degrees.
+        If ( wnd_dir_sonic > 180 ) Then ( wnd_dir_sonic = wnd_dir_sonic-360 )
+
+        'Compute online fluxes.
+        tau = SQR ((Ux_Uz_cov*Ux_Uz_cov)+(Uy_Uz_cov*Uy_Uz_cov))
+        u_star = SQR (tau)
+
+        'Compute the standard deviation from the variance.
+        Tsonic_stdev = SQR (Tsonic_stdev)
+        Ux_stdev = SQR (Ux_stdev)
+        Uy_stdev = SQR (Uy_stdev)
+        Uz_stdev = SQR (Uz_stdev)
+      EndIf
+      '*** End of sonic processing ***
+
+      '*** Beginning of temperature and humidity processing ***
+      CallTable stats_tmpr_rh
+      If ( stats_tmpr_rh.Output(1,1) ) Then
+        GetRecord (Ta_sensor_mean,stats_tmpr_rh,1)
+
+        AH_sensor_mean = e_sensor_mean/((Ta_sensor_mean+273.15)*RV)
+        rho_d_sensor = (amb_press_mean-e_sensor_mean)/((Ta_sensor_mean+273.15)*RD)
+        rho_a_sensor_mean = (rho_d_sensor+AH_sensor_mean)/1000
+        RH_sensor_mean = 100*e_sensor_mean/e_sat_sensor_mean
+      EndIf
+      '*** End of temperature and humidity processing ***
+
+      '*** Beginning of LI-7500(RS) processing ***
+      'Load in the LI-7500(RS) data that has been lagged by LI7500_REC_BCK scans.
+      GetRecord (dly_data_out(1),delay_irga,LI7500_REC_BCK)
+
+      Move (CO2,5,dly_data_out(1),5) 'CO2, H2O, press, signal strength, diag
+
+      diag_irga_tmp = IIF (diag_irga <> NAN,diag_irga,&h00)
+      diag_irga_aggregate = diag_irga_aggregate OR diag_irga_tmp
+
+      'Extract the four flags from the gas analyzer diagnostic word.
+      For i = 1 To 4
+        diag_bits_irga(i) = diag_irga_tmp AND &h1
+        diag_irga_tmp = diag_irga_tmp >> 1
+      Next i
+
+      'Compute fast response air temperature from sonic temperature and IRGA
+      ' vapor density (see sonic manual).
+      Tc_irga = Tsonic_absolute/(1+0.32*H2O*R*Tsonic_absolute/(amb_press_irga*18.02)) 'Kaimal and Gaynor (1991) Eq. 3
+
+      'Compute the molar mixing ratio of CO2 and H2O.
+      divisor_irga = (amb_press_irga/(R*Tc_irga))-(H2O/18.02)
+      Xc = CO2/(0.044*divisor_irga)
+      Xv = H2O/(0.01802*divisor_irga)
+
+      'Convert the fast response air temperature to degrees C.
+      Tc_irga = Tc_irga-273.15
+
+      'Filter data in the covariance instruction if the LI-7500(RS) reports bad data.
+      irga_disable_f = (sig_str_irga < IRGA_SIG_STR_THRESHOLD) OR (H2O = NAN)
+
+      'Load the arrays that hold the input data for the covariance instructions.
+      cov_array_irga(1,1) = CO2
+      Move (cov_array_irga(1,2),3,Ux,3)
+      cov_array_irga(2,1) = H2O
+      Move (cov_array_irga(2,2),3,Ux,3)
+      cov_array_irga(3,1) = Tc_irga
+      Move (cov_array_irga(3,2),3,Ux,3)
+      CallTable comp_cov_irga
+
+      If ( comp_cov_irga.Output(1,1) ) Then
+        GetRecord (co2_stdev,comp_cov_irga,1)
+
+        rho_d_irga_mean = (amb_press_mean/((Tc_mean+273.15)*RD))-(H2O_mean*MU_WPL)
+        Cp = 1004.67*(1+0.84*(0.622*H2O_mean*RV*(Tc_mean+273.15)/amb_press_mean)) 'Stull (1989)
+        rho_a_mean = (rho_d_irga_mean+H2O_mean)/1000
+        Lv = 2501-(2.37*Tc_mean) 'Stull (1989)
+
+        'Compute online fluxes.
+        Fco2_no_wpl = CO2_Uz_cov
+        Fe_no_wpl = Lv*H2O_Uz_cov
+
+        'Compute the standard deviation from the variance.
+        co2_stdev = SQR (co2_stdev)
+        H2O_stdev = SQR (H2O_stdev)
+        Tc_stdev = SQR (Tc_stdev)
+
+        sigma_wpl_irga = H2O_mean/rho_d_irga_mean
+
+        'LI-7500(RS) Webb et al. term for carbon dioxide Eq. (24).
+        CO2_wpl_Fe = MU_WPL*CO2_mean/rho_d_irga_mean*H2O_Uz_cov
+        CO2_wpl_Fh = (1+(MU_WPL*sigma_wpl_irga))*CO2_mean/(Tc_mean+273.15)*Tc_Uz_cov
+        Fco2 = Fco2_no_wpl+CO2_wpl_Fe+CO2_wpl_Fh
+
+        'LI-7500(RS) Webb et al. term for water vapor Eq. (25).
+        CO2_wpl_Fe = MU_WPL*sigma_wpl_irga*Fe_no_wpl
+        CO2_wpl_Fh = (1+(MU_WPL*sigma_wpl_irga))*H2O_mean/(Tc_mean+273.15)*Lv*Tc_Uz_cov
+        Fe = Fe_no_wpl+CO2_wpl_Fe+CO2_wpl_Fh
+      EndIf
+      '*** End of LI-7500(RS) processing ***
+
+      '*** Beginning of sonic sensible heat, momentum, and sensible heat flux processing ***
+      If ( comp_cov_sonic.Output(1,1) ) Then
+        'CSAT3(A) sensible heat flux using sonic temperature.
+        Fh = rho_a_sensor_mean*Cp*Tsonic_Uz_cov       'Air density computed from temperature and humidity probe.
+
+        'CSAT3(A) momentum flux.
+        tau = rho_a_sensor_mean*tau               'Air density computed from temperature and humidity probe.
+
+        'Sensible heat flux using sonic temperature corrected for water vapor measured by the LI-7500(RS).
+        Fh_irga = rho_a_sensor_mean*Cp*Tc_Uz_cov 'Air density computed from temperature and humidity probe.
+      EndIf
+      '*** End of sensible heat flux processing ***
+
+      CallTable TERNflux
+      If ( TERNflux.Output(1,1) ) Then
+        diag_sonic_aggregate = 0
+        diag_irga_aggregate = 0
+      EndIf
+
+      slowsequence_disable_f = TRUE
+      If ( slowsequence_finished_f ) Then
+        slowsequence_finished_f = FALSE
+        slowsequence_disable_f = FALSE
+      EndIf
+
+    Else
+      scan_count += 1 'Increments until reaches the value of OFFSET
+    EndIf
+
+    CallTable diagnostic
+    process_time = Status.ProcessTime(1,1)
+    buff_depth = Status.BuffDepth(1,1)
+
+    '*** Beginning of CSAT3B measurements ***
+    CSAT3B (sonic_raw(1),0,CSAT3B_SDM_ADDR,0)
+    '*** End of CSAT3B measurements ***
+
+    '*** Beginning of LI-7500(RS) measurements ***
+    CS7500 (irga_raw(1),1,LI7500_SDM_ADDR,6)
+    '*** End of LI-7500(RS) measurements ***
+
+    '*** File rename subroutine ***
+    If NewFileFlag Then Call file_rename()
+    '*** End of file rename subroutine ***
+
+  NextScan
+
+  SlowSequence
+
+  Scan (10,Sec,3,0)
+
+    'Measure battery voltage.
+    Battery (Vbat)
+
+    '*** Beginning of CR6 measurements ***
+
+    '*** End of CR6 measurements ***
+
+    '*** Beginning of CDM-VOLT116 measurements ***
+
+    '*** Beginning of temperature and humidity probe measurements ***
+    CDM_VoltDiff (VOLT116,1,Ta_sensor,1,AutoRange,T_RH_MAIN_INPUT,True,0,ANALOG_INTEGRATION,T_RH_T_MULT,T_RH_T_OFFSET)
+    CDM_VoltDiff (VOLT116,1,RH_sensor,1,AutoRange,T_RH_MAIN_INPUT+1,True,0,ANALOG_INTEGRATION,T_RH_RH_MULT,T_RH_RH_OFFSET)
+    VaporPressure (e_sensor,Ta_sensor,RH_sensor)
+    SatVP (es_sensor,Ta_sensor)
+    '*** End of temperature and humidity probe measurements ***
+
+    '*** Beginning of net radiometer measurements ***
+    ' Measure radiation components, calculate body temperature and correct raw longwave
+    CDM_VoltDiff (VOLT116,1,Fsd,4,AutoRange,NR_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,1.0,0)
+    Fsd = Fsd*NR_SW_INCOMING_CAL
+    Fsu = Fsu*NR_SW_OUTGOING_CAL
+    Fld = Fld*NR_LW_INCOMING_CAL
+    Flu = Flu*NR_LW_OUTGOING_CAL
+
+    'Compute net radiation, albedo, incoming and outgoing longwave radiation.
+    CDM_BrHalf (VOLT116,1,X_nr,1,mV5000,NR_TSENS_ANALOG_INPUT,NR_TSENS_VX,1,5000,True,0,ANALOG_INTEGRATION,1.0,0)
+    ln_R = LOG (1000*X_nr/(1-X_nr))
+    Tb = (1/(A_SHH+B_SHH*ln_R+C_SHH*ln_R*ln_R*ln_R))
+    Fld_meas = Fld
+    Flu_meas = Flu
+    Flu=Flu+(SB*Tb^4)         ' Corrected upwelling longwave
+    Fld=Fld+(SB*Tb^4)         ' Corrected downwelling longwave
+    Fn = Fsd-Fsu+Fld-Flu
+    albedo = Fsu/Fsd
+    '*** End of net radiometer measurements ***
+
+    '*** Beginning of PAR measurements
+    'VoltSe(PAR,1,AutoRange,PAR_ANALOG_INPUT,False,0,50,PAR_MULT,0) ' for CR1000x Apogee
+    CDM_VoltDiff(VOLT116,1,PAR,1,mV200,PAR_ANALOG_INPUT,True,0,50,PAR_MULT,0) ' for Volt116 Li190b
+    If PAR<0 Then PAR=0
+    '*** End of PAR measurements
+
+    '*** End of CDM-VOLT116 measurements ***
+
+    slowsequence_finished_f = TRUE
+  NextScan
+
+  SlowSequence
+  ' Markus ssh or ftp upload
+  Scan (OUTPUT_INTERVAL,Min,5,0)
+    TStamp = Public.Timestamp(5, 1)
+    Upload_status_ts_data =  FTPClient (Server,User,Pass,"ts_data",Folder & "Tumbarumba_EC_" & TStamp & "_ts_data.dat",28,0,0,Min,-1008)
+    Delay (1, 12,Sec) 'Arbitrary delay by a few seconds to space out the uploads on the server. ts_data uploaded on the dot, other data later so the current 30 min data is uploaded, and not the previous 30 min data
+    TStamp = Public.Timestamp(5, 1)
+    ' Option  1008 creates a new header for each upload, still appends to the same file
+    ' Option -1008 appends data to the same file. Does not create a new header each time. Also, does not create a new header when the table changes!!
+    Upload_TERNflux =        FTPClient (Server,User,Pass,"TERNflux",Folder & "Tumbarumba_EC_TERNflux.dat",28,0,0,Min,-1008)
+    Upload_diagnostic =      FTPClient (Server,User,Pass,"diagnostic",Folder & "Tumbarumba_EC_diagnostic.dat",28,0,0,Min,-1008)
+  NextScan
+  EndSequence
+EndProg
