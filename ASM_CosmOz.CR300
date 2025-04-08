@@ -1,0 +1,171 @@
+'SITE: Alice Springs Mulga
+'LOGGER: CR310
+'HISTORY:
+'May 2021 Aaron Hawdon (aaron.hawdon@csiro.au)
+'measurement system for a cosmic ray soil moisture neutron sensor and a vaisala barometer
+'data is stored locally then retrieived from the CR3000 (main oroicessing logger on the flux tower)
+'June 2022 Jordan Marano (jordan.marano@csiro.au)
+'Correct CosmOz detector tube measurement interval from 36000sec (10hr) to 3600sec (1hr)
+'March 2025 modified by Ian McHugh
+
+'############################################################################
+
+'############################################################################
+' *** Begin user-customised station / logger / instrument constants and wiring ***
+
+' -> Station-based user constants
+
+Const OUTPUT_INTERVAL = 60        'On-line data output interval in minutes.
+Const STATION_NAME = "AliceSpringsMulga_cosmoz"
+Const PAKBUS_ADDR = 1
+Const ANALOG_INTEGRATION = _50Hz      ' Slow sequence analog measurement integration time, _60Hz or _50Hz.
+
+' -> Cosmoz user constants / wiring
+
+Const COSMOZ_ANALOG_INPUT = C1
+
+'C1      Signal (Pin 6)
+'12V     Power (Pin 8)
+'gnd     Ground (Pin 7 and Pin 2)
+
+' -> T and RH user constants / wiring
+
+Const T_RH_MAIN_INPUT = 1          'Unique differential input channel for temperature and humidity probe.
+Const T_RH_T_MULT = 0.14           'Unique multiplier for temperature; HC2S3 = 0.1, HMP155A = 0.14, or HMP45C = 0.1.
+Const T_RH_T_OFFSET = -80          'Unique offset for temperature; HC2S3 = -40, HMP155A = -80, or HMP45C = -40.
+Const T_RH_RH_MULT = 0.1           'Unique multiplier for rh; HC2S3 = ?, HMP155A = 0.001, or HMP45C = ?.
+Const T_RH_RH_OFFSET = 0           'Unique offset for rh; HC2S3 = ?, HMP155A = 0, or HMP45C = ?.
+
+'1H      Temperature signal (yellow)
+'1L      RH signal (blue)
+'gnd     Signal reference (purple), shield (clear)
+'12V     Power (red)
+'G       Power reference (black)
+
+' -> Barometric pressure user constants / wiring
+
+Const PS_ANALOG_INPUT = 3
+Const PS_MULT = 0.24
+Const PS_OFFSET = 500
+
+'2H      Barometric pressure signal (blue)
+'gnd     Barometric pressure signal reference (yellow)
+'12V     Power (red)
+'C2      Trigger (green) - do not use, jumper should be installed (continuous power)
+'G       Power reference (black)
+
+' -> Rain gauge user constants / wiring
+
+Const RAIN_PULSE_INPUT = P_SW      'Unique pulse input channel for tipping bucket.
+Const RAIN_CAL = 0.1               'Unique multiplier for tipping bucket.
+
+'P_SW    Signal (black)
+'G       Signal reference (white)
+'        Shield (clear)
+
+' *** End user-customised station / logger / instrument constants and wiring ***
+' *** CUSTOMISE THE BELOW AT YOUR OWN RISK!!!
+'############################################################################
+
+'############################################################################
+' *** Begin internal constants and variables ***
+
+' -> Logger diagnostic internal variables
+
+Public Tpanel
+Public Vbat
+
+' -> Cosmic Ray Neutron sensor internal variables
+
+Public NPMData(5)   'Combined Neutron counts, elapsed time, tube t & h
+Alias NPMData(1)= NCts 'neutron counts
+Alias NPMData(2)= NSecs 'neutron count period
+Alias NPMData(3)= NCalls 'number of calls to sensor
+Alias NPMData(4)= NTTmp 'NPM tube temperature
+Alias NPMData(5)= NTRh 'NPM tube RH
+
+' -> T and RH internal variables
+
+Public T_RH(2)
+Alias T_RH(1) = Ta
+Alias T_RH(2) = RH
+Units Ta = degC
+Units RH = percent
+
+' -> Barometric pressure internal variables
+
+Public ps
+Units ps = hPa
+
+' -> Rainfall internal variables
+
+Public rain 'Hobo guage
+Units rain = mm
+
+'*** End internal constants and variables ***
+'############################################################################
+
+'############################################################################
+'*** Begin hardware config section ***
+
+SetSetting ("StationName",STATION_NAME)                     'Station name
+SetSetting ("PakBusAddress",PAKBUS_ADDR)                    'Pakbus address
+
+'*** End hardware config section ***
+'############################################################################
+
+'############################################################################
+'*** Begin output data tables ***
+
+DataTable (CRNSData,true,-1)
+  DataInterval (0,1,Hr,10)
+  Totalize(1,NCts,Long,0) 'total counts in 60 mins
+  Totalize(1,NSecs,Long,0) 'total secs elapsed in 60 min
+  Sample(1,NTTmp,Float) 'instantaneous tube temp
+  Sample(1,NTRh,Float) 'instantaneous tube relative humidity
+  Average (1,Ta,IEEE4,0)'Ambient Ta
+  Average (1,RH,IEEE4,0)'Ambient RH
+  Sample (1,ps,Float,0) 'Sample pressure from CS106
+  Totalize (1,rain,IEEE4,0)  ' Totalised rainfall generated from HOBO Raingauge added December 2024
+EndTable
+
+'*** End output data tables ***
+'############################################################################
+
+'############################################################################
+'*** Begin Program ***
+
+BeginProg
+
+  Scan(60,Sec,3,0)
+    PulseCount (rain,1,P_SW,2,0,RAIN_CAL,0)
+
+    PanelTemp (Tpanel,60)
+    Battery (Vbat)
+
+    ' Measure air temperature
+    VoltSe (Ta,1,mv2500,T_RH_MAIN_INPUT,TRUE,0,50,T_RH_T_MULT,T_RH_T_OFFSET)
+    ' Measure relative humidity
+    VoltSe (RH,1,mv2500,T_RH_MAIN_INPUT + 1,TRUE,0,50,T_RH_RH_MULT,T_RH_RH_OFFSET)
+
+    ' Once per hour
+    If TimeIntoInterval(0,3600,sec)Then
+
+      ' Measure the pressure sensor
+      VoltSe (ps,1,mV2500,PS_ANALOG_INPUT,1,0,ANALOG_INTEGRATION,PS_MULT,PS_OFFSET)
+
+      'Retrieve CRS Detector Neutron Counts from tube
+      SDI12Recorder(NPMData(1),COSMOZ_ANALOG_INPUT,"E","R!",1,0)
+      SDI12Recorder(NPMData(4),COSMOZ_ANALOG_INPUT,"E","R2!",1,0)
+      
+      ' Send to final output
+      CallTable CRNSData
+
+    EndIf
+
+  NextScan
+EndProg
+
+'*** End Program ***
+'############################################################################
+
