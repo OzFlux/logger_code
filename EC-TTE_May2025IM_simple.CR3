@@ -131,14 +131,10 @@
 '8H      Signal (white)
 '8L      Signal reference (green)
 'gnd     Shield (clear)
-'HFP01 #2
-'9H      Signal (white)
-'9L      Signal reference (green)
-'gnd     Shield (clear)
-'HFP01 #3
-'10H      Signal (white)
-'10L      Signal reference (green)
-'gnd     Shield (clear)
+
+'TCAV
+'9H      Thermocouple signal (purple)
+'9L      Thermocouple signal reference (red)
 
 'CS106
 '11H     Barometric pressure signal (blue)
@@ -155,6 +151,27 @@
 'gnd     RH signal reference (orange, was purple, was white)
 '12V     Power (red)
 'G       Power reference (black)
+
+'CS616 1
+'13H     Soil moisture signal (green)
+'5V      Control (orange)
+'12V     Power (red)
+'G       Power reference (black)
+'G       Shield
+
+'CS616 2
+'13L     Soil moisture signal (green)
+'5V      Control (orange)
+'12V     Power (red)
+'G       Power reference (black)
+'G       Shield
+
+'CS616 3
+'14H     Soil moisture signal (green)
+'5V      Control (orange)
+'12V     Power (red)
+'G       Power reference (black)
+'G       Shield
 
 '---------------------------------------------------------------------
 '
@@ -185,9 +202,7 @@ Const Flu_CNR4_cal = 1000/10.21          'Unique multiplier for Kipp and Zonen l
 
 ' Hukseflux ground heat flux plates
 '   sensitivity in uV/Wm-2; calibration in Wm-2/mV
-Const Fg_01_cal = 1000/66                'Unique multiplier for Hukseflux HFP01 #1, S/N 005015
-Const Fg_02_cal = 1000/64                'Unique multiplier for Hukseflux HFP01 #1, S/N 001164
-Const Fg_03_cal = 1000/62                'Unique multiplier for Hukseflux HFP01 #1, S/N 005017
+Const Fg_01_cal = 1000/62.34             'Unique multiplier for Hukseflux HFP01 #1, S/N 24806
 
 ' standard cs616 calibration coefficients
 Const Sws_a0 = -0.0663
@@ -454,56 +469,45 @@ Public CNR4_T_C                 ' CNR4 temperature
 Units CNR4_T_C = C
 
 ' Soil temperature.
-Public Ts(8)
-Alias Ts(1) = Ts_TCAV_01                 ' Soil temperature, sensor 01
-Alias Ts(2) = Ts_TCAV_02                 ' Soil temperature, sensor 02
-Alias Ts(3) = Ts_3                       ' Soil temperature, sensor 03
-Alias Ts(4) = Ts_4                       ' Soil temperature, sensor 04
-Alias Ts(5) = Ts_5                       ' Soil temperature, sensor 05
-Alias Ts(6) = Ts_6                       ' Soil temperature, sensor 06
-Alias Ts(7) = Ts_7                       ' Soil temperature, sensor 07
-Alias Ts(8) = Ts_8                       ' Soil temperature, sensor 08
-Units Ts = degC
+Public Ts_TCAV_01
 
 ' Soil heat flux
-Public Fg(3)
-Alias Fg(1) = Fg_01                  ' Soil heat flux, sensor 01, uncorrected
-Alias Fg(2) = Fg_02                  ' Soil heat flux, sensor 02, uncorrected
-Alias Fg(3) = Fg_03                  ' Soil heat flux, sensor 03, uncorrected
-Units Fg = W/m^2
-Dim Fg_cal(3)
+Public Fg_01
+Units Fg_01 = W/m^2
+Dim Fg_cal(1)
 
 ' Soil moisture.
-Public Sws_616_raw(8)
+' CS616
+Public Sws_616_raw(3)
 Alias Sws_616_raw(1) = Sws_616_01_raw             ' Soil moisture, CS616 sensor 01, period
 Alias Sws_616_raw(2) = Sws_616_02_raw             ' Soil moisture, CS616 sensor 02, period
 Alias Sws_616_raw(3) = Sws_616_03_raw             ' Soil moisture, CS616 sensor 03, period
-Alias Sws_616_raw(4) = Sws_616_04_raw             ' Soil moisture, CS616 sensor 04, period
-Alias Sws_616_raw(5) = Sws_616_05_raw             ' Soil moisture, CS616 sensor 05, period
-Alias Sws_616_raw(6) = Sws_616_06_raw             ' Soil moisture, CS616 sensor 06, period
-Alias Sws_616_raw(7) = Sws_616_07_raw             ' Soil moisture, CS616 sensor 07, period
-Alias Sws_616_raw(8) = Sws_616_08_raw             ' Soil moisture, CS616 sensor 08, period
 Units Sws_616_raw = ms
-Public Sws_616_Tcorr(8)
+Public Sws_616_Tcorr(3)
 Alias Sws_616_Tcorr(1) = Sws_616_01_Tcorr
 Alias Sws_616_Tcorr(2) = Sws_616_02_Tcorr
 Alias Sws_616_Tcorr(3) = Sws_616_03_Tcorr
-Alias Sws_616_Tcorr(4) = Sws_616_04_Tcorr
-Alias Sws_616_Tcorr(5) = Sws_616_05_Tcorr
-Alias Sws_616_Tcorr(6) = Sws_616_06_Tcorr
-Alias Sws_616_Tcorr(7) = Sws_616_07_Tcorr
-Alias Sws_616_Tcorr(8) = Sws_616_08_Tcorr
 Units Sws_616_Tcorr = ms
-Public Sws_616(8)
+Public Sws_616(3)
 Alias Sws_616(1) = Sws_616_01
 Alias Sws_616(2) = Sws_616_02
 Alias Sws_616(3) = Sws_616_03
-Alias Sws_616(4) = Sws_616_04
-Alias Sws_616(5) = Sws_616_05
-Alias Sws_616(6) = Sws_616_06
-Alias Sws_616(7) = Sws_616_07
-Alias Sws_616(8) = Sws_616_08
 Units Sws_616 = fraction
+
+' CS650
+Public Sws_650(6)
+Alias Sws_650(1) = sws_cs650           'Volumetric soil water content.
+Alias Sws_650(2) = ec_cs650            'Electrical conductivity.
+Alias Sws_650(3) = T_cs650             'Temperature.
+Alias Sws_650(4) = perm_cs650          'Permittivity.
+Alias Sws_650(5) = PerAvg_cs650        'Period average.
+Alias Sws_650(6) = VoltR_cs650         'Voltage ratio.
+Units sws_cs650 = frac_v_wtr
+Units ec_cs650 = dS/m
+Units T_cs650 = degC
+Units perm_cs650 = None
+Units PerAvg_cs650 = us
+Units VoltR_cs650 = None
 
 ' HMP air temperature and relative humidity 9m.
 Public T_RH_1(5)
@@ -546,6 +550,7 @@ Public Even_Min_Flag_On
 
 ' *** Local variable declarations ***
 ' Scalars.
+Dim i
 Dim j
 Dim k
 Dim n
@@ -567,8 +572,6 @@ Dim Disable_Flag_On(7)
 'Working variables.
 Dim co2_mm_m3					             'Carbon dioxide concentration [mmol/m^3], used to compute umol/mol concentration.
 Dim h2o_mm_m3					             'Water vapor concentration [mmol/m^3], used to compute vapor pressure and mmol/mol concentration.
-Dim loop_count
-
 
 ' *** Final output table definitions ***
 
@@ -607,9 +610,7 @@ DataTable (slow_core,true,4320)
   Average (1,Fh,IEEE4,false)
   Average (1,Fe_raw,IEEE4,false)
   Average (1,Fc_raw,IEEE4,false)
-  Average (1,Fg(1),IEEE4,Disable_Flag_On(5)
-  Average (1,Fg(2),IEEE4,Disable_Flag_On(6)
-  Average (1,Fg(3),IEEE4,Disable_Flag_On(7)
+  Average (1,Fg_01,IEEE4,Disable_Flag_On(5)
   Average (1,Fm,IEEE4,false)
   Average (1,ustar,IEEE4,false)
   Sample (21,IntProc_Out(1),IEEE4)
@@ -673,10 +674,11 @@ DataTable (slow_core,true,4320)
   Average (1,Ta_HMP_02,IEEE4,False)
   Average (1,RH_HMP_02,IEEE4,False)
   ' Soil sensors
-  Average (8,Ts(1),IEEE4,False)
-  Sample (8,Sws_616_raw(1),IEEE4)
-  Sample (8,Sws_616_Tcorr(1),IEEE4)
-  Sample (8,Sws_616(1),IEEE4)
+  Average (1,Ts_TCAV_01,IEEE4,False)
+  Sample (3,Sws_616_raw(1),IEEE4)
+  Sample (3,Sws_616_Tcorr(1),IEEE4)
+  Sample (3,Sws_616(1),IEEE4)
+  Sample (6,Sws_650(1),IEEE4)
   ' Rain, Barometric pressure, System diagnostics
   Average (1,Tpanel,IEEE4,False)
   Average (1,Vbat,IEEE4,False)
@@ -855,8 +857,6 @@ BeginProg
   SW12(1,true)
 
   Fg_cal(1) = Fg_01_cal          ' Load factory calibration values
-  Fg_cal(2) = Fg_02_cal
-  Fg_cal(3) = Fg_03_cal
 
   PortsConfig (&B00001000,00001000)
 
@@ -944,7 +944,10 @@ BeginProg
     rho_a = rho_d+(Ah_HMP_01/1000)               ' Compute moist air density
 
     ' HFP01
-    VoltDiff (Fg(1),3,mV50C,8,True,0,250,Fg_cal(),0)     ' Measure the HFP soil heat flux plates.
+    VoltDiff (Fg_01,1,mV50C,8,True,0,250,Fg_cal(),0)     ' Measure the HFP soil heat flux plates.
+    
+    ' TCAV
+    TCDiff(Ts_TCAV_01,1,mV50C,9,TypeE,Tpanel,True,0,250,1,0)
 
     ' CS106
     VoltDiff (ps_CS106,1,mV5000,11,False,0,250,0.24,500)  ' Measure the barometric pressure
@@ -965,46 +968,17 @@ BeginProg
 
   NextScan
 
-  '*** Beginning of AM16/32B measurements ***
-
-  SlowSequence
-  Scan(1,Min,10,0)
-
-    PortSet (RESET_PORT,1)
-
-    loop_count = 1
-    SubScan (0,Sec,8)
-      PulsePort (MUX_CLOCK_PORT,10)
-      TCDiff(Ts(loop_count),1,mV50C,13,TypeE,Tpanel,True,0,250,1,0)
-      loop_count += 1
-    NextSubScan
-
-    PortSet (RESET_PORT,0)
-
-  NextScan
-
   SlowSequence
   Scan(30,Min,10,0)
 
-    PortSet (RESET_PORT,1)
+    PeriodAvg (Sws_616_raw(),3,mV1000,27,0,0,100,10,1,0)
+    For i=1 To 3 
+      Sws_616_Tcorr(i) = Sws_616_raw(i) + (Tref - Ts_TCAV_01) * (t0 + t1 * Sws_616_raw(i) + t2 * Sws_616_raw(i)^2)
+      Sws_616(i) = Sws_a0 + Sws_a1 * Sws_616_Tcorr(i) + Sws_a2 * Sws_616_Tcorr(i)^2
+    Next i
 
-    SubScan (0,Sec,8)
-      PulsePort (MUX_CLOCK_PORT,10)
-    NextSubScan
-
-    loop_count = 1
-    SubScan (0,Sec,3)
-      PulsePort (MUX_CLOCK_PORT,10)
-      PeriodAvg (Sws_616_raw(loop_count),1,mV1000,27,0,0,100,10,1,0)
-      Sws_616_Tcorr(loop_count) = Sws_616_raw(loop_count) + (Tref - Ts(loop_count)) * (t0 + t1 * Sws_616_raw(loop_count) + t2 * Sws_616_raw(loop_count)^2)
-      Sws_616(loop_count) = Sws_a0 + Sws_a1 * Sws_616_Tcorr(loop_count) + Sws_a2 * Sws_616_Tcorr(loop_count)^2
-      loop_count += 1
-    NextSubScan
-
-    PortSet (RESET_PORT,0)
+    SDI12Recorder (Sws_650,7,1,"M3!",1,0)
 
   NextScan
-
-  '*** End of AM16/32B measurements ***
 
 EndProg
