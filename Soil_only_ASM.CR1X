@@ -15,33 +15,33 @@
 'Modified March 2025 by Ian McHugh for CR1000X
 
 'Profile soil moisture probe documentation
-'First 7 on SDMX50 #2 at tower
-'1: Bare soil array1 60cm deep, 45degree angle (60-80), cable length = 6, window length = 3.36
-'2: Bare soil array1 10cm deep, 45degree angle (10-30), cable length = 6, window length = 3.43
-'3: Bare soil array1 100cm deep, 45degree angle (100-120), cable length = 12, window length = 3.31
-'4: Mulga array1 100cm deep, 45degree angle (100-120), cable length = 12, window length = 3.31
-'5: Mulga array1 10cm deep, 45degree angle (10-30), cable length = 12, window length = 3.43
-'6: Mulga array1 60cm deep, 45degree angle (60-80), cable length = 12, window length = 3.36
-'7: Bare soil, horizontal (0-10), cable length = 38, window length = 3.44
+'First 7 on  at tower
+'Bare soil array1 60cm deep, 45degree angle (60-80), cable length = 6, window length = 3.36
+'Bare soil array1 10cm deep, 45degree angle (10-30), cable length = 6, window length = 3.43
+'Bare soil array1 100cm deep, 45degree angle (100-120), cable length = 12, window length = 3.31
+'Mulga array1 100cm deep, 45degree angle (100-120), cable length = 12, window length = 3.31
+'Mulga array1 10cm deep, 45degree angle (10-30), cable length = 12, window length = 3.43
+'Mulga array1 60cm deep, 45degree angle (60-80), cable length = 12, window length = 3.36
+'Raingage, bare soil, horizontal (0-10), cable length = 38, window length = 3.44
 
 'Second 7 on SDMX50 #2, 20m distance from tower
-'8: Understory array1 100cm deep, 45degree angle (100-120), cable length = 63, window length = 3.31
-'9: Understory array1 60cm deep, 45degree angle (60-80), cable length = 63, window length = 3.36
-'10: Understory array1 10cm deep, 45degree angle (10-30), cable length = 63, window length = 3.43
-'11: Bare soil array2 143cm deep, horizontal (140-146), cable length = 63, window length = 3.25
-'12: Bare soil array2 100cm deep, 45degree angle (100-120), cable length = 63, window length = 3.31
-'13: Bare soil array2 60cm deep, 45degree angle (60-80), cable length = 63, window length = 3.36
-'14: Bare soil array2 10cm deep, 45degree angle (10-30), cable length = 63, window length = 3.43
+'Understory array1 100cm deep, 45degree angle (100-120), cable length = 63, window length = 3.31
+'Understory array1 60cm deep, 45degree angle (60-80), cable length = 63, window length = 3.36
+'Understory array1 10cm deep, 45degree angle (10-30), cable length = 63, window length = 3.43
+'Bare soil array2 143cm deep, horizontal (140-146), cable length = 63, window length = 3.25
+'Bare soil array2 100cm deep, 45degree angle (100-120), cable length = 63, window length = 3.31
+'Bare soil array2 60cm deep, 45degree angle (60-80), cable length = 63, window length = 3.36
+'Bare soil array2 10cm deep, 45degree angle (10-30), cable length = 63, window length = 3.43
 
 'Third 8 on SDMX50 #3, 20m distance from SDMX50 #2
-'15: Understory array2 100cm deep, 45degree angle (100-120), cable length = 89, window length = 3.31
-'16: Understory array2 60cm deep, 45degree angle (60-80), cable length = 89, window length = 3.36
-'17: Understory array2 10cm deep, 45degree angle (10-30), cable length = 63, window length = 3.43
-'18: Understory array2 10cm deep, 45degree angle (10-30), cable length = 63, window length = 3.43
-'19: Mulga array2 100cm deep, 45degree angle (100-120), cable length = 89, window length = 3.31
-'20: Mulga array2 60cm deep, 45degree angle (60-80), cable length = 89, window length = 3.36
-'21: Mulga array2 10cm deep, 45degree angle (10-30), cable length = 89, window length = 3.43
-'22: Mulga array2 10cm deep, 45degree angle (10-30), cable length = 89, window length = 3.43
+'Understory array2 100cm deep, 45degree angle (100-120), cable length = 89, window length = 3.31
+'Understory array2 60cm deep, 45degree angle (60-80), cable length = 89, window length = 3.36
+'Understory array2 10cm deep, 45degree angle (10-30), cable length = 63, window length = 3.43
+'Understory array2 10cm deep, 45degree angle (10-30), cable length = 63, window length = 3.43
+'Mulga array2 100cm deep, 45degree angle (100-120), cable length = 89, window length = 3.31
+'Mulga array2 60cm deep, 45degree angle (60-80), cable length = 89, window length = 3.36
+'Mulga array2 10cm deep, 45degree angle (10-30), cable length = 89, window length = 3.43
+'Mulga array2 10cm deep, 45degree angle (10-30), cable length = 89, window length = 3.43
 
 '############################################################################
 
@@ -206,17 +206,15 @@ SetSetting ("PakBusAddress",PAKBUS_ADDR)                    'Pakbus address
 
 'Define Data Tables
 DataTable (VWC_Param,TRUE,-1)
-  DataInterval (0,OUTPUT_INTERVAL,Min,1)
   Sample (22,LaL(),IEEE4)
   Sample (22,Sws_CS610(),IEEE4)
 EndTable
 
 DataTable (soil_microsites,TRUE,-1)
-  DataInterval (0,OUTPUT_INTERVAL,Min,1)
   Average (1,Tpanel,IEEE4,False)
   Average (1,Vbat,IEEE4,False)
-  Average (3,Fg,IEEE4,False)
-  Average (3,Ts_TCAV,IEEE4,False)
+  Average (1,Fg,IEEE4,False)
+  Average (1,Ts_TCAV,IEEE4,False)
   Sample (3,Sws_cs616(1),IEEE4)
 EndTable
 
@@ -268,34 +266,25 @@ BeginProg
     'Turn the Campbell CS616 probes off 16 minutes into half-hourly interval.
     If (IfTime (16,OUTPUT_INTERVAL,Min)) Then WriteIO (&h70,&h0)
 
-'    ' Measure and correct the Campbell CS616 probes in the middle of the half-hourly interval.
-'    If (IfTime (15,OUTPUT_INTERVAL,Min)) Then
-'      PeriodAvg (Sws_cs616_raw,3,mV5000,VWC_ANALOG_INPUT,0,0,5,10,1,0)
-'      For i = 1 To 3
-'        Sws_cs616_Tcorr(i) = Sws_cs616_raw(i) + (Tref - Ts_TCAV(i)) * (t0 + t1 * Sws_cs616_raw(i) + t2 * Sws_cs616_raw(i)^2)
-'        Sws_cs616(i) = Sws_a0 + Sws_a1 * Sws_cs616_Tcorr(i) + Sws_a2 * Sws_cs616_Tcorr(i)^2
-'      Next i
-'    EndIf
-    
-    'Switch the Topp CS610 probes on 14 mins into the output interval
-    If (IfTime (14,OUTPUT_INTERVAL,min)) Then
-
-      ' Activate power
-      SW12(SW12_1,1)
-      
-    EndIf
-    
-    'Switch the Topp CS610 probes off 16 mins into the output interval
-    If (IfTime (16,OUTPUT_INTERVAL,min)) Then
-    
-      ' Deactivate power
-      SW12(SW12_1,0)
-      
-    EndIf
-
+    ' Measure and correct the Campbell CS616 probes in the middle of the half-hourly interval.
     If (IfTime (15,OUTPUT_INTERVAL,Min)) Then
-      
-      ' Measure CS610
+      PeriodAvg (Sws_cs616_raw,3,mV5000,VWC_ANALOG_INPUT,0,0,5,10,1,0)
+      For i = 1 To 3
+        Sws_cs616_Tcorr(i) = Sws_cs616_raw(i) + (Tref - Ts_TCAV(i)) * (t0 + t1 * Sws_cs616_raw(i) + t2 * Sws_cs616_raw(i)^2)
+        Sws_cs616(i) = Sws_a0 + Sws_a1 * Sws_cs616_Tcorr(i) + Sws_a2 * Sws_cs616_Tcorr(i)^2
+      Next i
+    EndIf
+    
+    ' Call the table to log the microsite data
+    CallTable soil_microsites
+
+    'Measure and correct the Topp CS610 probes halfway into the output interval
+    If (IfTime (20,OUTPUT_INTERVAL,min)) Then
+
+      ' Activate power then pause to stabilise
+      SW12(SW12_1,1)
+      Delay(1,2,Sec)
+
       TDR100 (LaL(1),SDMX50_ADDR,0,1001,10,1.0,251,cable_length(1),window_length(1),0.3,0.085,1.0,0)
       TDR100 (LaL(2),SDMX50_ADDR,0,2001,10,1.0,251,cable_length(2),window_length(2),0.3,0.085,1.0,0)
       TDR100 (LaL(3),SDMX50_ADDR,0,3001,10,1.0,251,cable_length(3),window_length(3),0.3,0.085,1.0,0)
@@ -324,22 +313,16 @@ BeginProg
         LaL2(i) = LaL(i)^2    'Apparent dielectric constant K=(LaL)^2
       Next i
 
-      ' Topp conversion from dielectric constant to Volumetric Water Content
+      'Topp conversion from dielectric constant to Volumetric Water Content
       For i = 1 To 22
         Sws_CS610(i) = Topp_a0 + Topp_a1 * LaL2(i) + Topp_a2 * LaL2(i)^2 + Topp_a3 * LaL2(i)^3
       Next i
 
-      ' Measure CS616
-      PeriodAvg (Sws_cs616_raw,3,mV5000,VWC_ANALOG_INPUT,0,0,5,10,1,0)
-      For i = 1 To 3
-        Sws_cs616_Tcorr(i) = Sws_cs616_raw(i) + (Tref - Ts_TCAV(i)) * (t0 + t1 * Sws_cs616_raw(i) + t2 * Sws_cs616_raw(i)^2)
-        Sws_cs616(i) = Sws_a0 + Sws_a1 * Sws_cs616_Tcorr(i) + Sws_a2 * Sws_cs616_Tcorr(i)^2
-      Next i      
+      CallTable VWC_Param
+
+      SW12(SW12_1,0)
 
     EndIf
-
-    CallTable VWC_Param
-    CallTable soil_microsites
 
   NextScan
 EndProg

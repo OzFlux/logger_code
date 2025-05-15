@@ -60,7 +60,7 @@
 '                           -> Internal variables: "Soil heat flux internal variables"
 
 'Soil temperature           -> User constants / wiring: "Soil temperature user constants / wiring"
-'                           -> Internal constants and variables: "Soil temperature internal variables / tables"
+'                           -> Internal constants and variables: "Soil temperature internal variables / tables" 
 
 'Air temperature / humidity -> User constants and wiring: "T and RH user constants / wiring"
 '                           -> Internal variables and tables: "T and RH internal variables / tables"
@@ -112,7 +112,7 @@ Const H2O_SIG_STRGTH_THRESHOLD = 0.7 'Unique value - filter gas analyzer H2O dat
 'G       power reference (black)
 '        power shield (clear)
 
-' -> Soil heat flux user constants / wiring (CR1000X - read calibration coefficienTs into memory on compile)
+' -> Soil heat flux user constants / wiring (CR1000X - read calibration coefficients into memory on compile)
 
 Const SHF_ANALOG_INPUT = 1           'Unique differential analog input channel.
 Const NMBR_SHF = 2                   'Unique number of HFP01 to measure.
@@ -272,7 +272,7 @@ Dim slowsequence_disable_f As Boolean = TRUE             'Flag used to decimate 
 Dim dly_data_out(7)                                      'Array used to temporarily store the lagged record.
 Dim sys_conf_var_file As Long                            'Filehandle for the file that contains the system configuration variables in the CPU.
 Dim sys_conf_var_file_size As Long                       'Size of the system configuration file stored on the CPU.
-Dim sys_conf_var(2) = {0,0}                              'Variable saved are:  AZ_SONIC and irga_off_flg
+Dim sys_conf_var(2) = {0,0}                              'Variable saved are:  sonic_azimuth and irga_off_flg
 Dim process_time
 Dim buff_depth
 Dim i As Long                                            'Main scan index variable.
@@ -367,7 +367,7 @@ Units diag_sonic_aggregate = arb
 
 Dim U_rslt                                 'Used to calculate Maximum resultant wind speed in an averaging period (Markus)
 
-Dim diag_biTs_sonic(6) As Long             'Sonic warning flags.
+Dim diag_bits_sonic(6) As Long             'Sonic warning flags.
 Alias diag_bits_sonic(1) = sonic_amp_l_f   'Amplitude low warning flag.
 Alias diag_bits_sonic(2) = sonic_amp_h_f   'Amplitude high warning flag.
 Alias diag_bits_sonic(3) = sonic_sig_lck_f 'Poor signal lock warning flag.
@@ -558,17 +558,17 @@ Units Tc_stdev = degC
 Units Tc_Ux_cov = degC m/s
 Units Tc_Uy_cov = degC m/s
 Units Tc_Uz_cov = degC m/s
-units CO2_mean = mg/m^3
-units H2O_mean = g/m^3
-units amb_press_mean = kPa
+Units CO2_mean = mg/m^3
+Units H2O_mean = g/m^3
+Units amb_press_mean = kPa
 Units Tc_mean = degC
-units rho_a_mean = kg/m^3
-units Fco2_no_wpl = mg/(m^2 s)
-units Fe_no_wpl = W/m^2
-units CO2_wpl_Fe = mg/(m^2 s)
-units CO2_wpl_Fh = mg/(m^2 s)
-units H2O_wpl_Fe = W/m^2
-units H2O_wpl_Fh = W/m^2
+Units rho_a_mean = kg/m^3
+Units Fco2_no_wpl = mg/(m^2 s)
+Units Fe_no_wpl = W/m^2
+Units CO2_wpl_Fe = mg/(m^2 s)
+Units CO2_wpl_Fh = mg/(m^2 s)
+Units H2O_wpl_Fe = W/m^2
+Units H2O_wpl_Fh = W/m^2
 
 ' Tables
 
@@ -676,12 +676,12 @@ Alias nr(3) = Fsd
 Alias nr(4) = Fsu
 Alias nr(5) = Fld
 Alias nr(6) = Flu
-Alias nr(7) = Tb
+Alias nr(7) = Tbody_RAD
 Alias nr(8) = Fld_meas
 Alias nr(9) = Flu_meas
 Units nr = W/m^2
-units albedo = arb
-units Tb = K
+Units albedo = arb
+Units Tbody_RAD = K
 
 ' -> Soil temperature variables / tables
 
@@ -693,7 +693,7 @@ Dim Tsoil_mean(NMBR_TSOIL)
 Units Tsoil_mean = degC
 Units del_Tsoil = degC
 
-DataTable (staTs_soil,TRUE,1)
+DataTable (stats_soil,TRUE,1)
   TableHide
   DataInterval (0,OUTPUT_INTERVAL,Min,1)
   Average (NMBR_TSOIL,Tsoil(1),IEEE4,slowsequence_disable_f)
@@ -891,7 +891,7 @@ EndTable
 'Time series data.
 DataTable (Ts_data,TRUE,-1)
   DataInterval (0,SCAN_INTERVAL,mSec,100)
-  TableFile ("CRD:"&Status.SerialNumber(1,1)&".Ts_data_",64,-1,0,1,Day,0,0)
+  TableFile ("CRD:TOB3_"&STATION_NAME&".fast_data_",64,-1,0,1,Day,0,0)
 
   '*** Beginning of sonic time series output ***
   Sample (5,sonic_irga_raw(1),IEEE4)
@@ -915,7 +915,7 @@ BeginProg
   Next i
 
   SemaphoreGet (1)
-    sys_conf_var_file = FileOpen ("CPU:sys_conf_var.dat","rb",0) 'Check if a file exists.
+    sys_conf_var_file = FileOpen ("CPU:sys_conf_var.dat","rb",0) 'Check if a file exisTs.
     sys_conf_var_file_size = FileSize (sys_conf_var_file)
     FileClose (sys_conf_var_file)
   SemaphoreRelease (1)
@@ -1000,7 +1000,7 @@ BeginProg
 
       'Extract the six warning flags from the sonic diagnostic word.
       For i = 1 To 6
-        diag_biTs_sonic(i) = diag_sonic_tmp AND &h1
+        diag_bits_sonic(i) = diag_sonic_tmp AND &h1
         diag_sonic_tmp = diag_sonic_tmp >> 1
       Next i
 
@@ -1016,7 +1016,7 @@ BeginProg
       If ( comp_cov_3d.Output(1,1) ) Then
         GetRecord (Tsonic_stdev,comp_cov_3d,1)
 
-        'Rotate the CSAT3A sonic head RHC system so the negative x-axis poinTs north.
+        'Rotate the CSAT3A sonic head RHC system so the negative x-axis points north.
         wnd_dir_compass = (360+AZ_SONIC-wnd_dir_sonic) MOD 360
 
         'Make the CSAT3A sonic head wind direction fall between 0 to 180 degrees and 0 to -180 degrees.
@@ -1109,9 +1109,9 @@ BeginProg
 
 
       '*** Beginning of temperature and humidity processing ***
-      CallTable staTs_tmpr_rh
-      If ( staTs_tmpr_rh.Output(1,1) ) Then
-        GetRecord (Ta_sensor_mean,staTs_tmpr_rh,1)
+      CallTable stats_tmpr_rh
+      If ( stats_tmpr_rh.Output(1,1) ) Then
+        GetRecord (Ta_sensor_mean,stats_tmpr_rh,1)
 
         AH_sensor_mean = e_sensor_mean/((Ta_sensor_mean+273.15)*RV)
         rho_d_tmpr_rh_mean = (amb_press_mean-e_sensor_mean)/((Ta_sensor_mean+273.15)*RD)
@@ -1136,9 +1136,9 @@ BeginProg
 
 
       '*** Beginning of soil temperature processing ***
-      CallTable staTs_soil
-      If ( staTs_soil.Output(1,1) ) Then
-        GetRecord (Tsoil_mean(1),staTs_soil,1)
+      CallTable stats_soil
+      If ( stats_soil.Output(1,1) ) Then
+        GetRecord (Tsoil_mean(1),stats_soil,1)
 
         'Compute the change in soil temperature.
         For i = 1 To NMBR_TSOIL
@@ -1206,15 +1206,15 @@ BeginProg
 
     CDM_BrHalf (VOLT116,CDMVOLT116_1_ADDR,X_nr,1,mV5000,NR_TsENS_ANALOG_INPUT,NR_TsENS_VX,1,2500,True,0,ANALOG_INTEGRATION,1.0,0)
     ln_R = LOG (1000*X_nr/(1-X_nr))
-    Tb = (1/(A_SHH+B_SHH*ln_R+C_SHH*ln_R*ln_R*ln_R))
+    Tbody_RAD = (1/(A_SHH+B_SHH*ln_R+C_SHH*ln_R*ln_R*ln_R))
 
     'Compute net radiation, albedo, incoming and outgoing longwave radiation.
     Fn = Fsd-Fsu+Fld-Flu
     albedo = Fsu/Fsd
     Fld_meas = Fld
     Flu_meas = Flu
-    Fld = Fld+(5.67e-8*Tb*Tb*Tb*Tb)
-    Flu = Flu+(5.67e-8*Tb*Tb*Tb*Tb)
+    Fld = Fld+(5.67e-8*Tbody_RAD*Tbody_RAD*Tbody_RAD*Tbody_RAD)
+    Flu = Flu+(5.67e-8*Tbody_RAD*Tbody_RAD*Tbody_RAD*Tbody_RAD)
     '*** End of CNR 4 measurements ***
 
     '*** Beginning of PAR measurements
@@ -1369,10 +1369,10 @@ BeginProg
     Delay(1, 25, Sec) ' Spread out the delay to take the load off simultaneous uploads to server
     TStamp = Public.Timestamp(5,1)
 
-    Upload_status_TERNflux   = FTPClient ("live.fluxdata.cloud.edu.au:4221","liveflux25","P5$d#x*R32$B9(k","TERNflux.dat","Dookie1/Dookie1_EC_TERNflux.dat",9,0,0,0,-1008)
+    Upload_status_TERNflux   = FTPClient ("live.fluxdata.cloud.edu.au:4221","liveflux25","P5$d#x*R32$B9(k","TERNflux","Dookie1/Dookie1_EC_TERNflux.dat",9,0,0,0,-1008)
     'Upload_status_TERNflux_ssh =  FTPClient (Server,User,Pass,"TERNflux.dat","/mnt/ext/ftp/Dookie1/Dookie1_EC_TERNflux_ssh.dat",28,0,0,Min,-1008)
-    Upload_status_diagnostic = FTPClient ("live.fluxdata.cloud.edu.au:4221","liveflux25","P5$d#x*R32$B9(k","diagnostic.dat","Dookie1/Dookie1_EC_diagnostic.dat",9,0,0,0,-1008)
-    Upload_status_ts_data    = FTPClient ("live.fluxdata.cloud.edu.au:4221","liveflux25","P5$d#x*R32$B9(k","Ts_data.dat","Dookie1/Dookie1_EC_" & TStamp & "ts_data.dat",9,0,0,0,-1008)
+    Upload_status_diagnostic = FTPClient ("live.fluxdata.cloud.edu.au:4221","liveflux25","P5$d#x*R32$B9(k","diagnostic","Dookie1/Dookie1_EC_diagnostic.dat",9,0,0,0,-1008)
+    Upload_status_ts_data    = FTPClient ("live.fluxdata.cloud.edu.au:4221","liveflux25","P5$d#x*R32$B9(k","ts_data","Dookie1/Dookie1_EC_" & TStamp & "ts_data.dat",9,0,0,0,-1008)
   NextScan
   EndSequence
 EndProg

@@ -54,17 +54,8 @@
 'LI7500RS                   -> User constants and wiring: "LI7500RS user constants / wiring"
 '                           -> Internal constants, variables and tables: "LI7500RS internal constants / variables / tables"
 
-'Soil moisture              -> User constants and wiring: "Soil moisture user constants / wiring"
-'                           -> Internal variables: "Soil moisture internal variables"
-
 'Rain gauge                 -> User constants and wiring: "Rain gauge user constants / wiring"
 '                           -> Internal variables: "Rain gauge internal variables"
-
-'Soil heat flux             -> User constants and wiring: "Soil heat flux user constants / wiring"
-'                           -> Internal variables: "Soil heat flux internal variables"
-
-'Soil temperature           -> User constants / wiring: "Soil temperature user constants / wiring"
-'                           -> Internal constants and variables: "Soil temperature internal variables / tables" 
 
 'Ancillary wind sensor      -> User constants and wiring: ""
 '                           -> Internal variables: "Ancillary wind sensing internal variables"
@@ -82,12 +73,23 @@
 
 ' -> Station-based user constants
 
-Const STATION_NAME = "<YOURSITEHERE>_EC"
+Const STATION_NAME = "WombatStateForest_EC"
 Const PAKBUS_ADDR = 1
+
+' Markus
+' server information for data upload
+'Const FTP_Address = "live.fluxdata.cloud.edu.au"
+'Const FTP_Port = 4221
+'Const FTP_Username = "logger"
+'Const FTP_Password = ""
+'Const FTP_FolderPath = "/WombatForest/"
+Const Server = "live.fluxdata.cloud.edu.au"
+Const User = "logger"
+Const Pass = ""
 
 ' -> General user constants
 
-Const NUM_DAY_CRD = 200               ' Unique value, number of days of flux data to store on a 16 GB CF card (44 days = 2 GB). This value will vary with configuration.
+Const NUM_DAY_CRD = 42               ' Unique value, number of days of flux data to store on a 16 GB CF card (44 days = 2 GB). This value will vary with configuration.
 Const SDM_PER = 30                    ' Unique value, default SDM clock speed.
 Const ANALOG_INTEGRATION = _50Hz      ' Slow sequence analog measurement integration time, _60Hz or _50Hz.
 Const SCAN_INTERVAL = 100             ' Unique value, measurement rate 100 ms (10 Hz) or 50 ms (20 Hz).
@@ -99,12 +101,12 @@ Const CDMVOLT116_1_SN = 4634              ' CDM-VOLT116 serial number
 Const CDMVOLT116_1_ADDR = 1               ' CDM-VOLT116 CPI address
 Const CDMVOLT116_1_DESC = "Mast_top_MUX"  ' CDM-VOLT116 descriptor
 
-' -> CSAT3B user constants / wiring (CR6 -> note that CSAT and IRGA signals 
-'    are combined at top of mast and brought down to logger on a single cable 
+' -> CSAT3B user constants / wiring (CR6 -> note that CSAT and IRGA signals
+'    are combined at top of mast and brought down to logger on a single cable
 '    for tall towers; as such, wiring colours may vary for cabling used).
 
 Const CSAT3B_SDM_ADDR = 3          ' CSAT3B SDM address
-Const AZ_SONIC = 210                ' CSAT3B azimuth
+Const AZ_SONIC = 195                ' CSAT3B azimuth
 
 'SDM-C1  SDM Data (green)
 'SDM-C2  SDM Clock (white)
@@ -131,26 +133,6 @@ Const IRGA_SIG_STR_THRESHOLD = 60  ' Unique value - filter LI-7500(RS) data with
 'G       power reference (red with black/black)
 '        ground (green/not used)
 
-' -> Soil moisture user constants / wiring (CR6)
-
-Const NMBR_CS65X = 5                  'Number of CS65X to measure.
-Const CS65X_SDI12_PORT = U9           'Measurement port.
-Const CS65X_1_ADDR = 1                'Address for this probe.
-Const CS65X_2_ADDR = 2                'Address for this probe.
-Const CS65X_3_ADDR = 3                'Address for this probe.
-Const CS65X_4_ADDR = 4                'Address for this probe.
-
-'Search for text "Duplicate above for additional probes." to add code for additional probes.
-
-'C5      SDI-12 data #1 (SDI-12 address = 1-4) (green)
-'G       RS-232 Rx #1 (orange)
-'12V     SDI-12 power #1 (red)
-'        SDI-12 power #2 (red)
-'G       SDI-12 data/power reference #1 (black)
-'        Shield #1 (clear)
-'        SDI-12 data/power reference #2 (black)
-'        Shield #2 (clear)
-
 ' -> Rain gauge user constants / wiring (CR6)
 
 'Note: for the CR6 and CR1000X, triggering conflicts may occur when a companion terminal is used for
@@ -158,52 +140,19 @@ Const CS65X_4_ADDR = 4                'Address for this probe.
 'example, If the WindSonic4 Is connected To C3 on a CR1000X, C4 cannot be used in the
 'TimerInput(), PulseCount(), OR WaitDigTrig() instructions. Hence, we put the pulse port at U3.
 
-Const RAIN_PULSE_INPUT = U12       'Unique pulse input channel for tipping bucket.
+Const RAIN_PULSE_INPUT = U1        'Unique pulse input channel for tipping bucket.
 Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
 
 'U3      Signal (black)
 'G       Signal reference (white)
 '        Shield (clear)
 
-' -> Soil heat flux user constants / wiring (CR6 - read calibration coefficients into memory on compile)
-
-Const SHF_ANALOG_INPUT = U1           'Unique single-ended analog input channel.
-Const NMBR_SHF = 2                    'n plates
-Const SHF_FIELDS = "Fg_01,Fg_02"      'Field names
-Const SHF_CAL_1 = -33.1               'Unique multiplier for HFP #1 (1000/sensitivity).
-Const SHF_CAL_2 = 15.11               'Unique multiplier for HFP #2 (1000/sensitivity).
-Data SHF_CAL_1
-Data SHF_CAL_2
-
-'HFP01 #1
-'U5      Signal (white)
-'gnd     Signal reference (green)
-'gnd     Shield (clear)
-'HFP01 #2
-'U6      Signal (white)
-'gnd     Signal reference (green)
-'gnd     Shield (clear)
-
-' -> Soil temperature user constants / wiring (CR6)
-
-Const TSOIL_ANALOG_INPUT = U3         'Unique differential analog input channel.
-Const NMBR_TSOIL = 2                  'n sensors
-
-'TCAV1
-'3H      Signal #1 (purple)
-'3L      Signal reference #1 (red)
-'gnd     Shield #1 (clear)
-'TCAV2
-'4H      Signal #2 (purple)
-'4L      Signal reference #2 (red)
-'gnd     Shield #2 (clear)
-
 ' -> T and RH user constants / wiring (VOLT116)
 
 Const T_RH_MAIN_INPUT = 1          'Unique differential input channel for temperature and humidity probe.
 Const T_RH_T_MULT = 0.14           'Unique multiplier for temperature; HC2S3 = 0.1, HMP155A = 0.14, or HMP45C = 0.1.
 Const T_RH_T_OFFSET = -80          'Unique offset for temperature; HC2S3 = -40, HMP155A = -80, or HMP45C = -40.
-Const T_RH_RH_MULT = 0.1           'Unique multiplier for rh; HC2S3 = ?, HMP155A = 0.001, or HMP45C = ?.
+Const T_RH_RH_MULT = 0.1           'Unique multiplier for rh; HC2S3 = ?, HMP155A = 0.001 for fraction, 0.1 for percent, or HMP45C = ?.
 Const T_RH_RH_OFFSET = 0           'Unique offset for rh; HC2S3 = ?, HMP155A = 0, or HMP45C = ?.
 
 '1H      Temperature signal (yellow)
@@ -218,7 +167,7 @@ Const T_RH_RH_OFFSET = 0           'Unique offset for rh; HC2S3 = ?, HMP155A = 0
 
 Const NR_ANALOG_INPUT = 3                'Unique differential analog input channel for raw measurements
 Const NR_TSENS_ANALOG_INPUT = 13         'Unique single-ended analog input channel for body T
-Const NR_TSENS_VX = X1                   'Unique voltage excitation channel for thermistor
+Const NR_TSENS_VX = X2                   'Unique voltage excitation channel for thermistor
 Const NR_SW_INCOMING_CAL = 1000/12.71    'Unique multiplier for CNR 4 shortwave incoming radiation (1000/sensitivity).
 Const NR_SW_OUTGOING_CAL = 1000/12.98    'Unique multiplier for CNR 4 shortwave outgoing radiation (1000/sensitivity).
 Const NR_LW_INCOMING_CAL = 1000/8.75     'Unique multiplier for CNR 4 longwave incoming radiation (1000/sensitivity).
@@ -282,10 +231,10 @@ Dim slowsequence_disable_f As Boolean = TRUE             'Flag used to decimate 
 Dim dly_data_out(7)                                      'Array used to temporarily store the lagged record for sonic or irga.
 Dim process_time
 Dim buff_depth
-'Dim PrevFileName As String *50                           'The name of the daily fast data file at time of closing
-'Dim NewFileName As String *50                            'The filename that is constructed from date and time elements
-'Dim NewFileFlag                                          'Status flag that goes high when file handle is closed (midnight)
-'Dim timearray(6)                                         'Array that holds the date and time elements used to construct the new file name
+Dim PrevFileName As String *50                           'The name of the daily fast data file at time of closing
+Dim NewFileName As String *50                            'The filename that is constructed from date and time elements
+Dim NewFileFlag                                          'Status flag that goes high when file handle is closed (midnight)
+Dim timearray(6)                                         'Array that holds the date and time elements used to construct the new file name
 Dim i As Long                                            'Main scan index variable.
 Dim n = 1
 Units process_time = us
@@ -432,10 +381,10 @@ Dim irga_raw(5)                           'Raw and not lagged LI-7500(RS) data.
 'LI-7500(RS) output variables.
 Dim cov_array_irga(3,4)                   'Arrays used to hold the input data for the covariance instructions (sonic and LI-7500(RS)).
 Dim cov_out_irga(26)                      'LI-7500(RS) statistics.
-Alias cov_out_irga(1) = Fco2              'Carbon dioxide flux (LI-7500(RS)), with Webb et al. term.
-Alias cov_out_irga(2) = Fe                'Latent heat flux (LI-7500(RS)), with Webb et al. term.
+Alias cov_out_irga(1) = Fco2         'Carbon dioxide flux (LI-7500(RS)), with Webb et al. term.
+Alias cov_out_irga(2) = Fe           'Latent heat flux (LI-7500(RS)), with Webb et al. term.
 Alias cov_out_irga(3) = Fh_irga           'Sensible heat flux using sonic temperature corrected for water vapor measured by the LI-7500(RS).
-Alias cov_out_irga(4) = CO2_stdev
+Alias cov_out_irga(4) = co2_stdev
 Alias cov_out_irga(5) = CO2_Ux_cov
 Alias cov_out_irga(6) = CO2_Uy_cov
 Alias cov_out_irga(7) = CO2_Uz_cov
@@ -461,7 +410,7 @@ Alias cov_out_irga(26) = H2O_wpl_Fh       'Latent heat flux (LI-7500(RS)), Webb 
 Units Fco2 = mg/(m^2 s)
 Units Fe = W/m^2
 Units Fh_irga = W/m^2
-Units CO2_stdev = mg/m^3
+Units co2_stdev = mg/m^3
 Units CO2_Ux_cov = mg/(m^2 s)
 Units CO2_Uy_cov = mg/(m^2 s)
 Units CO2_Uz_cov = mg/(m^2 s)
@@ -513,28 +462,19 @@ EndTable
 Public rain
 Units rain = mm
 
-' -> Ancillary wind sensing internal variables
-
-' Variables
-
-'Public WS_AUX
-'Public WD_AUX
-'Units WS_AUX = meters/second
-'Units WD_AUX = degrees
-
 ' -> T and RH internal variables / tables
 
 ' Variables
 
 Public tmpr_rh(3)
-Alias tmpr_rh(1) = Ta_sensor                    'Temperature/humidity probe temperature.
-Alias tmpr_rh(2) = RH_sensor                    'Temperature/humidity probe relative humidity.
-Alias tmpr_rh(3) = e_sensor                     'Temperature/humidity probe vapor pressure.
+Alias tmpr_rh(1) = Ta_sensor                     'Temperature/humidity probe temperature.
+Alias tmpr_rh(2) = RH_sensor                     'Temperature/humidity probe relative humidity.
+Alias tmpr_rh(3) = e_sensor                      'Temperature/humidity probe vapor pressure.
 Units Ta_sensor = degC
 Units RH_sensor = %
 Units e_sensor = kPa
-Dim es_sensor                                  'Temperature/humidity probe saturation vapor pressure.
-Dim rho_d_sensor                          'Density of dry air used in Webb et al. term [kg / m^3].
+Public es_sensor                                    'Temperature/humidity probe saturation vapor pressure.
+Public rho_d_sensor                                 'Density of dry air used in Webb et al. term [kg / m^3].
 
 Dim stats_out_tmpr_rh(6)                        'Temperature/humidity probe statistics.
 Alias stats_out_tmpr_rh(1) = Ta_sensor_mean      'Mean temperature/humidity probe temperature.
@@ -587,54 +527,13 @@ Units nr = W/m^2
 Units albedo = arb
 Units Tb = K
 
-' -> Soil temperature variables / tables
-
-' Variables
-
-Public Tsoil(NMBR_TSOIL)                'TCAV soil thermocouples.
-Public del_Tsoil(NMBR_TSOIL)            'Change in soil temperature.
-Dim prev_Tsoil(NMBR_TSOIL)
-Dim Tsoil_mean(NMBR_TSOIL)
-Units Tsoil_mean = degC
-Units del_Tsoil = degC
-
-' Tables
-
-DataTable (stats_soil,TRUE,1)
-  TableHide
-  DataInterval (0,OUTPUT_INTERVAL,Min,1)
-
-  Average (NMBR_TSOIL,Tsoil(1),IEEE4,slowsequence_disable_f)
-EndTable
-
-' -> Soil moisture variables
-
-Public sws_cs650(NMBR_CS65X)           'Volumetric soil water content.
-Public ec_cs650(NMBR_CS65X)            'Electrical conductivity.
-Public T_cs650(NMBR_CS65X)             'Temperature.
-Public perm_cs650(NMBR_CS65X)          'Permittivity.
-Public PerAvg_cs650(NMBR_CS65X)        'Period average.
-Public VoltR_cs650(NMBR_CS65X)         'Voltage ratio.
-Dim cs65x_raw(6)
-Units sws_cs650 = frac_v_wtr
-Units ec_cs650 = dS/m
-Units T_cs650 = degC
-Units perm_cs650 = None
-Units PerAvg_cs650 = us
-Units VoltR_cs650 = None
-
-' -> Soil heat flux variables
-
-Public shf(NMBR_SHF)                   ' HFP01 soil heat flux plates.
-Units shf = W/m^2
-Dim shf_cal(NMBR_SHF)
-
-''*** Beginning of PAR constants and variables ***
-'Public Fpar(2)
-'Alias Fpar(1) = Fpard    ' Downwelling PPFD
-'Alias Fpar(2) = Fparu    ' Upwelling PPFD
-'Units Fpar = umol/m^2/s
-''*** End of PAR constants and variables ***
+' Upload related (Markus)
+Public Upload_status_TERNflux
+Public Upload_status_diagnostic
+'Public Upload_status_TERNflux_ssh
+Public Upload_status_ts_data
+'Public Upload_TERNflux
+Public TStamp As String * 9 ' create a daily timestamp for ts_data
 
 '*** End internal constants, variables, working data tables ***
 '############################################################################
@@ -660,7 +559,7 @@ PipeLineMode
 DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
   DataInterval (0,OUTPUT_INTERVAL,Min,10)
   CardOut (0,FLUX_SIZE_CRD)
-  
+
   '*** Beginning of CSAT3B output data ***
   Sample (18,Fh,IEEE4)
   Average (4,Ux,IEEE4,sonic_disable_f)
@@ -704,33 +603,9 @@ DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
   Average (9,Fn,IEEE4,slowsequence_disable_f)
   '*** End of radiometer output data ***
 
-  '*** Beginning of soil T output data ***
-  Sample (NMBR_TSOIL,Tsoil_mean(1),IEEE4)
-  Sample (NMBR_TSOIL,del_Tsoil(1),IEEE4)
-  '*** End of soil T output data ***
-
-  '*** Beginning of soil moisture output data ***
-  Average (NMBR_CS65X,sws_cs650(1),IEEE4,slowsequence_disable_f)
-  Average (NMBR_CS65X,ec_cs650(1),IEEE4,slowsequence_disable_f)
-  Average (NMBR_CS65X,T_cs650(1),IEEE4,slowsequence_disable_f)
-  Average (NMBR_CS65X,perm_cs650(1),IEEE4,slowsequence_disable_f)
-  Average (NMBR_CS65X,PerAvg_cs650(1),IEEE4,slowsequence_disable_f)
-  Average (NMBR_CS65X,VoltR_cs650(1),IEEE4,slowsequence_disable_f)
-  '*** End of soil moisture output data ***
-
-  '*** Beginning of HFP output data ***
-  Average (NMBR_SHF,shf(1),IEEE4,slowsequence_disable_f)
-  FieldNames(SHF_FIELDS)
-  '*** End of HFP output data ***
-
   '*** Beginning of precipitation output data ***
   Totalize (1,rain,IEEE4,FALSE)
   '*** End of precipitation output data ***
-
-  '  '*** Beginning of auxiliary wind output data ***
-  '  WindVector(1,WS_AUX,WD_AUX,FP2,False,0,0,0)
-  '  FieldNames(WIND_AUX_FIELDS)
-  '  '*** End of CNR 4 output data ***
 
   '*** Beginning of other output data ***
   Average (1,Tpanel,IEEE4,FALSE)
@@ -753,7 +628,7 @@ EndTable
 'Time series data.
 DataTable (ts_data,TRUE,-1)
   DataInterval (0,SCAN_INTERVAL,mSec,100)
-  TableFile ("CRD:"&Status.SerialNumber(1,1)&".ts_data_",64,-1,0,1,Day,0,0)
+  TableFile ("CRD:"&Status.SerialNumber(1,1)&".ts_data_",64,-1,0,1,Day,NewFileFlag,PrevFileName)
 
   '*** Beginning of sonic time series output ***
   Sample (5,sonic_raw(1),IEEE4)
@@ -764,21 +639,32 @@ DataTable (ts_data,TRUE,-1)
   Sample (4,irga_raw(1),IEEE4)
   FieldNames ("CO2,H2O,amb_press_irga,sig_str_irga")
   '*** End of LI-7500(RS) time series output ***
-  
+
 EndTable
 
 '*** End output data tables ***
 '############################################################################
 
 '############################################################################
+'*** Begin subroutines ***
+
+Sub file_rename()
+  ' This subroutine creates a new filename and renames the file output to the card by tablefile
+  SplitStr(timearray(),TERNflux.TimeStamp(3,2),"",6,0)
+  NewFileName = _
+"CRD:TOB3_"&STATION_NAME&"_"&SCAN_INTERVAL&"ms_"&timearray(3)&"_"& _
+FormatFloat(timearray(2),"%02.0f")&"_"& _
+FormatFloat(timearray(1),"%02.0f")&".dat"
+FileRename(PrevFileName, NewFileName)
+EndSub
+
+'*** End subroutines ***
+'############################################################################
+
+'############################################################################
 '*** Program ***
 
 BeginProg
-
-  ' Load NMBR_SHF plate calibration.
-  For i = 1 To NMBR_SHF
-    Read shf_cal(i)
-  Next i
 
   'Set the SDM clock speed.
   SDMSpeed (SDM_PER)
@@ -808,15 +694,8 @@ BeginProg
     '*** End of LI-7500(RS) measurement processing ***
 
     '*** Beginning of rain gauge measurement ***
-    PulseCount (rain,1,RAIN_PULSE_INPUT,2,0,RAIN_CAL,0)
+    PulseCount (rain,1,RAIN_PULSE_INPUT,1,0,RAIN_CAL,0)
     '*** End of rain gauge measurement ***
-
-    '    '*** Beginning of independent wind speed and direction measurement
-    '    PulseCount(WS_AUX,1,WIND_SPD_PULSE_INPUT,5,1,0.098,0)
-    '    BrHalf (WD_AUX,1,AutoRange,WIND_DIR_ANALOG_INPUT,WIND_DIR_VX_PORT,1,WIND_DIR_VX_MV,True,0,ANALOG_INTEGRATION,355,0)
-    '    If WD_AUX >=360 Then WD_AUX = 0
-    '    If WD_AUX <0 Then WD_AUX = 0
-    '    '*** End of independent wind speed and direction
 
     'Save time series data.
     CallTable ts_data
@@ -920,7 +799,7 @@ BeginProg
       CallTable comp_cov_irga
 
       If ( comp_cov_irga.Output(1,1) ) Then
-        GetRecord (CO2_stdev,comp_cov_irga,1)
+        GetRecord (co2_stdev,comp_cov_irga,1)
 
         rho_d_irga_mean = (amb_press_mean/((Tc_mean+273.15)*RD))-(H2O_mean*MU_WPL)
         Cp = 1004.67*(1+0.84*(0.622*H2O_mean*RV*(Tc_mean+273.15)/amb_press_mean)) 'Stull (1989)
@@ -932,7 +811,7 @@ BeginProg
         Fe_no_wpl = Lv*H2O_Uz_cov
 
         'Compute the standard deviation from the variance.
-        CO2_stdev = SQR (CO2_stdev)
+        co2_stdev = SQR (co2_stdev)
         H2O_stdev = SQR (H2O_stdev)
         Tc_stdev = SQR (Tc_stdev)
 
@@ -963,19 +842,6 @@ BeginProg
       EndIf
       '*** End of sensible heat flux processing ***
 
-      '*** Beginning of soil temperature processing ***
-      CallTable stats_soil
-      If ( stats_soil.Output(1,1) ) Then
-        GetRecord (Tsoil_mean(1),stats_soil,1)
-
-        'Compute the change in soil temperature.
-        For i = 1 To NMBR_TSOIL
-          del_Tsoil(i) = Tsoil_mean(i)-prev_Tsoil(i)
-          prev_Tsoil(i) = Tsoil_mean(i)
-        Next i
-      EndIf
-      '*** End of soil temperature processing ***
-
       CallTable TERNflux
       If ( TERNflux.Output(1,1) ) Then
         diag_sonic_aggregate = 0
@@ -989,7 +855,7 @@ BeginProg
       EndIf
 
     Else
-      scan_count += 1 'Increments until reaches the value of OFFSET 
+      scan_count += 1 'Increments until reaches the value of OFFSET
     EndIf
 
     CallTable diagnostic
@@ -1004,6 +870,10 @@ BeginProg
     CS7500 (irga_raw(1),1,LI7500_SDM_ADDR,6)
     '*** End of LI-7500(RS) measurements ***
 
+    '*** File rename subroutine ***
+    If NewFileFlag Then Call file_rename()
+    '*** End of file rename subroutine ***
+
   NextScan
 
   SlowSequence
@@ -1014,49 +884,6 @@ BeginProg
     Battery (Vbat)
 
     '*** Beginning of CR6 measurements ***
-
-    '*** Beginning of SHF measurements ***
-    VoltSe (shf(),NMBR_SHF,mV200C,SHF_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,shf_cal(),0)
-    '*** End of SHF measurements ***
-
-    '*** Beginning of soil temperature measurements ***
-    TCDiff (Tsoil,NMBR_TSOIL,mV200c,TSOIL_ANALOG_INPUT,TypeE,Tpanel,True,0,ANALOG_INTEGRATION,1.0,0)
-    '*** End of soil temperature measurements ***
-    
-    '*** Beginning of CS65X measurements ***
-    SDI12Recorder (cs65x_raw(1),CS65X_SDI12_PORT,CS65X_1_ADDR,"M3!",1,0)
-    sws_cs650(1) = cs65x_raw(1)
-    ec_cs650(1) = cs65x_raw(2)
-    T_cs650(1) = cs65x_raw(3)
-    perm_cs650(1) = cs65x_raw(4)
-    PerAvg_cs650(1) = cs65x_raw(5)
-    VoltR_cs650(1) = cs65x_raw(6)
-    
-    SDI12Recorder (cs65x_raw(1),CS65X_SDI12_PORT,CS65X_2_ADDR,"M3!",1,0)
-    sws_cs650(2) = cs65x_raw(1)
-    ec_cs650(2) = cs65x_raw(2)
-    T_cs650(2) = cs65x_raw(3)
-    perm_cs650(2) = cs65x_raw(4)
-    PerAvg_cs650(2) = cs65x_raw(5)
-    VoltR_cs650(2) = cs65x_raw(6)
-    
-    SDI12Recorder (cs65x_raw(1),CS65X_SDI12_PORT,CS65X_3_ADDR,"M3!",1,0)
-    sws_cs650(3) = cs65x_raw(1)
-    ec_cs650(3) = cs65x_raw(2)
-    T_cs650(3) = cs65x_raw(3)
-    perm_cs650(3) = cs65x_raw(4)
-    PerAvg_cs650(3) = cs65x_raw(5)
-    VoltR_cs650(3) = cs65x_raw(6)
-    
-    SDI12Recorder (cs65x_raw(1),CS65X_SDI12_PORT,CS65X_4_ADDR,"M3!",1,0)
-    sws_cs650(4) = cs65x_raw(1)
-    ec_cs650(4) = cs65x_raw(2)
-    T_cs650(4) = cs65x_raw(3)
-    perm_cs650(4) = cs65x_raw(4)
-    PerAvg_cs650(4) = cs65x_raw(5)
-    VoltR_cs650(4) = cs65x_raw(6)
-    'Duplicate above for additional probes.
-    '*** End of CS65X measurements ***
 
     '*** End of CR6 measurements ***
 
@@ -1089,12 +916,25 @@ BeginProg
     albedo = Fsu/Fsd
     '*** End of net radiometer measurements ***
 
-    '    '*** Beginning of quantum sensor measurements ***
-    '    CDM_VoltDiff (VOLT116,1,Fpar(),2,AutoRange,PAR_ANALOG_INPUT,True,0,ANALOG_INTEGRATION,5,0)
-    '    '*** End of quantum sensor measurements ***
-
     '*** End of CDM-VOLT116 measurements ***
 
     slowsequence_finished_f = TRUE
   NextScan
+
+  SlowSequence
+  ' Markus ssh or ftp upload
+  Scan (OUTPUT_INTERVAL,Min,5,0)
+    Delay (1,10,Sec) ' without the delay, the latest 30 min values are not in the table yet!
+    TStamp = Public.Timestamp(5,1)
+
+    'Upload_status_TERNflux = FTPClient ("live.fluxdata.cloud.edu.au:4221","liveflux25","P5$d#x*R32$B9(k","TERNflux.dat","WombatForest/Wombat_EC_IP_TERNflux.dat",9,0,0,0,-1008)
+    ' the following is for ssh-based sftp upload
+    Upload_status_TERNflux   = FTPClient (Server,User,Pass,"TERNflux","/mnt/ext/ftp/WombatForest/Wombat_EC_IP_TERNflux.dat",28,0,0,Min,-1008)
+    Upload_status_diagnostic = FTPClient (Server,User,Pass,"diagnostic","/mnt/ext/ftp/WombatForest/Wombat_EC_diagnostic.dat",28,0,0,Min,-1008)
+    Upload_status_ts_data    = FTPClient (Server,User,Pass,"ts_data","/mnt/ext/ftp/WombatForest/Wombat_EC_" & TStamp & "ts_data.dat",28,0,0,Min,-1008)
+    'Upload_status_ts_data = FTPClient ("live.fluxdata.cloud.edu.au:4221","liveflux25","P5$d#x*R32$B9(k","ts_data.dat","WombatForest/Wombat_EC_" & TStamp & "ts_data.dat",9,0,0,0,-1008)
+    ' helpfile example ssh upload with dynamic filename:         FTPClient (Server,User,Pass,"Test","Ex1_" & TStamp & ".dat",2,0,5,Min,-1008)
+
+  NextScan
+  EndSequence
 EndProg

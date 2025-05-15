@@ -63,9 +63,6 @@
 'Air temp / humidity 2      -> User constants and wiring: "T and RH 2 user constants / wiring"
 '                           -> Internal variables and tables: "T and RH internal variables / tables"
 
-
-' -> T and RH 2 user constants / wiring (VOLT116)
-
 'Radiation                  -> User constants and wiring: "4-component radiation user constants / wiring"
 '                           -> Internal constants and variables: "4-component radiation internal constants / variables"
 
@@ -394,7 +391,7 @@ Dim cov_out_irga(26)                      'LI-7500(RS) statistics.
 Alias cov_out_irga(1) = Fco2              'Carbon dioxide flux (LI-7500(RS)), with Webb et al. term.
 Alias cov_out_irga(2) = Fe                'Latent heat flux (LI-7500(RS)), with Webb et al. term.
 Alias cov_out_irga(3) = Fh_irga           'Sensible heat flux using sonic temperature corrected for water vapor measured by the LI-7500(RS).
-Alias cov_out_irga(4) = co2_stdev
+Alias cov_out_irga(4) = CO2_stdev
 Alias cov_out_irga(5) = CO2_Ux_cov
 Alias cov_out_irga(6) = CO2_Uy_cov
 Alias cov_out_irga(7) = CO2_Uz_cov
@@ -420,7 +417,7 @@ Alias cov_out_irga(26) = H2O_wpl_Fh       'Latent heat flux (LI-7500(RS)), Webb 
 Units Fco2 = mg/(m^2 s)
 Units Fe = W/m^2
 Units Fh_irga = W/m^2
-Units co2_stdev = mg/m^3
+Units CO2_stdev = mg/m^3
 Units CO2_Ux_cov = mg/(m^2 s)
 Units CO2_Uy_cov = mg/(m^2 s)
 Units CO2_Uz_cov = mg/(m^2 s)
@@ -647,7 +644,7 @@ EndTable
 'Time series data.
 DataTable (ts_data,TRUE,-1)
   DataInterval (0,SCAN_INTERVAL,mSec,100)
-  TableFile ("CRD:"&Status.SerialNumber(1,1)&".ts_data_",64,-1,0,1,Day,0,0)
+  TableFile ("CRD:TOB3_"&STATION_NAME&".fast_data_",64,-1,0,1,Day,0,0)
 
   '*** Beginning of sonic time series output ***
   Sample (5,sonic_raw(1),IEEE4)
@@ -809,7 +806,7 @@ BeginProg
       CallTable comp_cov_irga
 
       If ( comp_cov_irga.Output(1,1) ) Then
-        GetRecord (co2_stdev,comp_cov_irga,1)
+        GetRecord (CO2_stdev,comp_cov_irga,1)
 
         rho_d_irga_mean = (amb_press_mean/((Tc_mean+273.15)*RD))-(H2O_mean*MU_WPL)
         Cp = 1004.67*(1+0.84*(0.622*H2O_mean*RV*(Tc_mean+273.15)/amb_press_mean)) 'Stull (1989)
@@ -821,7 +818,7 @@ BeginProg
         Fe_no_wpl = Lv*H2O_Uz_cov
 
         'Compute the standard deviation from the variance.
-        co2_stdev = SQR (co2_stdev)
+        CO2_stdev = SQR (CO2_stdev)
         H2O_stdev = SQR (H2O_stdev)
         Tc_stdev = SQR (Tc_stdev)
 

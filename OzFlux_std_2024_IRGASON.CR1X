@@ -645,12 +645,12 @@ Alias nr(3) = Fsd
 Alias nr(4) = Fsu
 Alias nr(5) = Fld
 Alias nr(6) = Flu
-Alias nr(7) = Tb
+Alias nr(7) = Tbody_RAD
 Alias nr(8) = Fld_meas
 Alias nr(9) = Flu_meas
 Units nr = W/m^2
-units albedo = arb
-units Tb = K
+Units albedo = arb
+Units Tbody_RAD = K
 
 ' -> Soil temperature variables / tables
 
