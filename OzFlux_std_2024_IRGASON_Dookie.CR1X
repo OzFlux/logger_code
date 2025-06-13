@@ -60,7 +60,7 @@
 '                           -> Internal variables: "Soil heat flux internal variables"
 
 'Soil temperature           -> User constants / wiring: "Soil temperature user constants / wiring"
-'                           -> Internal constants and variables: "Soil temperature internal variables / tables" 
+'                           -> Internal constants and variables: "Soil temperature internal variables / tables"
 
 'Air temperature / humidity -> User constants and wiring: "T and RH user constants / wiring"
 '                           -> Internal variables and tables: "T and RH internal variables / tables"
@@ -84,9 +84,14 @@ Const PAKBUS_ADDR = 1
 
 ' -> General user constants
 
-Const SCAN_INTERVAL = 100  'Unique value, measurement rate 100 ms (10 Hz) or 50 ms (20 Hz).
+Const SCAN_INTERVAL = 50  'Unique value, measurement rate 100 ms (10 Hz) or 50 ms (20 Hz).
+' Note on the interaction between SCAN_INTERVAL, ANALOG_INTEGRATION, BANDWIDTH and DELAY_EC150! When SCAN_INTERVAL is 20 HZ, BANDWIDTH should be 10 Hz. 
+' See Irgason Manual, "Appendix A. Filter bandwidth AND time delay"
+' DELAY_EC150 is automatically computed as scan number. It is "8" scans for 50 ms (=20 Hz scan interval) and bandwith 10 Hz.
+' activate "show_delay_EC150" lines in the code to show actual scan delay.
 Const OUTPUT_INTERVAL = 30 'Unique value, online flux data output interval in minutes.
-Const ANALOG_INTEGRATION = _50Hz      ' Slow sequence analog measurement integration time, _60Hz or _50Hz.
+'Const ANALOG_INTEGRATION = _50Hz      ' Slow sequence analog measurement integration time, _60Hz or _50Hz.
+Const ANALOG_INTEGRATION = 3750        ' First notch frequency of 3750 Hz allows the Volt116 to operate at 20 Hz, 0.26667 ms. Leave at _50Hz when running at 10Hz measurement frequency.
 Const NUM_DAY_CRD = 42    'Unique value, number of days of flux data to store on a 16 GB CF card (44 days = 2 GB). This value will vary with configuration.
 Const SDM_PER = 30         'Unique value, default SDM clock speed.
 
@@ -289,7 +294,7 @@ Units n = samples
 
 ' Constants
 
-Const BANDWIDTH = 20            '10 = 10 Hz; 20 = 20 Hz
+Const BANDWIDTH = 10            '10 = 10 Hz; 20 = 20 Hz
 Const DIFFERENTIAL_PRESSURE = 0 '0 = disabled
 Const TEMPERATURE_SOURCE = 0    '0 = ambient temperature sensor
 Const AUTO_HEATER_CONTROL = -2  '-2 = automatic; -1 = off
@@ -297,7 +302,7 @@ Const BB = 0                    'BB = EC100 basic pressure transducer
 Const EB = 2                    'EB = EC100 enhanced pressure transducer
 
 ' Variables
-
+'Public show_delay_EC150         'Just to show what the autoatically calculated Irgason delay is
 Public CO2_span_gas
 Public Td_span_gas
 
@@ -349,7 +354,7 @@ EndSub
 ' Variables
 
 Public AZ_SONIC                       'Enter sonic azimuth using keyboard after program has compiled (azimuth of the CSAT3(A) negative x-axis see Section 3.2.1 CSAT3A Azimuth in the OPEC manual).
-units AZ_SONIC = degrees
+Units AZ_SONIC = degrees
 
 Public sonic(5)
 Alias sonic(1) = Ux
@@ -429,7 +434,7 @@ Public Upload_status_TERNflux
 'Public Upload_status_TERNflux_ssh
 Public Upload_status_diagnostic
 Public Upload_status_ts_data
-Public TStamp As String * 9 ' create a daily timestamp for ts_data
+Public TStamp As String * 16 'holds timestamp as YYYY-MM-DD_HH-mm for file upload
 
 ' Tables
 
@@ -452,6 +457,7 @@ EndTable
 ' Constants
 
 Const DELAY_EC150 = INT (4000/SCAN_INTERVAL/BANDWIDTH) 'Automatically computed lag of the EC150 data.
+
 Const EC150_REC_BCK = OFFSET-DELAY_EC150-1 'Number of records back to align EC150 data. Minus one scan because the SDM instruction is at the end of the program.
 
 ' Variables
@@ -543,9 +549,9 @@ Alias cov_out_cs(23) = CO2_wpl_Fe      'Carbon dioxide flux (EC150), Webb et al.
 Alias cov_out_cs(24) = CO2_wpl_Fh      'Carbon dioxide flux (EC150), Webb et al. term due to sensible heat flux.
 Alias cov_out_cs(25) = H2O_wpl_Fe      'Latent heat flux (EC150), Webb et al. term due to latent heat flux.
 Alias cov_out_cs(26) = H2O_wpl_Fh      'Latent heat flux (EC150), Webb et al. term due to sensible heat flux.
-units Fco2 = mg/(m^2 s)
-units Fe = W/m^2
-units Fh_irga = W/m^2
+Units Fco2 = mg/(m^2 s)
+Units Fe = W/m^2
+Units Fh_irga = W/m^2
 Units CO2_stdev = mg/m^3
 Units CO2_Ux_cov = mg/(m^2 s)
 Units CO2_Uy_cov = mg/(m^2 s)
@@ -729,7 +735,7 @@ Units shf = W/m^2
 
 ' Variables
 Public rain
-units rain = mm
+Units rain = mm
 
 '*** End internal constants, variables, working data tables ***
 '############################################################################
@@ -909,6 +915,8 @@ EndTable
 '*** Program ***
 
 BeginProg
+  ' Show irgason DELAY_EC150
+  ' show_delay_EC150 = DELAY_EC150
   'Load NMBR_SHF plate calibration.
   For i = 1 To NMBR_SHF
     Read shf_cal(i)
@@ -1366,12 +1374,16 @@ BeginProg
   SlowSequence
   ' Markus ftp upload
   Scan (OUTPUT_INTERVAL ,Min,5,0)
-    Delay(1, 25, Sec) ' Spread out the delay to take the load off simultaneous uploads to server
     TStamp = Public.Timestamp(5,1)
-
-    Upload_status_TERNflux   = FTPClient ("server:port","username","password","TERNflux","Dookie1/Dookie1_EC_TERNflux.dat",9,0,0,0,-1008)
+    ' create clean timestamp without seconds (TStamp As String * x works in 4 bytes increments, can't limit string to desired length on creation, hence trimming left.
+    TStamp = Left(TStamp, 16)
+    'Immediately upload fast data, delay only for slow data
+    Upload_status_ts_data    = FTPClient ("server:port","username","password","ts_data","Dookie1/Dookie1_EC_" & TStamp & "_ts_data.dat",9,0,0,0,-1008)
+    
+    Delay(1, 25, Sec) ' Spread out the delay to take the load off simultaneous uploads to server
+    Upload_status_TERNflux   = FTPClient ("server:port","username",password","TERNflux","Dookie1/Dookie1_EC_TERNflux.dat",9,0,0,0,-1008)
     Upload_status_diagnostic = FTPClient ("server:port","username","password","diagnostic","Dookie1/Dookie1_EC_diagnostic.dat",9,0,0,0,-1008)
-    Upload_status_ts_data    = FTPClient ("server:port","username","password","ts_data","Dookie1/Dookie1_EC_" & TStamp & "ts_data.dat",9,0,0,0,-1008)
+
   NextScan
   EndSequence
 EndProg
