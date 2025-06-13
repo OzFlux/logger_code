@@ -1369,10 +1369,9 @@ BeginProg
     Delay(1, 25, Sec) ' Spread out the delay to take the load off simultaneous uploads to server
     TStamp = Public.Timestamp(5,1)
 
-    Upload_status_TERNflux   = FTPClient ("live.fluxdata.cloud.edu.au:4221","liveflux25","P5$d#x*R32$B9(k","TERNflux","Dookie1/Dookie1_EC_TERNflux.dat",9,0,0,0,-1008)
-    'Upload_status_TERNflux_ssh =  FTPClient (Server,User,Pass,"TERNflux.dat","/mnt/ext/ftp/Dookie1/Dookie1_EC_TERNflux_ssh.dat",28,0,0,Min,-1008)
-    Upload_status_diagnostic = FTPClient ("live.fluxdata.cloud.edu.au:4221","liveflux25","P5$d#x*R32$B9(k","diagnostic","Dookie1/Dookie1_EC_diagnostic.dat",9,0,0,0,-1008)
-    Upload_status_ts_data    = FTPClient ("live.fluxdata.cloud.edu.au:4221","liveflux25","P5$d#x*R32$B9(k","ts_data","Dookie1/Dookie1_EC_" & TStamp & "ts_data.dat",9,0,0,0,-1008)
+    Upload_status_TERNflux   = FTPClient ("server:port","username","password","TERNflux","Dookie1/Dookie1_EC_TERNflux.dat",9,0,0,0,-1008)
+    Upload_status_diagnostic = FTPClient ("server:port","username","password","diagnostic","Dookie1/Dookie1_EC_diagnostic.dat",9,0,0,0,-1008)
+    Upload_status_ts_data    = FTPClient ("server:port","username","password","ts_data","Dookie1/Dookie1_EC_" & TStamp & "ts_data.dat",9,0,0,0,-1008)
   NextScan
   EndSequence
 EndProg
