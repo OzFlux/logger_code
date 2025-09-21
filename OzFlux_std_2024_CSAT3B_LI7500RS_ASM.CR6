@@ -95,7 +95,7 @@ Const CDMVOLT116_1_DESC = "MUX_1"         ' CDM-VOLT116 descriptor
 '    for tall towers; as such, wiring colours may vary for cabling used).
 
 Const CSAT3B_SDM_ADDR = 3          ' CSAT3B SDM address
-Const AZ_SONIC = 210               ' CSAT3B azimuth
+Const AZ_SONIC = 135               ' CSAT3B azimuth
 
 'SDM-C1  SDM Data (green)
 'SDM-C2  SDM Clock (white)
@@ -129,7 +129,7 @@ Const IRGA_SIG_STR_THRESHOLD = 60  ' Unique value - filter LI-7500(RS) data with
 'example, If the WindSonic4 Is connected To C3 on a CR1000X, C4 cannot be used in the
 'TimerInput(), PulseCount(), OR WaitDigTrig() instructions. Hence, we put the pulse port at U12.
 
-Const RAIN_PULSE_INPUT = U12       'Unique pulse input channel for tipping bucket.
+Const RAIN_PULSE_INPUT = U3        'Unique pulse input channel for tipping bucket.
 Const RAIN_CAL = 0.2               'Unique multiplier for tipping bucket.
 
 'U3      Signal (black)

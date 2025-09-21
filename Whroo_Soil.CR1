@@ -1,0 +1,409 @@
+'CR1000
+
+'############################################################################
+' *** Begin user-customised station / logger / instrument constants and wiring ***
+
+' -> Station-based user constants
+
+Const STATION_NAME = "Whroo_soil"
+Const PAKBUS_ADDR = 1
+Const ANALOG_INTEGRATION = _50Hz  ' Slow sequence analog measurement integration time, _60Hz or _50Hz.
+Const AM1632B_ANALOG_INPUT = 8
+Const AM1632B_RESET_PORT = 1
+Const AM1632B_CLK_PORT = 2
+
+'*** Begin CR1000 front panel ports and wiring ***
+
+' -> Soil heat flux user constants / wiring (read calibration coefficients into memory on compile)
+
+Const SHF_ANALOG_INPUT = 1               'Unique single-ended analog input channel.
+Const SHF_A_CAL = -1000/63.6             'Unique multiplier for HFP01 S/N 003715 in Wm2/mV
+Const SHF_B_CAL = -1000/64.5             'Unique multiplier for HFP01 S/N 003716 in Wm2/mV
+Const SHF_C_CAL = -1000/66.1             'Unique multiplier for HFP01 S/N 003713 in Wm2/mV
+Const SHF_D_CAL = -1000/64.3             'Unique multiplier for HFP01 S/N 003714 in Wm2/mV
+Data SHF_A_CAL, SHF_B_CAL, SHF_B_CAL, SHF_D_CAL
+
+'HFP01 #1
+'1H      Signal (white)
+'1L      Signal reference (green)
+'gnd     Shield (clear)
+'HFP01 #2
+'2H      Signal (white)
+'2L      Signal reference (green)
+'gnd     Shield (clear)
+'HFP01 #3
+'3H      Signal (white)
+'3L      Signal reference (green)
+'gnd     Shield (clear)
+'HFP01 #4
+'4H      Signal (white)
+'4L      Signal reference (green)
+'gnd     Shield (clear)
+
+' -> Campbell CS616 Soil moisture user constants / wiring
+
+Const NMBR_CS616 = 4
+Const VWC_ANALOG_INPUT = 9
+
+' -> SoilVue user constants / wiring
+Const SOILVUE_ENABLE_PORT = 9
+Const SOILVUE_SDI12_INPUT = 5
+
+'SoilVUE
+'C5      SDI12 digital signal (white)
+'SW12V   Power (brown)
+'G       Power ground (black)
+'AG      Shield (clear)
+
+'*** End CR1000 front panel ports and wiring ***
+
+'*** Begin AM16/32B multiplexer ports and wiring ***
+
+' -> Soil temperature user constants / wiring
+
+Const TSOIL_ANALOG_INPUT = 8
+
+'TCAV1
+'4H      Signal #1 (purple)
+'4L      Signal reference #1 (red)
+'gnd     Shield #1 (clear)
+'TCAV2
+'5H      Signal #2 (purple)
+'5L      Signal reference #2 (red)
+'gnd     Shield #2 (clear)
+'TCAV3
+'6H      Signal #2 (purple)
+'6L      Signal reference #2 (red)
+'gnd     Shield #2 (clear)
+'TCAV3
+'6H      Signal #2 (purple)
+'6L      Signal reference #2 (red)
+'gnd     Shield #2 (clear)
+
+'*** End AM16/32B multiplexer ports and wiring ***
+
+' *** End user-customised station / logger / instrument constants and wiring ***
+' *** CUSTOMISE THE BELOW AT YOUR OWN RISK!!!
+'############################################################################
+
+'############################################################################
+' *** Begin internal constants, variables, working data tables ***
+
+Const MAIN_SCAN_INTERVAL = 30 'Seconds
+Const SLOW_SCAN_INTERVAL = 5  'Minutes
+Const OUTPUT_INTERVAL = 30    'On-line data output interval in minutes.
+
+' -> Logger diagnostic and working variables
+Public Tpanel, Vbat
+Dim i, LCount
+Public Upload_status
+
+' -> Soil heat flux internal variables
+
+' Soil heat flux
+Public Fg(4)
+Alias Fg(1) = Fg_8cma
+Alias Fg(2) = Fg_8cmb
+Alias Fg(3) = Fg_8cmc
+Alias Fg(4) = Fg_8cmd
+Units Fg = W/m^2
+Dim shf_cal(4)
+
+' -> Soil temperature internal variables
+
+Public Ts(4)
+Alias Ts(1) = Ts_8cma
+Alias Ts(2) = Ts_8cmb
+Alias Ts(3) = Ts_8cmc
+Alias Ts(4) = Ts_8cmd
+Units Ts = degC
+
+' -> Campbell CS616 soil moisture internal constants and variables
+
+' Constants
+
+' standard cs616 calibration coefficients
+Const Sws_a0 = -0.0663
+Const Sws_a1 = -0.0063
+Const Sws_a2 = 0.0007
+
+' standard cs616 temperature correction coefficients
+Const t0 = 0.526
+Const t1 = -0.052
+Const t2 = 0.00136
+Const Tref = 20
+
+' Variables
+
+Public Sws_cs616_raw(NMBR_CS616)
+Public Sws_cs616_Tcorr(NMBR_CS616)
+Public Sws_cs616(NMBR_CS616)
+Alias Sws_cs616(1) = Sws_8cma
+Alias Sws_cs616(2) = Sws_8cmb
+Alias Sws_cs616(3) = Sws_8cmc
+Alias Sws_cs616(4) = Sws_8cmd
+Units Sws_cs616_raw = us
+Units Sws_cs616 = m^3/m^3
+
+' -> Campbell SoilVue
+
+'5cm
+Public SoilVue_5cm(4)
+Alias SoilVue_5cm(1)=Sws_5cm
+Alias SoilVue_5cm(2)=Ka_5cm
+Alias SoilVue_5cm(3)=Ts_5cm
+Alias SoilVue_5cm(4)=BulkEC_5cm
+Units Sws_5cm=m^3/m^3
+Units Ka_5cm=unitless
+Units Ts_5cm=Deg C
+Units BulkEC_5cm=dS/m
+
+'10cm
+Public SoilVue_10cm(4)
+Alias SoilVue_10cm(1)=Sws_10cm
+Alias SoilVue_10cm(2)=Ka_10cm
+Alias SoilVue_10cm(3)=Ts_10cm
+Alias SoilVue_10cm(4)=BulkEC_10cm
+Units Sws_10cm=m^3/m^3
+Units Ka_10cm=unitless
+Units Ts_10cm=Deg C
+Units BulkEC_10cm=dS/m
+
+'20cm
+Public SoilVue_20cm(4)
+Alias SoilVue_20cm(1)=Sws_20cm
+Alias SoilVue_20cm(2)=Ka_20cm
+Alias SoilVue_20cm(3)=Ts_20cm
+Alias SoilVue_20cm(4)=BulkEC_20cm
+Units Sws_20cm=m^3/m^3
+Units Ka_20cm=unitless
+Units Ts_20cm=Deg C
+Units BulkEC_20cm=dS/m
+
+'30cm
+Public SoilVue_30cm(4)
+Alias SoilVue_30cm(1)=Sws_30cm
+Alias SoilVue_30cm(2)=Ka_30cm
+Alias SoilVue_30cm(3)=Ts_30cm
+Alias SoilVue_30cm(4)=BulkEC_30cm
+Units Sws_30cm=m^3/m^3
+Units Ka_30cm=unitless
+Units Ts_30cm=Deg C
+Units BulkEC_30cm=dS/m
+
+'40cm
+Public SoilVue_40cm(4)
+Alias SoilVue_40cm(1)=Sws_40cm
+Alias SoilVue_40cm(2)=Ka_40cm
+Alias SoilVue_40cm(3)=Ts_40cm
+Alias SoilVue_40cm(4)=BulkEC_40cm
+Units Sws_40cm=m^3/m^3
+Units Ka_40cm=unitless
+Units Ts_40cm=Deg C
+Units BulkEC_40cm=dS/m
+
+'50cm
+Public SoilVue_50cm(4)
+Alias SoilVue_50cm(1)=Sws_50cm
+Alias SoilVue_50cm(2)=Ka_50cm
+Alias SoilVue_50cm(3)=Ts_50cm
+Alias SoilVue_50cm(4)=BulkEC_50cm
+Units Sws_50cm=m^3/m^3
+Units Ka_50cm=unitless
+Units Ts_50cm=Deg C
+Units BulkEC_50cm=dS/m
+
+'60cm
+Public SoilVue_60cm(4)
+Alias SoilVue_60cm(1)=Sws_60cm
+Alias SoilVue_60cm(2)=Ka_60cm
+Alias SoilVue_60cm(3)=Ts_60cm
+Alias SoilVue_60cm(4)=BulkEC_60cm
+Units Sws_60cm=m^3/m^3
+Units Ka_60cm=unitless
+Units Ts_60cm=Deg C
+Units BulkEC_60cm=dS/m
+
+'75cm
+Public SoilVue_75cm(4)
+Alias SoilVue_75cm(1)=Sws_75cm
+Alias SoilVue_75cm(2)=Ka_75cm
+Alias SoilVue_75cm(3)=Ts_75cm
+Alias SoilVue_75cm(4)=BulkEC_75cm
+Units Sws_75cm=m^3/m^3
+Units Ka_75cm=unitless
+Units Ts_75cm=Deg C
+Units BulkEC_75cm=dS/m
+
+'100cm
+Public SoilVue_100cm(4)
+Alias SoilVue_100cm(1)=Sws_100cm
+Alias SoilVue_100cm(2)=Ka_100cm
+Alias SoilVue_100cm(3)=Ts_100cm
+Alias SoilVue_100cm(4)=BulkEC_100cm
+Units Sws_100cm=m^3/m^3
+Units Ka_100cm=unitless
+Units Ts_100cm=Deg C
+Units BulkEC_100cm=dS/m
+
+Public TStamp As String * 16 'holds timestamp as YYYY-MM-DD_HH-mm for file upload
+
+' *** End internal constants, variables, working data tables ***
+'############################################################################
+
+'############################################################################
+'*** Begin hardware config section ***
+
+SetSetting ("StationName",STATION_NAME)                     'Station name
+SetSetting ("PakBusAddress",PAKBUS_ADDR)                    'Pakbus address
+'SequentialMode
+
+'*** End hardware config section ***
+'############################################################################
+
+'############################################################################
+'*** Begin output data tables ***
+
+'Define Data Tables
+DataTable(Table1,True,-1)
+  DataInterval(0,OUTPUT_INTERVAL,Min,10)
+
+  ' Logger variables
+  Average(1,Vbat,FP2,False)
+  Average(1,Tpanel,FP2,False)
+
+  ' Soil heat flux (HFP01)
+  Average(4,Fg,FP2,False)
+
+  ' Soil moisture
+  Average(4,Sws_cs616_raw(1),IEEE4,False)
+  Average(4,Sws_cs616(1),IEEE4,False)
+
+  ' Soil temperature (TCAV)
+  Average(4,Ts,FP2,False)
+
+  ' SoilVue
+  Average(4,SoilVue_5cm,FP2,False)
+  Average(4,SoilVue_10cm,FP2,False)
+  Average(4,SoilVue_20cm,FP2,False)
+  Average(4,SoilVue_30cm,FP2,False)
+  Average(4,SoilVue_40cm,FP2,False)
+  Average(4,SoilVue_50cm,FP2,False)
+  Average(4,SoilVue_60cm,FP2,False)
+  Average(4,SoilVue_75cm,FP2,False)
+  Average(4,SoilVue_100cm,FP2,False)
+
+EndTable
+
+'*** End output data tables ***
+'############################################################################
+
+'############################################################################
+'*** Begin Program ***
+
+'Main Program
+BeginProg
+
+  'Read shfp calibration coefficients into memory (SHFP are wired in backwards, hence -ve correction)
+  For i = 1 To 4
+    Read(shf_cal(i))
+  Next i
+
+  'Main Scan
+  Scan(MAIN_SCAN_INTERVAL,Sec,1,0)
+
+    'Default CR1000 Datalogger Battery Voltage measurement
+    Battery(Vbat)
+
+    'Default CR1000 Datalogger Wiring Panel Temperature measurement
+    PanelTemp(Tpanel,ANALOG_INTEGRATION)
+
+    'HFP01
+    VoltDiff(Fg,4,mV25,SHF_ANALOG_INPUT,True,0,_50Hz,shf_cal,0)
+
+    'Turn AM16/32 Multiplexer On
+    PortSet(AM1632B_RESET_PORT,1)
+    Delay(0,150,mSec)
+    LCount=1
+
+    'Loop through TCAV measurements
+    SubScan(0,uSec,4)
+
+      'Switch to next AM16/32 Multiplexer channel
+      PulsePort(AM1632B_CLK_PORT,10000)
+
+      'Type E Thermocouple measurements
+      TCDiff(Ts(LCount),1,mV2_5C,TSOIL_ANALOG_INPUT,TypeE,Tpanel,True,0,ANALOG_INTEGRATION,1,0)
+
+      LCount=LCount+1
+
+    NextSubScan
+
+    'Turn AM16/32 Multiplexer Off
+    PortSet(AM1632B_RESET_PORT,0)
+    Delay(0,150,mSec)
+
+    'Call Data Tables and Store Data
+    CallTable Table1
+
+  NextScan
+
+  SlowSequence
+  Scan(SLOW_SCAN_INTERVAL,Min,0,0)
+
+    'Measure the CS616
+    PeriodAvg (Sws_cs616_raw,NMBR_CS616,mV250,VWC_ANALOG_INPUT,0,0,5,10,1,0)
+    For i = 1 To 3
+      Sws_cs616_Tcorr(i) = Sws_cs616_raw(i) + (Tref - Ts(i)) * (t0 + t1 * Sws_cs616_raw(i) + t2 * Sws_cs616_raw(i)^2)
+      Sws_cs616(i) = Sws_a0 + Sws_a1 * Sws_cs616_Tcorr(i) + Sws_a2 * Sws_cs616_Tcorr(i)^2
+    Next i
+
+    'Measure the SoilVue 10 Complete Soil Profiler every 5 minutes
+    If TimeIntoInterval(0,5,Min) Then
+      'Turn the SoilVue 10 Complete Soil Profiler on
+      PortSet(SOILVUE_ENABLE_PORT,1)
+      'Let the SoilVue 10 Complete Soil Profiler warm-up before taking measurements
+      Delay(0,2,Sec)
+
+      '5cm
+      SDI12Recorder(SoilVue_5cm(),SOILVUE_SDI12_INPUT,"0","M1!",1,0,-1)
+      '10cm
+      SDI12Recorder(SoilVue_10cm(),SOILVUE_SDI12_INPUT,"0","M2!",1,0,-1)
+      '20cm
+      SDI12Recorder(SoilVue_20cm(),SOILVUE_SDI12_INPUT,"0","M3!",1,0,-1)
+      '30cm
+      SDI12Recorder(SoilVue_30cm(),SOILVUE_SDI12_INPUT,"0","M4!",1,0,-1)
+      '40cm
+      SDI12Recorder(SoilVue_40cm(),SOILVUE_SDI12_INPUT,"0","M5!",1,0,-1)
+      '50cm
+      SDI12Recorder(SoilVue_50cm(),SOILVUE_SDI12_INPUT,"0","M6!",1,0,-1)
+      '60cm
+      SDI12Recorder(SoilVue_60cm(),SOILVUE_SDI12_INPUT,"0","M7!",1,0,-1)
+      '75cm
+      SDI12Recorder(SoilVue_75cm(),SOILVUE_SDI12_INPUT,"0","M8!",1,0,-1)
+      '100cm
+      SDI12Recorder(SoilVue_100cm(),SOILVUE_SDI12_INPUT,"0","M9!",1,0,-1)
+
+      'Turn the SoilVue 10 Complete Soil Profiler off
+      PortSet(SOILVUE_ENABLE_PORT,0)
+
+    EndIf
+    'EndSequence
+  NextScan
+
+  SlowSequence
+  ' Markus ftp upload
+  Scan (OUTPUT_INTERVAL ,Min,5,0)
+    'Scan (5 ,Min,5,0)
+    TStamp = Public.Timestamp(5,1)
+    TStamp = Left(TStamp, 16)
+    Delay(1,48,Sec)
+    Upload_status = FTPClient ("live.fluxdata.cloud.edu.au:4221","liveflux25","P5$d#x*R32$B9(k","Table1","Whroo/Whroo_Soil.dat",9,0,0,0,-1008)
+  NextScan
+  EndSequence
+EndProg
+
+'*** End Program ***
+'############################################################################
+
+

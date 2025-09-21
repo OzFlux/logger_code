@@ -1,0 +1,261 @@
+'CR1000
+'Created by Short Cut (4.7)
+
+'Declare Variables and Units
+Dim LCount
+Public BattV
+Public PTemp_C
+Public SHF1
+Public SHF2
+Public SHF3
+Public SHF4
+Public VW1
+Public PA_uS
+Public VW2
+Public PA_uS_2
+Public VW3
+Public PA_uS_3
+Public VW4
+Public PA_uS_4
+Public Temp_C(4)
+Public SoilVue_5cm(4)
+Public SoilVue_10cm(4)
+Public SoilVue_20cm(4)
+Public SoilVue_30cm(4)
+Public SoilVue_40cm(4)
+Public SoilVue_50cm(4)
+Public SoilVue_60cm(4)
+Public SoilVue_75cm(4)
+Public SoilVue_100cm(4)
+
+Alias SoilVue_5cm(1)=VWC_5cm
+Alias SoilVue_5cm(2)=Ka_5cm
+Alias SoilVue_5cm(3)=T_5cm
+Alias SoilVue_5cm(4)=BulkEC_5cm
+Alias SoilVue_10cm(1)=VWC_10cm
+Alias SoilVue_10cm(2)=Ka_10cm
+Alias SoilVue_10cm(3)=T_10cm
+Alias SoilVue_10cm(4)=BulkEC_10cm
+Alias SoilVue_20cm(1)=VWC_20cm
+Alias SoilVue_20cm(2)=Ka_20cm
+Alias SoilVue_20cm(3)=T_20cm
+Alias SoilVue_20cm(4)=BulkEC_20cm
+Alias SoilVue_30cm(1)=VWC_30cm
+Alias SoilVue_30cm(2)=Ka_30cm
+Alias SoilVue_30cm(3)=T_30cm
+Alias SoilVue_30cm(4)=BulkEC_30cm
+Alias SoilVue_40cm(1)=VWC_40cm
+Alias SoilVue_40cm(2)=Ka_40cm
+Alias SoilVue_40cm(3)=T_40cm
+Alias SoilVue_40cm(4)=BulkEC_40cm
+Alias SoilVue_50cm(1)=VWC_50cm
+Alias SoilVue_50cm(2)=Ka_50cm
+Alias SoilVue_50cm(3)=T_50cm
+Alias SoilVue_50cm(4)=BulkEC_50cm
+Alias SoilVue_60cm(1)=VWC_60cm
+Alias SoilVue_60cm(2)=Ka_60cm
+Alias SoilVue_60cm(3)=T_60cm
+Alias SoilVue_60cm(4)=BulkEC_60cm
+Alias SoilVue_75cm(1)=VWC_75cm
+Alias SoilVue_75cm(2)=Ka_75cm
+Alias SoilVue_75cm(3)=T_75cm
+Alias SoilVue_75cm(4)=BulkEC_75cm
+Alias SoilVue_100cm(1)=VWC_100cm
+Alias SoilVue_100cm(2)=Ka_100cm
+Alias SoilVue_100cm(3)=T_100cm
+Alias SoilVue_100cm(4)=BulkEC_100cm
+
+Units BattV=Volts
+Units PTemp_C=Deg C
+Units SHF1=W/m^2
+Units SHF2=W/m^2
+Units SHF3=W/m^2
+Units SHF4=W/m^2
+Units PA_uS=uSec
+Units PA_uS_2=uSec
+Units PA_uS_3=uSec
+Units PA_uS_4=uSec
+Units Temp_C=Deg C
+Units VWC_5cm=m^3/m^3
+Units Ka_5cm=unitless
+Units T_5cm=Deg C
+Units BulkEC_5cm=dS/m
+Units VWC_10cm=m^3/m^3
+Units Ka_10cm=unitless
+Units T_10cm=Deg C
+Units BulkEC_10cm=dS/m
+Units VWC_20cm=m^3/m^3
+Units Ka_20cm=unitless
+Units T_20cm=Deg C
+Units BulkEC_20cm=dS/m
+Units VWC_30cm=m^3/m^3
+Units Ka_30cm=unitless
+Units T_30cm=Deg C
+Units BulkEC_30cm=dS/m
+Units VWC_40cm=m^3/m^3
+Units Ka_40cm=unitless
+Units T_40cm=Deg C
+Units BulkEC_40cm=dS/m
+Units VWC_50cm=m^3/m^3
+Units Ka_50cm=unitless
+Units T_50cm=Deg C
+Units BulkEC_50cm=dS/m
+Units VWC_60cm=m^3/m^3
+Units Ka_60cm=unitless
+Units T_60cm=Deg C
+Units BulkEC_60cm=dS/m
+Units VWC_75cm=m^3/m^3
+Units Ka_75cm=unitless
+Units T_75cm=Deg C
+Units BulkEC_75cm=dS/m
+Units VWC_100cm=m^3/m^3
+Units Ka_100cm=unitless
+Units T_100cm=Deg C
+Units BulkEC_100cm=dS/m
+
+'Define Data Tables
+DataTable(Table1,True,-1)
+	DataInterval(0,30,Min,10)
+	Average(1,BattV,FP2,False)
+	Average(1,PTemp_C,FP2,False)
+	Average(1,Temp_C(1),FP2,False)
+	Average(1,Temp_C(2),FP2,False)
+	Average(1,Temp_C(3),FP2,False)
+	Average(1,Temp_C(4),FP2,False)
+	Average(1,SHF1,FP2,False)
+	Average(1,SHF2,FP2,False)
+	Average(1,SHF3,FP2,False)
+	Average(1,SHF4,FP2,False)
+	Average(1,VW1,FP2,False)
+	Average(1,PA_uS,FP2,False)
+	Average(1,VW2,FP2,False)
+	Average(1,PA_uS_2,FP2,False)
+	Average(1,VW3,FP2,False)
+	Average(1,PA_uS_3,FP2,False)
+	Average(1,VW4,FP2,False)
+	Average(1,PA_uS_4,FP2,False)
+	Average(1,VWC_5cm,FP2,False)
+	Average(1,Ka_5cm,FP2,False)
+	Average(1,T_5cm,FP2,False)
+	Average(1,BulkEC_5cm,FP2,False)
+	Average(1,VWC_10cm,FP2,False)
+	Average(1,Ka_10cm,FP2,False)
+	Average(1,T_10cm,FP2,False)
+	Average(1,BulkEC_10cm,FP2,False)
+	Average(1,VWC_20cm,FP2,False)
+	Average(1,Ka_20cm,FP2,False)
+	Average(1,T_20cm,FP2,False)
+	Average(1,BulkEC_20cm,FP2,False)
+	Average(1,VWC_30cm,FP2,False)
+	Average(1,Ka_30cm,FP2,False)
+	Average(1,T_30cm,FP2,False)
+	Average(1,BulkEC_30cm,FP2,False)
+	Average(1,VWC_40cm,FP2,False)
+	Average(1,Ka_40cm,FP2,False)
+	Average(1,T_40cm,FP2,False)
+	Average(1,BulkEC_40cm,FP2,False)
+	Average(1,VWC_50cm,FP2,False)
+	Average(1,Ka_50cm,FP2,False)
+	Average(1,T_50cm,FP2,False)
+	Average(1,BulkEC_50cm,FP2,False)
+	Average(1,VWC_60cm,FP2,False)
+	Average(1,Ka_60cm,FP2,False)
+	Average(1,T_60cm,FP2,False)
+	Average(1,BulkEC_60cm,FP2,False)
+	Average(1,VWC_75cm,FP2,False)
+	Average(1,Ka_75cm,FP2,False)
+	Average(1,T_75cm,FP2,False)
+	Average(1,BulkEC_75cm,FP2,False)
+	Average(1,VWC_100cm,FP2,False)
+	Average(1,Ka_100cm,FP2,False)
+	Average(1,T_100cm,FP2,False)
+	Average(1,BulkEC_100cm,FP2,False)
+EndTable
+
+DataTable(Table2,True,-1)
+	DataInterval(0,1440,Min,10)
+	Minimum(1,BattV,FP2,False,False)
+EndTable
+
+'Main Program
+BeginProg
+	'Main Scan
+	Scan(30,Sec,1,0)
+		'Default CR1000 Datalogger Battery Voltage measurement 'BattV'
+		Battery(BattV)
+		'Default CR1000 Datalogger Wiring Panel Temperature measurement 'PTemp_C'
+		PanelTemp(PTemp_C,_50Hz)
+		'Turn AM16/32 Multiplexer On
+		PortSet(3,1)
+		Delay(0,150,mSec)
+		LCount=1
+		SubScan(0,uSec,4)
+			'Switch to next AM16/32 Multiplexer channel
+			PulsePort(2,10000)
+			'Type E Thermocouple measurements 'Temp_C()' on the AM16/32 Multiplexer
+			TCDiff(Temp_C(LCount),1,mV2_5C,7,TypeE,PTemp_C,True,0,_50Hz,1,0)
+			LCount=LCount+1
+		NextSubScan
+		'Turn AM16/32 Multiplexer Off
+		PortSet(3,0)
+		Delay(0,150,mSec)
+		'HFP01 Soil Heat Flux Plate measurement 'SHF1'
+		VoltDiff(SHF1,1,mV25,3,True,0,_50Hz,20,0)
+		'HFP01 Soil Heat Flux Plate measurement 'SHF2'
+		VoltDiff(SHF2,1,mV25,4,True,0,_50Hz,20,0)
+		'HFP01 Soil Heat Flux Plate measurement 'SHF3'
+		VoltDiff(SHF3,1,mV25,5,True,0,_50Hz,20,0)
+		'HFP01 Soil Heat Flux Plate measurement 'SHF4'
+		VoltDiff(SHF4,1,mV25,6,True,0,_50Hz,20,0)
+		'CS615 Water Content Reflectometer measurements 'VW1' and 'PA_uS'
+		PortSet(1,1)
+		PeriodAvg(PA_uS,1,mV250,1,0,0,10,50,0.001,0)
+		PortSet(1,0)
+		VW1=-0.187+(0.037*PA_uS)+(0.335*PA_uS^2)
+		'CS615 Water Content Reflectometer measurements 'VW2' and 'PA_uS_2'
+		PortSet(1,1)
+		PeriodAvg(PA_uS_2,1,mV250,2,0,0,10,50,0.001,0)
+		PortSet(1,0)
+		VW2=-0.187+(0.037*PA_uS_2)+(0.335*PA_uS_2^2)
+		'CS615 Water Content Reflectometer measurements 'VW3' and 'PA_uS_3'
+		PortSet(1,1)
+		PeriodAvg(PA_uS_3,1,mV250,3,0,0,10,50,0.001,0)
+		PortSet(1,0)
+		VW3=-0.187+(0.037*PA_uS_3)+(0.335*PA_uS_3^2)
+		'CS615 Water Content Reflectometer measurements 'VW4' and 'PA_uS_4'
+		PortSet(1,1)
+		PeriodAvg(PA_uS_4,1,mV250,4,0,0,10,50,0.001,0)
+		PortSet(1,0)
+		VW4=-0.187+(0.037*PA_uS_4)+(0.335*PA_uS_4^2)
+		'Measure the SoilVue 10 Complete Soil Profiler every fifteen minutes
+		If TimeIntoInterval(0,5,Min) Then
+			'Turn the SoilVue 10 Complete Soil Profiler on
+			PortSet(9,1)
+			'Let the SoilVue 10 Complete Soil Profiler warm-up before taking measurements
+			Delay(0,2,Sec)
+			'SoilVue 10 Complete Soil Profiler measurements 'VWC_5cm', 'Ka_5cm', 'T_5cm', and 'BulkEC_5cm'
+			SDI12Recorder(SoilVue_5cm(),5,"0","M1!",1,0,-1)
+			'SoilVue 10 Complete Soil Profiler measurements 'VWC_10cm', 'Ka_10cm', 'T_10cm', and 'BulkEC_10cm'
+			SDI12Recorder(SoilVue_10cm(),5,"0","M2!",1,0,-1)
+			'SoilVue 10 Complete Soil Profiler measurements 'VWC_20cm', 'Ka_20cm', 'T_20cm', and 'BulkEC_20cm'
+			SDI12Recorder(SoilVue_20cm(),5,"0","M3!",1,0,-1)
+			'SoilVue 10 Complete Soil Profiler measurements 'VWC_30cm', 'Ka_30cm', 'T_30cm', and 'BulkEC_30cm'
+			SDI12Recorder(SoilVue_30cm(),5,"0","M4!",1,0,-1)
+			'SoilVue 10 Complete Soil Profiler measurements 'VWC_40cm', 'Ka_40cm', 'T_40cm', and 'BulkEC_40cm'
+			SDI12Recorder(SoilVue_40cm(),5,"0","M5!",1,0,-1)
+			'SoilVue 10 Complete Soil Profiler measurements 'VWC_50cm', 'Ka_50cm', 'T_50cm', and 'BulkEC_50cm'
+			SDI12Recorder(SoilVue_50cm(),5,"0","M6!",1,0,-1)
+			'SoilVue 10 Complete Soil Profiler measurements 'VWC_60cm', 'Ka_60cm', 'T_60cm', and 'BulkEC_60cm'
+			SDI12Recorder(SoilVue_60cm(),5,"0","M7!",1,0,-1)
+			'SoilVue 10 Complete Soil Profiler measurements 'VWC_75cm', 'Ka_75cm', 'T_75cm', and 'BulkEC_75cm'
+			SDI12Recorder(SoilVue_75cm(),5,"0","M8!",1,0,-1)
+			'SoilVue 10 Complete Soil Profiler measurements 'VWC_100cm', 'Ka_100cm', 'T_100cm', and 'BulkEC_100cm'
+			SDI12Recorder(SoilVue_100cm(),5,"0","M9!",1,0,-1)
+			'Turn the SoilVue 10 Complete Soil Profiler off
+			PortSet(9,0)
+		EndIf
+		'Call Data Tables and Store Data
+		CallTable Table1
+		CallTable Table2
+	NextScan
+EndProg

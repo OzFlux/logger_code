@@ -1022,7 +1022,7 @@ BeginProg
       Tc = Tc-273.15
 
       'Filter data in the covariance instruction if the EC150 w/ CSAT3A sonic head reports bad data.
-      irga_disable_f = ( sig_str_CO2 < CO2_SIG_STRGTH_THRESHOLD ) OR ( sig_str_H2O < H2O_SIG_STRGTH_THRESHOLD ) OR (diag_irga <> 0 )
+      irga_disable_f = ( sig_str_CO2 < CO2_SIG_STRGTH_THRESHOLD ) OR (sig_str_H2O < H2O_SIG_STRGTH_THRESHOLD ) OR (diag_irga <> 0 )
 
       'Load the arrays that hold the input data for the covariance instructions.
       cov_array_cs(1,1) = CO2
@@ -1062,7 +1062,6 @@ BeginProg
         Fe = Fe_no_wpl+H2O_wpl_Fe+H2O_wpl_Fh
       EndIf
       '*** End of EC150 processing ***
-
 
       '*** Beginning of temperature and humidity processing ***
       CallTable stats_tmpr_rh

@@ -138,8 +138,8 @@ Const NR_LW_OUTGOING_CAL = 1000/8    'Unique multiplier for CNR 4 longwave outgo
 'VX1     Thermistor excitation (red)
 
 ' -> PAR user constants / wiring (CR1000X)
-Const PAR_ANALOG_INPUT = 14 ' Unique SE analog input channel
-Const PAR_MULT = 100
+Const PAR_ANALOG_INPUT = 15 ' Unique SE analog input channel
+Const PAR_MULT = 233.5161
 
 '7L      PAR signal (?)
 'gnd     PAR signal reference (?)
@@ -181,8 +181,8 @@ Dim Cp                                                   'Specific heat capacity
 
 Public Tpanel
 Public Vbat
-units Tpanel = degC
-units Vbat = V
+Units Tpanel = degC
+Units Vbat = V
 
 ' -> System power control variables
 
@@ -206,9 +206,9 @@ Dim err_message_str As String * 76
 Dim value_str(2) As String * 20
 Alias value_str(1) = curr_value_str
 Alias value_str(2) = prev_value_str
-units process_time = us
-units buff_depth = scans
-units n = samples
+Units process_time = us
+Units buff_depth = scans
+Units n = samples
 
 ' -> EC100 internal constants / variables / subroutines
 
@@ -274,7 +274,7 @@ EndSub
 ' Variables
 
 Public AZ_SONIC                       'Enter sonic azimuth using keyboard after program has compiled (azimuth of the CSAT3(A) negative x-axis see Section 3.2.1 CSAT3A Azimuth in the OPEC manual).
-units AZ_SONIC = degrees
+Units AZ_SONIC = degrees
 
 Public sonic(5)
 Alias sonic(1) = Ux
@@ -283,11 +283,11 @@ Alias sonic(3) = Uz
 Alias sonic(4) = Tsonic
 Alias sonic(5) = diag_sonic
 Public diag_sonic_aggregate As Long
-units Ux = m/s
-units Uy = m/s
-units Uz = m/s
+Units Ux = m/s
+Units Uy = m/s
+Units Uz = m/s
 Units Tsonic = degC
-units diag_sonic = arb
+Units diag_sonic = arb
 Units diag_sonic_aggregate = arb
 Dim U_rslt                                 'Used to calculate Maximum resultant wind speed in an averaging period (Markus)
 
@@ -298,7 +298,7 @@ Alias diag_bits_sonic(3) = sonic_sig_lck_f 'Poor signal lock warning flag.
 Alias diag_bits_sonic(4) = sonic_del_T_f   'Delta temperature warning flag.
 Alias diag_bits_sonic(5) = sonic_aq_sig_f  'Sonic acquiring signals warning flag.
 Alias diag_bits_sonic(6) = sonic_cal_err_f 'Signature error in reading CSAT3A sonic head calibration data.
-units diag_bits_sonic = arb
+Units diag_bits_sonic = arb
 Dim diag_sonic_tmp As Long                 'Temporary variable used to break out the CSAT3A sonic head diagnostic bits.
 
 Dim sonic_irga_raw(12)                     'EC150 w/CSAT3A sonic head (not lagged).
@@ -328,31 +328,31 @@ Alias cov_out_sonic(16) = wnd_dir_sonic
 Alias cov_out_sonic(17) = std_wnd_dir
 Alias cov_out_sonic(18) = wnd_dir_compass
 Alias cov_out_sonic(19) = wnd_spd_max
-units Fh = W/m^2
+Units Fh = W/m^2
 Units tau = kg/(m s^2)
-units u_star = m/s
+Units u_star = m/s
 Units Tsonic_stdev = degC
 Units Tsonic_Ux_cov = degC m/s
 Units Tsonic_Uy_cov = degC m/s
 Units Tsonic_Uz_cov = degC m/s
-units Ux_stdev = m/s
-units Ux_Uy_cov = (m/s)^2
-units Ux_Uz_cov = (m/s)^2
-units Uy_stdev = m/s
-units Uy_Uz_cov = (m/s)^2
-units Uz_stdev = m/s
-units wnd_spd = m/s
+Units Ux_stdev = m/s
+Units Ux_Uy_cov = (m/s)^2
+Units Ux_Uz_cov = (m/s)^2
+Units Uy_stdev = m/s
+Units Uy_Uz_cov = (m/s)^2
+Units Uz_stdev = m/s
+Units wnd_spd = m/s
 Units wnd_spd_max = m/s   ' wind gust
-units rslt_wnd_spd = m/s
-units wnd_dir_sonic = degrees
-units std_wnd_dir = degrees
+Units rslt_wnd_spd = m/s
+Units wnd_dir_sonic = degrees
+Units std_wnd_dir = degrees
 Units wnd_dir_compass = degrees
 ' Upload related (Markus
 Public Upload_status_TERNflux
 'Public Upload_status_TERNflux_ssh
 Public Upload_status_diagnostic
 Public Upload_status_ts_data
-Public TStamp As String * 9 ' create a daily timestamp for ts_data
+Public TStamp As String * 16 'holds timestamp as YYYY-MM-DD_HH-mm for file upload
 
 ' Tables
 
@@ -466,32 +466,32 @@ Alias cov_out_cs(23) = CO2_wpl_Fe      'Carbon dioxide flux (EC150), Webb et al.
 Alias cov_out_cs(24) = CO2_wpl_Fh      'Carbon dioxide flux (EC150), Webb et al. term due to sensible heat flux.
 Alias cov_out_cs(25) = H2O_wpl_Fe      'Latent heat flux (EC150), Webb et al. term due to latent heat flux.
 Alias cov_out_cs(26) = H2O_wpl_Fh      'Latent heat flux (EC150), Webb et al. term due to sensible heat flux.
-units Fco2 = mg/(m^2 s)
-units Fe = W/m^2
-units Fh_irga = W/m^2
+Units Fco2 = mg/(m^2 s)
+Units Fe = W/m^2
+Units Fh_irga = W/m^2
 Units CO2_stdev = mg/m^3
-units CO2_Ux_cov = mg/(m^2 s)
+Units CO2_Ux_cov = mg/(m^2 s)
 Units CO2_Uy_cov = mg/(m^2 s)
-units CO2_Uz_cov = mg/(m^2 s)
-units H2O_stdev = g/m^3
-units H2O_Ux_cov = g/(m^2 s)
-units H2O_Uy_cov = g/(m^2 s)
-units H2O_Uz_cov = g/(m^2 s)
+Units CO2_Uz_cov = mg/(m^2 s)
+Units H2O_stdev = g/m^3
+Units H2O_Ux_cov = g/(m^2 s)
+Units H2O_Uy_cov = g/(m^2 s)
+Units H2O_Uz_cov = g/(m^2 s)
 Units Tc_stdev = degC
 Units Tc_Ux_cov = degC m/s
 Units Tc_Uy_cov = degC m/s
 Units Tc_Uz_cov = degC m/s
-units CO2_mean = mg/m^3
-units H2O_mean = g/m^3
-units amb_press_mean = kPa
+Units CO2_mean = mg/m^3
+Units H2O_mean = g/m^3
+Units amb_press_mean = kPa
 Units Tc_mean = degC
-units rho_a_mean = kg/m^3
-units Fco2_no_wpl = mg/(m^2 s)
-units Fe_no_wpl = W/m^2
-units CO2_wpl_Fe = mg/(m^2 s)
-units CO2_wpl_Fh = mg/(m^2 s)
-units H2O_wpl_Fe = W/m^2
-units H2O_wpl_Fh = W/m^2
+Units rho_a_mean = kg/m^3
+Units Fco2_no_wpl = mg/(m^2 s)
+Units Fe_no_wpl = W/m^2
+Units CO2_wpl_Fe = mg/(m^2 s)
+Units CO2_wpl_Fh = mg/(m^2 s)
+Units H2O_wpl_Fe = W/m^2
+Units H2O_wpl_Fh = W/m^2
 
 ' Tables
 
@@ -520,12 +520,12 @@ EndTable
 DisplayMenu ("System Control",TRUE)
   MenuItem ("Sonic Azmth",AZ_SONIC)
   MenuItem ("IRGA Off",irga_off_flg)
-    MenuPick (True,False)
+  MenuPick (True,False)
   SubMenu ("Change Press Source")
     MenuItem ("Select Srce",press_source)
-  MenuPick (BB,EB)
+    MenuPick (BB,EB)
     MenuItem ("Set Source",set_press_source_flg)
-  MenuPick (True)
+    MenuPick (True)
   EndSubMenu
   SubMenu ("On Site Zero & Span")
     SubMenu ("Span Concentrations")
@@ -533,11 +533,11 @@ DisplayMenu ("System Control",TRUE)
       MenuItem ("Td",Td_span_gas)
     EndSubMenu
     MenuItem ("Do Zero",do_zero_flg)
-  MenuPick (True)
+    MenuPick (True)
     MenuItem ("Do CO2 Span",do_CO2_span_flg)
-  MenuPick (True)
+    MenuPick (True)
     MenuItem ("Do H2O Span",do_H2O_span_flg)
-  MenuPick (True)
+    MenuPick (True)
     DisplayValue ("CO2 um/m dry",Xc)
     DisplayValue ("H2O mm/m dry",Xv)
     DisplayValue ("Td degrees C",Td)
@@ -553,8 +553,8 @@ Alias tmpr_rh(1) = T_tmpr_rh                    'Temperature/humidity probe temp
 Alias tmpr_rh(2) = RH_tmpr_rh                   'Temperature/humidity probe relative humidity.
 Alias tmpr_rh(3) = e_tmpr_rh                    'Temperature/humidity probe vapor pressure.
 Units T_tmpr_rh = degC
-units RH_tmpr_rh = percent
-units e_tmpr_rh = kPa
+Units RH_tmpr_rh = percent
+Units e_tmpr_rh = kPa
 Dim e_sat_tmpr_rh                               'Temperature/humidity probe saturation vapor pressure.
 Dim rho_d_tmpr_rh_mean                          'Density of dry air used in Webb et al. term [kg / m^3].
 
@@ -566,11 +566,11 @@ Alias stats_out_tmpr_rh(4) = AH_sensor_mean     'Mean temperature/humidity probe
 Alias stats_out_tmpr_rh(5) = RH_sensor_mean     'Mean temperature/humidity probe relative humidity.
 Alias stats_out_tmpr_rh(6) = rho_a_sensor_mean  'Mean air density using Temperature/humidity probe measurements.
 Units Ta_sensor_mean = degC
-units e_sensor_mean = kPa
+Units e_sensor_mean = kPa
 Units e_sat_sensor_mean = kPa
-units AH_sensor_mean = g/m^3
-units RH_sensor_mean = %
-units rho_a_sensor_mean = kg/m^3
+Units AH_sensor_mean = g/m^3
+Units RH_sensor_mean = %
+Units rho_a_sensor_mean = kg/m^3
 
 ' Tables
 
@@ -599,12 +599,12 @@ Alias nr(3) = Fsd
 Alias nr(4) = Fsu
 Alias nr(5) = Fld
 Alias nr(6) = Flu
-Alias nr(7) = Tb
+Alias nr(7) = Tbody_RAD
 Alias nr(8) = Fld_meas
 Alias nr(9) = Flu_meas
 Units nr = W/m^2
-units albedo = arb
-units Tb = K
+Units albedo = arb
+Units Tbody_RAD = K
 
 ' -> PAR internal variables
 Public PAR
@@ -614,7 +614,7 @@ Units PAR = umol/s/m^2
 
 ' Variables
 Public rain
-units rain = mm
+Units rain = mm
 
 '*** End internal constants, variables, working data tables ***
 '############################################################################
@@ -622,12 +622,12 @@ units rain = mm
 '############################################################################
 '*** Begin hardware config section ***
 
-Setsetting ("StationName",STATION_NAME)                     'Station name
-Setsetting ("PakBusAddress",PAKBUS_ADDR)                    'Pakbus address
-Setsetting ("FTPEnabled",True)                              'FTP server settings
-Setsetting ("FTPPort",21)
-Setsetting ("FTPUserName","CCFC")
-Setsetting ("FTPPassword","EPCN")
+SetSetting ("StationName",STATION_NAME)                     'Station name
+SetSetting ("PakBusAddress",PAKBUS_ADDR)                    'Pakbus address
+SetSetting ("FTPEnabled",True)                              'FTP server settings
+SetSetting ("FTPPort",21)
+SetSetting ("FTPUserName","CCFC")
+SetSetting ("FTPPassword","EPCN")
 PipeLineMode
 
 '*** End hardware config section ***
@@ -714,8 +714,8 @@ DataTable (TERNflux,TRUE,FLUX_SIZE_CPU)
 
   '*** Beginning of PAR output data ***
   Average(1,PAR,IEEE4,False)
-  '*** End of PAR output data ***  
-  
+  '*** End of PAR output data ***
+
   '*** Beginning of TE525 output data ***
   Totalize (1,rain,IEEE4,FALSE)
   '*** End of TE525 output data ***
@@ -737,7 +737,7 @@ DataTable (diagnostic,TRUE,1)
   Sample (6,sonic_amp_l_f,Boolean)
   Sample (22,irga_bad_data_f,Boolean)
   Sample (1,irga_off_bit,Boolean)
-  Sample (1,irga_startup_bit,Boolean)  
+  Sample (1,irga_startup_bit,Boolean)
 EndTable
 
 
@@ -775,9 +775,9 @@ EndTable
 BeginProg
 
   SemaphoreGet (1)
-  sys_conf_var_file = FileOpen ("CPU:sys_conf_var.dat","rb",0) 'Check if a file exists.
-  sys_conf_var_file_size = FileSize (sys_conf_var_file)
-  FileClose (sys_conf_var_file)
+    sys_conf_var_file = FileOpen ("CPU:sys_conf_var.dat","rb",0) 'Check if a file exists.
+    sys_conf_var_file_size = FileSize (sys_conf_var_file)
+    FileClose (sys_conf_var_file)
   SemaphoreRelease (1)
 
   Select Case sys_conf_var_file_size
@@ -1011,7 +1011,7 @@ BeginProg
     CallTable diagnostic
     process_time = Status.ProcessTime(1,1)
     buff_depth = Status.BuffDepth(1,1)
- 
+
 
     '*** Beginning of EC150 w/ CSAT3A sonic head measurements ***
     EC100 (sonic_irga_raw(1),EC100_SDM_ADDR,1)
@@ -1019,7 +1019,7 @@ BeginProg
   NextScan
 
 
-SlowSequence
+  SlowSequence
 
   Scan (5,Sec,3,0)
     sec_since_last_cmd = Timer (1,Sec,4)
@@ -1045,19 +1045,19 @@ SlowSequence
 
     BrHalf (X_nr,1,mV5000,NR_TSENS_ANALOG_INPUT,NR_TSENS_VX,1,2500,True,0,ANALOG_INTEGRATION,1.0,0)
     ln_R = LOG (1000*X_nr/(1-X_nr))
-    Tb = (1/(A_SHH+B_SHH*ln_R+C_SHH*ln_R*ln_R*ln_R))
+    Tbody_RAD = (1/(A_SHH+B_SHH*ln_R+C_SHH*ln_R*ln_R*ln_R))
 
     'Compute net radiation, albedo, incoming and outgoing longwave radiation.
     Fn = Fsd-Fsu+Fld-Flu
     albedo = Fsu/Fsd
     Fld_meas = Fld
     Flu_meas = Flu
-    Fld = Fld+(5.67e-8*Tb*Tb*Tb*Tb)
-    Flu = Flu+(5.67e-8*Tb*Tb*Tb*Tb)
+    Fld = Fld+(5.67e-8*Tbody_RAD*Tbody_RAD*Tbody_RAD*Tbody_RAD)
+    Flu = Flu+(5.67e-8*Tbody_RAD*Tbody_RAD*Tbody_RAD*Tbody_RAD)
     '*** End of CNR 4 measurements ***
 
     '*** Beginning of PAR measurements
-    VoltSe(PAR,1,AutoRange,PAR_ANALOG_INPUT,False,0,50,1,0)
+    VoltSe(PAR,1,mV200,PAR_ANALOG_INPUT,False,0,50,1,0)
     If PAR<0 Then PAR=0
     'Calculate photon flux density
     PAR=PAR*PAR_MULT
@@ -1139,16 +1139,17 @@ SlowSequence
   NextScan
 
   SlowSequence
-  
+
   ' Markus ftp upload
   'Scan (OUTPUT_INTERVAL ,Min,5,0)
-    Scan (5 ,Min,5,0)
-    Delay(1, 25, Sec) ' Spread out the delay to take the load off simultaneous uploads to server
+  Scan (OUTPUT_INTERVAL,Min,5,0)
     TStamp = Public.Timestamp(5,1)
-
+    TStamp = Left(TStamp, 16)
+    Upload_status_ts_data    = FTPClient (Server,User,Pass,"ts_data","/mnt/data/ftp/WhrooCR1/Whroo_EC_" & TStamp & "_ts_data.dat",28,0,0,0,-1008)
+    Delay(1, 25, Sec) ' Spread out the delay to take the load off simultaneous uploads to server
     Upload_status_TERNflux   = FTPClient (Server,User,Pass,"TERNflux","/mnt/data/ftp/WhrooCR1/Whroo_EC_TERNflux.dat",28,0,0,0,-1008)
     Upload_status_diagnostic = FTPClient (Server,User,Pass,"diagnostic","/mnt/data/ftp/WhrooCR1/Whroo_EC_diagnostic.dat",28,0,0,0,-1008)
-    Upload_status_ts_data    = FTPClient (Server,User,Pass,"Ts_data","/mnt/data/ftp/WhrooCR1/Whroo_EC_" & TStamp & "ts_data.dat",28,0,0,0,-1008)
-  
+
+
   NextScan
 EndProg
