@@ -1,0 +1,178 @@
+'CR1000X Series Datalogger
+
+'*** Contstant Table
+ConstTable (Constants)
+  '* Measurement constants
+  Const OUTPUT_INTERVAL = 30           'Online mean output interval in minutes.
+  Const CAL_INTERVAL    = 1440         'HFP01SC insitu calibration interval (minutes).
+  Const END_CAL = OUTPUT_INTERVAL - 1  'End HFP01SC insitu calibration one minute before the next Output.
+
+  'Enter sensor sensitivities and heater resistance values as constants.
+  'These values are unique for each sensor and are listed in the product certificate
+  Const HFP01SC_SNSTVT_1 = 60.80 'Change to your HFP01SC #1 sensitivity (uV/(W/m^2).
+  Const HFP01SC_SNSTVT_2 = 60.05 'Change to your HFP01SC #2 sensitivity (uV/(W/m^2).
+  Const HFP01SC_SNSTVT_3 = 63.05 'Change to your HFP01SC #3 sensitivity (uV/(W/m^2).
+  Const HFP01SC_RSSTNC_1 = 96.5  'Change to your HFP01SC #1 heater resistance (ohm).
+  Const HFP01SC_RSSTNC_2 = 95.8  'Change to your HFP01SC #2 heater resistance (ohm).
+  Const HFP01SC_RSSTNC_3 = 94.6  'Change to your HFP01SC #3 heater resistance (ohm).
+  Const HEAT_REF_RSSTNC  = 10.0  'Resistance of heater reference resister (ohm).
+  Const HFP01SC_AREA = 3.855e-3  'Area of HFP01SC (m^2).
+EndConstTable
+
+'*** Wiring instruction
+' * Plate cable
+Const PLATE_ANALOG_INPUT = 1    'Starting differential analog input channel in CR1000X for plate measurements.
+
+' CR1000X 1H     HFP signal #1 (white)
+' CR1000X 1L     HFP signal reference #1 (green)
+' CR1000X AG     HFP Shield #1 (clear)
+
+' CR1000X 2H     HFP signal #2 (white)
+' CR1000X 2L     HFP Signal reference #2 (green)
+' CR1000X AG     HFP Shield #2 (clear)
+
+' CR1000X 3H     HFP signal #3 (white)
+' CR1000X 3L     HFP signal reference #3 (green)
+' CR1000X AG     HFP shield #3 (clear)
+
+' * Heater cable
+Const HEATER_ANALOG_INPUT = 4   'Starting differential analog input channel in CR1000X for heater measurements.
+
+' CR1000X 4H     Heater resistor signal #1 (yellow)
+' CR1000X 4L     Heater resistor signal reference #1 (purple)
+' CR1000X SW12-1 Heater power positive #1 (red)
+' CR1000X G      Heater power negative #1 (black)
+' CR1000X AG     Heater shield #1 (clear)
+
+' CR1000X 5H     Heater resistor signal #2 (yellow)
+' CR1000X 5L     Heater resistor signal reference #2 (purple)
+' CR1000X SW12-1 Heater power positive #2 (red)
+' CR1000X G      Heater power negative #2 (black)
+' CR1000X AG     Heater shield #2 (clear)
+
+' CR1000X 6H     Heater resistor signal #3 (yellow)
+' CR1000X 6L     Heater resistor signal reference #3 (purple)
+' CR1000X SW12-2 Heater power positive #3 (red)
+' CR1000X G      Heater power negative #3 (black)
+' CR1000X AG     Heater shield #3 (clear)
+
+'*** Variables
+' * Used for measurements
+Public shf_plate(3)
+Units  shf_plate = W/m^2
+Public shf_multiplier(3) = {1000/HFP01SC_SNSTVT_1, 1000/HFP01SC_SNSTVT_2, 1000/HFP01SC_SNSTVT_3} 'Hold multipliers used in computation
+Units  shf_multiplier    = W/(m^2 mV)
+Dim    shf_mfct_mult(3)  = {1000/HFP01SC_SNSTVT_1, 1000/HFP01SC_SNSTVT_2, 1000/HFP01SC_SNSTVT_3} 'Hold manufacture multipliers all time
+Dim    shf_htr_resstnc(3)= {HFP01SC_RSSTNC_1, HFP01SC_RSSTNC_2, HFP01SC_RSSTNC_3}                'Array to load heater resistance in ohm
+
+' * Used for self-calibration
+Dim shf_mV(3)                      'Voltage measured from soil heat flux plates
+Dim shf_mV_run(3)                  'Running mean of shf_mV
+Dim shf_mV_0(3)                    'Running mean of shf_mV at the beginning of calibration
+Dim shf_mV_170(3)                  'Running mean of shf_mV after 170 seconds since the beginning of calibration
+Dim shf_mV_180(3)                  'Running mean of shf_mV after 180 seconds since the beginning of calibration
+Dim shf_mV_end(3)                  'Running mean of shf_mV at the end of calibration
+Dim V_rf(3)                        'Reference voltage
+Dim V_rf_run(3)                    'Running mean of reference voltage
+Dim V_rf_180(3)                    'Running mean of reference voltage after 180 seconds since the beginning of calibration
+Dim shf_cal_on_f As Boolean        'Set true while calibration is on
+Public shf_wrnng_flg(3) As Boolean 'HFP01SC self-calibration warning
+
+Dim i As Long
+Dim truefalse (2) = {"True", "False"} As String*5
+
+DataTable (shf_mean, TRUE, 100)
+  DataInterval (0, OUTPUT_INTERVAL, Min, 10)
+
+  Average (3, shf_plate(1),      IEEE4, 0)   'Soil heat flux through a plate
+
+  Sample (3, shf_multiplier(1),  IEEE4)      'Multipliers for soil heat flux plates
+  Sample (3, shf_htr_resstnc(1), IEEE4)      'Heater resistance of self-calibrated soil heat flux plate
+
+  'Warning flag indicates the peformace of self-calibration #1 (see HFP01SC manual v1624)
+  Sample (1, truefalse (2 + shf_wrnng_flg(1)), String)
+  FieldNames ("shfp_wrnng_1_1_1")
+  Sample (1, truefalse (2 + shf_wrnng_flg(2)), String)
+  FieldNames ("shfp_wrnng_2_1_1")
+  Sample (1, truefalse (2 + shf_wrnng_flg(3)), String)
+  FieldNames ("shfp_wrnng_3_1_1")
+
+EndTable
+
+BeginProg
+
+  Scan (1, Sec, 3, 0)
+
+    '*** HFP01SC measurements
+    VoltDiff (shf_mV(1), 3, mV200C, PLATE_ANALOG_INPUT, TRUE, 500, 60, 1, 0)
+
+    'Apply HFP01SC soil heat flux plate calibration.
+    For i = 1 To 3
+      shf_plate(i) = shf_mV(i)*shf_multiplier(i)
+    Next i
+
+    '*** Measure voltage across the heater (V_Rf).
+    VoltDiff (V_rf(1), 3, mV5000, HEATER_ANALOG_INPUT, TRUE, 500, 60, 0.001, 0)
+
+    'Maintain filtered values for calibration.
+    AvgRun (shf_mV_run(1), 3, shf_mV(1), 5)
+    AvgRun (V_rf_run(1),   3, V_rf(1),   5)
+
+    ' *** HFP01SC self-calibration one minute into CAL_INTERVAL.
+    If (TimeIntoInterval (1,CAL_INTERVAL,Min)) Then
+      shf_cal_on_f = TRUE
+      Move (shf_mV_0(1), 3, shf_mV_run(1), 3)
+
+      'Power the HFP01SC heaters.
+      SW12 (SW12_1, TRUE, 1)
+      SW12 (SW12_2, TRUE, 1)
+    EndIf
+
+    ' *** Record voltage output 10 seconds before end of heating cycle.
+    If (TimeIntoInterval (230, CAL_INTERVAL*60, Sec)) Then
+      Move (shf_mV_170(1), 3, shf_mV_run(1), 3)
+    EndIf
+    ' *** Record voltage output at end of heating cycle and power down heaters.
+    If (TimeIntoInterval (4,CAL_INTERVAL,Min)) Then
+      Move (shf_mV_180(1), 3, shf_mV_run(1), 3)
+      Move (V_rf_180(1),   3, V_rf_run(1),   3)
+
+      SW12 (SW12_1, FALSE, 1)
+      SW12 (SW12_2, FALSE, 1)
+    EndIf
+
+    'End HFP01SC calibration sequence.
+    If (TimeIntoInterval (END_CAL,CAL_INTERVAL,Min)) Then
+      Move (shf_mV_end(1), 3, shf_mV_run(1), 3)
+      'Compute new HFP01SC calibration factors.
+      For i = 1 To 3
+        If (V_rf_180(i) <> NaN) AND (shf_mV_0(i) <> NaN) AND (shf_mV_180(i) <> NaN) Then
+          shf_wrnng_flg(i) = FALSE
+
+          'In the following equation 2 means that heat emitts in two directions
+
+          shf_multiplier(i) = ((V_rf_180(i)*V_rf_180(i)*shf_htr_resstnc (i)/2/HFP01SC_AREA/HEAT_REF_RSSTNC/HEAT_REF_RSSTNC) _
+          /ABS (shf_mV_180(i)-((shf_mV_0(i)+shf_mV_end(i))/2)))
+
+          If ((1000/shf_multiplier(i) < 800/shf_mfct_mult(i)) OR (1000/shf_multiplier(i) > 1050/shf_mfct_mult(i)) _
+            OR (ABS(shf_mV_end(i)-shf_mV_0(i)) > 0.1* ABS(shf_mV_180(i)-((shf_mV_0(i)+shf_mV_end(i))/2))) _
+            OR (ABS(shf_mV_180(i)-shf_mV_170(i)) > 0.1 *ABS(shf_mV_180(i)-((shf_mV_0(i)+shf_mV_end(i))/2)))) Then
+            shf_wrnng_flg(i) = TRUE
+            shf_multiplier(i) = shf_mfct_mult(i)
+          EndIf
+
+        Else
+          shf_wrnng_flg(i) = TRUE
+        EndIf
+
+      Next i
+      shf_cal_on_f = FALSE
+    EndIf
+
+    CallTable shf_mean
+
+  NextScan
+EndProg
+
+
+
